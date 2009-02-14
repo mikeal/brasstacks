@@ -1,0 +1,372 @@
+{
+  "buildid": "1234567890",
+  "endtime": "2009-02-12T23:20:48.255843", 
+  "starttime": "2009-02-12T23:20:18.247181", 
+  "sysinfo": {
+    "arch": "i386", 
+    "hostname": "Havok.local", 
+    "os.name": "Darwin", 
+    "os.version.number": "9.6.0", 
+    "os.version.string": "Darwin Kernel Version 9.6.0: Mon Nov 24 17:37:00 PST 2008; root:xnu-1228.9.59~1/RELEASE_I386"
+  }, 
+  "testPath": "/Users/mikeal/Documents/svn/mozmill/trunk/test", 
+  "testType": "mozmill", 
+  "tests": [
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_assert.js", 
+      "name": "test_assert", 
+      "passed": 9, 
+      "passes": [
+        {
+          "function": "Controller.type()"
+        }, 
+        {
+          "function": "Controller.open()"
+        }, 
+        {
+          "function": "Controller.type()"
+        }, 
+        {
+          "function": "Controller.assertValue()"
+        }, 
+        {
+          "function": "Controller.type()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.assertNode()"
+        }, 
+        {
+          "function": "Controller.type()"
+        }, 
+        {
+          "function": "Controller.assertValue()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_demo.js", 
+      "name": "test_PrefsContentTab", 
+      "passed": 5, 
+      "passes": [
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_demo.js", 
+      "name": "test_GoogleDotCom", 
+      "passed": 5, 
+      "passes": [
+        {
+          "function": "Controller.type()"
+        }, 
+        {
+          "function": "Controller.open()"
+        }, 
+        {
+          "function": "Controller.type()"
+        }, 
+        {
+          "function": "Controller.assertValue()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_demo.js", 
+      "name": "test_mozillaorg", 
+      "passed": 0, 
+      "passes": [], 
+      "skipped": true, 
+      "skipped_reason": "Platform exclusion"
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_focus.js", 
+      "name": "test_focus", 
+      "passed": 2, 
+      "passes": [
+        {
+          "function": "Controller.type()"
+        }, 
+        {
+          "function": "Controller.open()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_jum.js", 
+      "name": "testAsserts", 
+      "passed": 12, 
+      "passes": [
+        {
+          "function": "jum.assert", 
+          "value": true
+        }, 
+        {
+          "function": "jum.assertTrue", 
+          "value": true
+        }, 
+        {
+          "function": "jum.assertFalse", 
+          "value": false
+        }, 
+        {
+          "function": "jum.assertEquals", 
+          "value1": "asdf", 
+          "value2": "asdf"
+        }, 
+        {
+          "function": "jum.assertNotEquals", 
+          "value1": "asdf", 
+          "value2": "fdsa"
+        }, 
+        {
+          "function": "jum.assertNull", 
+          "value": null
+        }, 
+        {
+          "function": "jum.assertNotNull", 
+          "value": true
+        }, 
+        {
+          "function": "jum.assertUndefined"
+        }, 
+        {
+          "function": "jum.assertNotUndefined", 
+          "value": "asdf"
+        }, 
+        {
+          "function": "jum.assertNaN", 
+          "value": "a"
+        }, 
+        {
+          "function": "jum.assertNotNaN", 
+          "value": 4
+        }, 
+        {
+          "function": "jum.pass"
+        }
+      ]
+    }, 
+    {
+      "failed": 14, 
+      "fails": [
+        {
+          "function": "jum.assert", 
+          "value": false
+        }, 
+        {
+          "function": "jum.assertTrue", 
+          "value": false
+        }, 
+        {
+          "function": "jum.assertTrue", 
+          "message": "Bad argument, value type string !=  \"boolean\"", 
+          "value": "asf"
+        }, 
+        {
+          "function": "jum.assertFalse", 
+          "value": true
+        }, 
+        {
+          "function": "jum.assertFalse", 
+          "message": "Bad argument, value type string !=  \"boolean\"", 
+          "value": "asdf"
+        }, 
+        {
+          "function": "jum.assertEquals", 
+          "value1": "asdf", 
+          "value2": "fdsa"
+        }, 
+        {
+          "function": "jum.assertNotEquals", 
+          "value1": "asdf", 
+          "value2": "asdf"
+        }, 
+        {
+          "function": "jum.assertNull", 
+          "value": true
+        }, 
+        {
+          "function": "jum.assertNotNull", 
+          "value": null
+        }, 
+        {
+          "function": "jum.assertUndefined", 
+          "value": "asdf"
+        }, 
+        {
+          "function": "jum.assertNotUndefined"
+        }, 
+        {
+          "function": "jum.assertNaN", 
+          "value": 4
+        }, 
+        {
+          "function": "jum.assertNotNaN", 
+          "value": "f"
+        }, 
+        {
+          "function": "jum.fail"
+        }
+      ], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_jum.js", 
+      "name": "testNotAsserts", 
+      "passed": 0, 
+      "passes": []
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_prefs.js", 
+      "name": "setupModule", 
+      "passed": 0, 
+      "passes": []
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_prefs.js", 
+      "name": "test_TabsTab", 
+      "passed": 5, 
+      "passes": [
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_prefs.js", 
+      "name": "test_ContentTab", 
+      "passed": 5, 
+      "passes": [
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_prefs.js", 
+      "name": "test_ApplicationsTab", 
+      "passed": 1, 
+      "passes": [
+        {
+          "function": "Controller.click()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_prefs.js", 
+      "name": "test_PrivacyTab", 
+      "passed": 8, 
+      "passes": [
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }, 
+        {
+          "function": "Controller.click()"
+        }
+      ]
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_something/test_sub/test_deps.js", 
+      "name": "setupModule", 
+      "passed": 0, 
+      "passes": []
+    }, 
+    {
+      "failed": 0, 
+      "fails": [], 
+      "filename": "/Users/mikeal/Documents/svn/mozmill/trunk/test/test_something/test_sub/test_deps.js", 
+      "name": "testDependencies", 
+      "passed": 1, 
+      "passes": [
+        {
+          "function": "jum.assertEquals", 
+          "value1": "asdf", 
+          "value2": "asdf"
+        }
+      ]
+    }
+  ]
+}
