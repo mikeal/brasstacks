@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>test</title>
+	<meta name="generator" content="TextMate http://macromates.com/">
+	<meta name="author" content="adam">
+	<!-- Date: 2009-03-19 -->
+</head>
+<body>
+<script type="text/javascript" charset="utf-8">
+  RemoteCanvas = function(url) {
+      this.url = url;
+  };
+
+  RemoteCanvas.CANVAS_WIDTH = 900;
+  RemoteCanvas.CANVAS_HEIGHT = 900;
+
+  RemoteCanvas.prototype.load = function() {
+      var windowWidth = window.innerWidth - 25;
+      var iframe;
+      iframe = document.createElement("iframe");
+      iframe.id = "test-iframe";
+      iframe.height = "10px";
+      iframe.width = windowWidth + "px";
+      iframe.style.visibility = "hidden";
+      iframe.src = this.url;
+      // Here is where the magic happens... add a listener to the
+      // frame's onload event
+      iframe.addEventListener("load", this.remotePageLoaded, true);
+      //append to the end of the page
+      window.document.body.appendChild(iframe);
+      return;    
+  };
+
+  RemoteCanvas.prototype.remotePageLoaded = function() {
+      // Look back up the iframe by id
+      var ldrFrame = document.getElementById("test-iframe");
+      // Get a reference to the window object you need for the canvas
+      // drawWindow method
+      var remoteWindow = ldrFrame.contentWindow;
+
+      //Draw canvas
+      var canvas = document.createElement("canvas");
+      canvas.id = "mycanvas";
+      canvas.style.width = RemoteCanvas.CANVAS_WIDTH + "px";
+      canvas.style.height = RemoteCanvas.CANVAS_HEIGHT + "px";
+      canvas.width = RemoteCanvas.CANVAS_WIDTH;
+      canvas.height = RemoteCanvas.CANVAS_HEIGHT;
+      var windowWidth = window.innerWidth - 25;
+      var windowHeight = window.innerHeight;
+
+      var ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0,
+                    RemoteCanvas.CANVAS_WIDTH,
+                    RemoteCanvas.CANVAS_HEIGHT);
+      ctx.save();
+      ctx.scale(RemoteCanvas.CANVAS_WIDTH / windowWidth,
+                RemoteCanvas.CANVAS_HEIGHT / windowHeight);
+      ctx.drawWindow(remoteWindow,
+                     0, 0,
+                     windowWidth, windowHeight,
+                     "rgb(0,0,0)");
+      ctx.restore();
+      saveCanvas(canvas, '/Users/mikeal/Desktop/screenshot.png');
+  };
+  
+  function saveCanvas(canvas, destFile) {
+    // convert string filepath to an nsIFile
+    var file = Components.classes["@mozilla.org/file/local;1"]
+                         .createInstance(Components.interfaces.nsILocalFile);
+    file.initWithPath(destFile);
+
+    // create a data url from the canvas and then create URIs of the source and targets  
+    var io = Components.classes["@mozilla.org/network/io-service;1"]
+                       .getService(Components.interfaces.nsIIOService);
+    var source = io.newURI(canvas.toDataURL("image/png", ""), "UTF8", null);
+    var target = io.newFileURI(file)
+
+    // prepare to save the canvas data
+    var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                            .createInstance(Components.interfaces.nsIWebBrowserPersist);
+
+    persist.persistFlags = Components.interfaces.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+    persist.persistFlags |= Components.interfaces.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
+
+    // displays a download dialog (remove these 3 lines for silent download)
+    var xfer = Components.classes["@mozilla.org/transfer;1"]
+                         .createInstance(Components.interfaces.nsITransfer);
+    xfer.init(source, target, "", null, null, null, persist);
+    persist.progressListener = xfer;
+
+    // save the canvas data to the file
+    persist.saveURI(source, null, null, null, null, file);
+  }
+  
+  var remoteCanvas = new RemoteCanvas('http://www.google.com');
+  remoteCanvas.load();
+    
+</script>
+</body>
+</html>
