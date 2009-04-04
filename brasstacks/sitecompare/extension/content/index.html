@@ -9,23 +9,27 @@
 	<meta name="author" content="adam">
 	<!-- Date: 2009-03-19 -->
 </head>
-<body>
+<body style="padding:0px;margin:0px;">
 <script type="text/javascript" charset="utf-8">
-  RemoteCanvas = function(url) {
+  RemoteCanvas = function(url, destFile) {
       this.url = url;
+      this.destFile = destFile;
+      window.destFile = destFile;
   };
-
-  RemoteCanvas.CANVAS_WIDTH = 900;
-  RemoteCanvas.CANVAS_HEIGHT = 900;
+  
+  RemoteCanvas.CANVAS_WIDTH = window.innerWidth;
+  RemoteCanvas.CANVAS_HEIGHT = window.innerHeight;
 
   RemoteCanvas.prototype.load = function() {
       var windowWidth = window.innerWidth - 25;
       var iframe;
       iframe = document.createElement("iframe");
       iframe.id = "test-iframe";
-      iframe.height = "10px";
-      iframe.width = windowWidth + "px";
-      iframe.style.visibility = "hidden";
+      // iframe.height = "10px";
+      // iframe.width = windowWidth + "px";
+      iframe.height = window.innerHeight + "px";
+      iframe.width = "100%";
+      //iframe.style.visibility = "hidden";
       iframe.src = this.url;
       // Here is where the magic happens... add a listener to the
       // frame's onload event
@@ -45,10 +49,15 @@
       //Draw canvas
       var canvas = document.createElement("canvas");
       canvas.id = "mycanvas";
+      // canvas.style.width = RemoteCanvas.CANVAS_WIDTH + "px";
+      //       canvas.style.height = RemoteCanvas.CANVAS_HEIGHT + "px";
+      //       canvas.width = RemoteCanvas.CANVAS_WIDTH;
+      //       canvas.height = RemoteCanvas.CANVAS_HEIGHT;
       canvas.style.width = RemoteCanvas.CANVAS_WIDTH + "px";
       canvas.style.height = RemoteCanvas.CANVAS_HEIGHT + "px";
       canvas.width = RemoteCanvas.CANVAS_WIDTH;
       canvas.height = RemoteCanvas.CANVAS_HEIGHT;
+      
       var windowWidth = window.innerWidth - 25;
       var windowHeight = window.innerHeight;
 
@@ -64,7 +73,7 @@
                      windowWidth, windowHeight,
                      "rgb(0,0,0)");
       ctx.restore();
-      saveCanvas(canvas, '/Users/mikeal/Desktop/screenshot.png');
+      saveCanvas(canvas, window.destFile);
   };
   
   function saveCanvas(canvas, destFile) {
@@ -96,7 +105,7 @@
     persist.saveURI(source, null, null, null, null, file);
   }
   
-  var remoteCanvas = new RemoteCanvas('http://www.google.com');
+  var remoteCanvas = new RemoteCanvas('http://www.google.com','/Users/adam/Desktop/screenshot.png');
   remoteCanvas.load();
     
 </script>
