@@ -29,7 +29,7 @@ class CompareSites(object):
             os.mkdir(directory)
         self.finished = False
         
-        self.all_sites = {"yahoo":"http://www.yahoo.com", "google":"http://www.google.com"}
+        self.all_sites = {"google":"http://www.google.com", 'wikipedia':"http://en.wikipedia.org/wiki/Main_Page"}
         
     def start(self):
         self.runner1.start()
@@ -85,7 +85,8 @@ class CompareSites(object):
         
     def do_all_images(self):
         for name, site in self.all_sites.items():
-            self.test_uri(name, site)
+            result = self.test_uri(name, site)
+            print name, 'differs by ', str(result['difference'])
     
     def stop(self):
         sleep(3)
