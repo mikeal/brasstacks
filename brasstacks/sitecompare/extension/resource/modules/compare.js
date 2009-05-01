@@ -1,4 +1,5 @@
-var EXPORTED_SYMBOLS = ["getActiveTab", "currentURI", "doURI", "saveDirectory", "URI", "PATH", "sleep"];
+var EXPORTED_SYMBOLS = ["getActiveTab", "currentURI", "doURI", 
+                        "saveDirectory", "URI", "PATH", "sleep"];
 
 var hwindow = Components.classes["@mozilla.org/appshell/appShellService;1"]
                 .getService(Components.interfaces.nsIAppShellService)
@@ -50,5 +51,5 @@ function doURI(uri, path) {
   URI = uri;
   PATH = path;
   getActiveTab().location.href = "chrome://sitecompare/content/index.html";
-  sleep(1000);
+  sleep(5000);
 }

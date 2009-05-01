@@ -17,11 +17,11 @@
       window.destFile = destFile;
   };
   
-  // RemoteCanvas.CANVAS_WIDTH = window.innerWidth;
-  // RemoteCanvas.CANVAS_HEIGHT = window.innerHeight;
+  window.innerWidth = 994;
+  window.innerHeight = 580;
   
-  RemoteCanvas.CANVAS_WIDTH = 990;
-  RemoteCanvas.CANVAS_HEIGHT = 660;
+  RemoteCanvas.CANVAS_WIDTH = window.innerWidth;
+  RemoteCanvas.CANVAS_HEIGHT = window.innerHeight;
 
   RemoteCanvas.prototype.load = function() {
       var windowWidth = window.innerWidth - 25;
@@ -39,11 +39,13 @@
       iframe.addEventListener("load", this.remotePageLoaded, true);
       //append to the end of the page
       window.document.body.appendChild(iframe);
-      return;    
+      return;
   };
 
   RemoteCanvas.prototype.remotePageLoaded = function() {
       // Look back up the iframe by id
+      window.innerWidth = 994;
+      window.innerHeight = 609;
       var ldrFrame = document.getElementById("test-iframe");
       // Get a reference to the window object you need for the canvas
       // drawWindow method
@@ -76,6 +78,9 @@
                      windowWidth, windowHeight,
                      "rgb(0,0,0)");
       ctx.restore();
+      window.innerWidth = 994;
+      window.innerHeight = 609;
+      compare.sleep(3000)
       saveCanvas(canvas, window.destFile);
   };
   
@@ -108,7 +113,7 @@
     persist.saveURI(source, null, null, null, null, file);
   }
   
-  var compare = {}; Components.utils.import("resource://sitecompare/modules/compare.js", compare);
+  compare = {}; Components.utils.import("resource://sitecompare/modules/compare.js", compare);
   
   var remoteCanvas = new RemoteCanvas(compare.URI, compare.PATH);
   remoteCanvas.load();

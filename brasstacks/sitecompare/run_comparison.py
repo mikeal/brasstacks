@@ -85,9 +85,10 @@ class CompareSites(object):
         
     def do_all_images(self):
         for name, site in self.all_sites.items():
-            print self.test_uri(name, site)
+            self.test_uri(name, site)
     
     def stop(self):
+        sleep(3)
         self.runner1.stop()
         self.runner2.stop()    
 
