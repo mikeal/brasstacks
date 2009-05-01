@@ -105,7 +105,9 @@
     persist.saveURI(source, null, null, null, null, file);
   }
   
-  var remoteCanvas = new RemoteCanvas('http://www.google.com','/Users/adam/Desktop/screenshot.png');
+  var compare = {}; Components.utils.import("resource://sitecompare/modules/compare.js", compare);
+  
+  var remoteCanvas = new RemoteCanvas(compare.URI, compare.PATH);
   remoteCanvas.load();
     
 </script>

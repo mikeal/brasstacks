@@ -1,4 +1,6 @@
+import tempfile
 import os
+from time import sleep
 from optparse import OptionParser
 
 import jsbridge
@@ -17,7 +19,19 @@ class CompareSites(object):
         self.runner2.start()
         
         self.back_channel1, self.bridge1 = jsbridge.wait_and_create_network('127.0.0.1', 24242)
-        self.back_channel2, self.bridge2 = jsbridge.wait_and_create_network('127.0.0.1', 24243)    
+        self.back_channel2, self.bridge2 = jsbridge.wait_and_create_network('127.0.0.1', 24243)
+        
+        js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
+        self.c1 = jsbridge.JSObject(self.bridge1, js)
+        self.c2 = jsbridge.JSObject(self.bridge2, js) 
+        self.tempdir = tempfile.mkdtemp()
+        sleep(5)
+        
+    def test_uri(self, uri):
+        filename = os.path.join(self.tempdir, uri.split('?')[0])
+        file1 = self.c1.doURI(uri, filename+'.release.png')
+        file2 = self.c2.doURI(uri, fileanem+'.nightly.png')
+        
         
 
 def cli():
@@ -60,11 +74,21 @@ def cli():
     
     
 def test():
-    runner = mozrunner.FirefoxRunner(binary='/Applications/Shiretoko.app')
+    runner = mozrunner.FirefoxRunner(binary='/Applications/Shiretoko.app',  cmdargs=['-jsbridge', '24242'])
     runner.profile.install_plugin(jsbridge.extension_path)
     runner.profile.install_plugin(extension_path)
-    runner.profile.install_plugin('/Users/mikeal/Documents/svn/mozmill/trunk/xpi/firebug-1.3.3-fx.xpi')
+    runner.profile.install_plugin('/Users/mikeal/tmp/xush')
     runner.start()
+    
+    back_channel, bridge = jsbridge.wait_and_create_network('127.0.0.1', 24242)
+    sleep(3)
+    js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
+    c = jsbridge.JSObject(bridge, js)
+    sleep(3)
+    c.doURI('http://www.google.com', '/Users/mikeal/Desktop/screenshot.png')
+    sleep(5)
+    c.doURI('http://www.yahoo.com', '/Users/mikeal/Desktop/screenshot2.png')
+    sleep(5)
     try:
         runner.wait()
     except KeyboardInterrupt:
