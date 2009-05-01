@@ -1,4 +1,4 @@
-var EXPORTED_SYMBOLS = ["getActiveTab", "currentURI", "doURI", "saveDirectory", "URI", "PATH"];
+var EXPORTED_SYMBOLS = ["getActiveTab", "currentURI", "doURI", "saveDirectory", "URI", "PATH", "sleep"];
 
 var hwindow = Components.classes["@mozilla.org/appshell/appShellService;1"]
                 .getService(Components.interfaces.nsIAppShellService)

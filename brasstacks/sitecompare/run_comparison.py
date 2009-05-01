@@ -1,6 +1,9 @@
 import tempfile
 import os
+import math
+import operator
 from time import sleep
+from PIL import Image, ImageChops
 from optparse import OptionParser
 
 import jsbridge
@@ -9,11 +12,25 @@ import mozrunner
 parent_path = os.path.abspath(os.path.dirname(__file__))
 extension_path = os.path.join(parent_path, 'extension')
 
+def diff_images(file1, file2):
+    """Image diff code from http://snipplr.com/view/757/compare-two-pil-images-in-python/"""
+    image1, image2 = Image.open(file1), Image.open(file2)
+    h1, h2 = image1.histogram(), image2.histogram()
+    if image1.size != image2.size:
+        raise Exception('Image sizes do not match! image1 :: '+str(image1.size)+', image2 :: '+str(image2.size))
+    rms = math.sqrt(reduce(operator.add, map(lambda a,b: (a-b)**2, h1, h2))/len(h1))
+    return ( rms, image1, image2, h1, h2, )
+
 class CompareSites(object):
     def __init__(self, runner1, runner2, report, directory):
         self.runner1 = runner1; self.runner2 = runner2
-        self.report = report; self.directory = directory
+        self.report = report; self.directory = os.path.abspath(directory)
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
         self.finished = False
+        
+        self.all_sites = {"yahoo":"http://www.yahoo.com", "google":"http://www.google.com"}
+        
     def start(self):
         self.runner1.start()
         self.runner2.start()
@@ -24,15 +41,55 @@ class CompareSites(object):
         js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
         self.c1 = jsbridge.JSObject(self.bridge1, js)
         self.c2 = jsbridge.JSObject(self.bridge2, js) 
-        self.tempdir = tempfile.mkdtemp()
+        
         sleep(5)
+        self.do_all_images()
         
-    def test_uri(self, uri):
-        filename = os.path.join(self.tempdir, uri.split('?')[0])
-        file1 = self.c1.doURI(uri, filename+'.release.png')
-        file2 = self.c2.doURI(uri, fileanem+'.nightly.png')
+    def test_uri(self, name, uri):
+        filename = os.path.join(self.directory, name)
+        file1 = filename+'.release.png'
+        file2 = filename+'.nightly.png'
+        self.c1.doURI(uri, file1)
+        self.c2.doURI(uri, file2)
+        sleep(5)
+        rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
+        result = {"uri":uri, "release_image":file1, "nightly_image":file2, "difference":rms}
+        if rms  != 0:
+            result["images_differ"] = True
+            image1RGB = image1.convert('RGB')
+            image2RGB = image2.convert('RGB')
+            
+            ImageChops.difference(image1RGB, image2RGB).save(filename+'.diff.difference.png')
+            result["diff_difference_image"] = filename+'.diff.difference.png'
+            
+            ImageChops.multiply(image1, image2).save(filename+'.diff.multiply.png')
+            result["diff_multiply_image"] = filename+'.diff.multiply.png'
+            
+            ImageChops.screen(image1, image2).save(filename+'.diff.screen.png')
+            result["diff_screen_image"] = filename+'.diff.screen.png'
+            
+            ImageChops.add(image1, image2).save(filename+'diff.add.png')
+            result["diff_add_image"] = filename+'.diff.add.png'
+            
+            ImageChops.subtract(image1RGB, image2RGB).save(filename+'diff.subtract.png')
+            result["diff_subtract_image"] = filename+'.diff.subtract.png'
+            
+            ImageChops.lighter(image1, image2).save(filename+'diff.lighter.png')
+            result["diff_lighter_image"] = filename+'.diff.lighter.png'
+            
+            ImageChops.darker(image1, image2).save(filename+'diff.darker.png')
+            result["diff_darker_image"] = filename+'.diff.darker.png'
+        else:
+            result["images_differ"] = False
+        return result
         
-        
+    def do_all_images(self):
+        for name, site in self.all_sites.items():
+            print self.test_uri(name, site)
+    
+    def stop(self):
+        self.runner1.stop()
+        self.runner2.stop()    
 
 def cli():
     parser = OptionParser()
@@ -68,10 +125,13 @@ def cli():
     
     runner1.profile.install_plugin(extension_path)
     runner2.profile.install_plugin(extension_path)  
-    
+    if options.directory is None:
+        raise Exception("Must specify directory for tests to be saved to.")
     c = CompareSites(runner1, runner2, options.report, options.directory)
     c.start()
     
+    sleep(2)
+    c.stop()
     
 def test():
     runner = mozrunner.FirefoxRunner(binary='/Applications/Shiretoko.app',  cmdargs=['-jsbridge', '24242'])
@@ -96,5 +156,5 @@ def test():
 
 
 if __name__ == "__main__":
-    test()
+    cli()
 
