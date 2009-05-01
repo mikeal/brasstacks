@@ -17,17 +17,17 @@
       window.destFile = destFile;
   };
   
-  RemoteCanvas.CANVAS_WIDTH = 994;
-  RemoteCanvas.CANVAS_HEIGHT = 609;
+  RemoteCanvas.CANVAS_WIDTH = window.innerWidth;
+  RemoteCanvas.CANVAS_HEIGHT = window.innerHeight;
 
   RemoteCanvas.prototype.load = function() {
-      var windowWidth = 994;
+      var windowWidth = window.innerWidth - 25;
       var iframe;
       iframe = document.createElement("iframe");
       iframe.id = "test-iframe";
       // iframe.height = "10px";
       // iframe.width = windowWidth + "px";
-      iframe.height = 609 + "px";
+      iframe.height = window.innerHeight + "px";
       iframe.width = "100%";
       //iframe.style.visibility = "hidden";
       iframe.src = this.url;
@@ -73,13 +73,11 @@
                      windowWidth, windowHeight,
                      "rgb(0,0,0)");
       ctx.restore();
-      compare.sleep(2000)
       saveCanvas(canvas, window.destFile);
   };
   
   function saveCanvas(canvas, destFile) {
     // convert string filepath to an nsIFile
-    // compare.sleep(3000)
     var file = Components.classes["@mozilla.org/file/local;1"]
                          .createInstance(Components.interfaces.nsILocalFile);
     file.initWithPath(destFile);
@@ -107,7 +105,7 @@
     persist.saveURI(source, null, null, null, null, file);
   }
   
-  compare = {}; Components.utils.import("resource://sitecompare/modules/compare.js", compare);
+  var compare = {}; Components.utils.import("resource://sitecompare/modules/compare.js", compare);
   
   var remoteCanvas = new RemoteCanvas(compare.URI, compare.PATH);
   remoteCanvas.load();
