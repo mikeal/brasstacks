@@ -51,5 +51,7 @@ function doURI(uri, path) {
   URI = uri;
   PATH = path;
   getActiveTab().location.href = "chrome://sitecompare/content/index.html";
-  sleep(5000);
 }
+
+var browserWindow = wm.getMostRecentWindow("navigator:browser");
+browserWindow.getBrowser().selectedTab = browserWindow.getBrowser().addTab("about:blank");

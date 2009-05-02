@@ -2,9 +2,13 @@ import tempfile
 import os
 import math
 import operator
+import shutil
+from distutils import dir_util
 from time import sleep
 from PIL import Image, ImageChops
 from optparse import OptionParser
+
+copytree = dir_util.copy_tree
 
 import jsbridge
 import mozrunner
@@ -29,7 +33,18 @@ class CompareSites(object):
             os.mkdir(directory)
         self.finished = False
         
-        self.all_sites = {"google":"http://www.google.com", 'wikipedia':"http://en.wikipedia.org/wiki/Main_Page"}
+        self.all_sites = {
+            "google":"http://www.google.com",            
+            'wikipedia':"http://en.wikipedia.org/wiki/Main_Page",
+            "ebay": "http://www.ebay.com",
+            "google-china": "http://www.google.cn",
+            "fc2": "http://fc2.com",
+            "craigslist": "http://www.craigslist.com",
+            "hi5": "http://www.hi5.com",
+            "mail-ru": "http://www.mail.ru"}
+            
+        self.saved_release_images = []
+        self.saved_nightly_images = []
         
     def start(self):
         self.runner1.start()
@@ -37,13 +52,26 @@ class CompareSites(object):
         
         self.back_channel1, self.bridge1 = jsbridge.wait_and_create_network('127.0.0.1', 24242)
         self.back_channel2, self.bridge2 = jsbridge.wait_and_create_network('127.0.0.1', 24243)
-        
+        self.back_channel1.add_listener(self.save_release_listener,
+                                        eventType='sitecompare.save')
+        self.back_channel2.add_listener(self.save_nightly_listener, 
+                                        eventType='sitecompare.save')
+                                        
+        # def gl(name, obj):
+        #     print 'gl', name, obj
+        # self.back_channel1.add_global_listener(gl)
+        sleep(5)
         js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
         self.c1 = jsbridge.JSObject(self.bridge1, js)
         self.c2 = jsbridge.JSObject(self.bridge2, js) 
         
-        sleep(5)
+        
         self.do_all_images()
+        
+    def save_nightly_listener(self, obj):
+        self.saved_nightly_images.append(obj)
+    def save_release_listener(self, obj):
+        self.saved_release_images.append(obj)
         
     def test_uri(self, name, uri):
         filename = os.path.join(self.directory, name)
@@ -51,7 +79,8 @@ class CompareSites(object):
         file2 = filename+'.nightly.png'
         self.c1.doURI(uri, file1)
         self.c2.doURI(uri, file2)
-        sleep(5)
+        while file1 not in self.saved_release_images and file2 not in self.saved_nightly_images:
+            sleep(1)
         rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
         result = {"uri":uri, "release_image":file1, "nightly_image":file2, "difference":rms}
         if rms  != 0:
@@ -68,16 +97,16 @@ class CompareSites(object):
             ImageChops.screen(image1, image2).save(filename+'.diff.screen.png')
             result["diff_screen_image"] = filename+'.diff.screen.png'
             
-            ImageChops.add(image1, image2).save(filename+'diff.add.png')
+            ImageChops.add(image1, image2).save(filename+'.diff.add.png')
             result["diff_add_image"] = filename+'.diff.add.png'
             
-            ImageChops.subtract(image1RGB, image2RGB).save(filename+'diff.subtract.png')
+            ImageChops.subtract(image1RGB, image2RGB).save(filename+'.diff.subtract.png')
             result["diff_subtract_image"] = filename+'.diff.subtract.png'
             
-            ImageChops.lighter(image1, image2).save(filename+'diff.lighter.png')
+            ImageChops.lighter(image1, image2).save(filename+'.diff.lighter.png')
             result["diff_lighter_image"] = filename+'.diff.lighter.png'
             
-            ImageChops.darker(image1, image2).save(filename+'diff.darker.png')
+            ImageChops.darker(image1, image2).save(filename+'.diff.darker.png')
             result["diff_darker_image"] = filename+'.diff.darker.png'
         else:
             result["images_differ"] = False
@@ -116,6 +145,8 @@ def cli():
     if options.profile2:
         profile2 = mozrunner.FirefoxProfile(default_profile=options.profile2)
     else: profile2 = None
+
+    base_path = os.path.dirname(__file__)
     
     runner1 = mozrunner.FirefoxRunner(binary=options.binary1, profile=profile1, 
                                       cmdargs=['-jsbridge', '24242'])
@@ -127,6 +158,15 @@ def cli():
     
     runner1.profile.install_plugin(extension_path)
     runner2.profile.install_plugin(extension_path)  
+    
+    runner1.profile.install_plugin(os.path.join(base_path, 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
+    runner2.profile.install_plugin(os.path.join(base_path, 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
+    
+    copytree(os.path.join(base_path, 'adblockplus'), 
+             os.path.join(runner1.profile.profile, 'adblockplus'))
+    copytree(os.path.join(base_path, 'adblockplus'), 
+             os.path.join(runner2.profile.profile, 'adblockplus'))
+    
     if options.directory is None:
         raise Exception("Must specify directory for tests to be saved to.")
     c = CompareSites(runner1, runner2, options.report, options.directory)
@@ -134,11 +174,13 @@ def cli():
     
     sleep(2)
     c.stop()
+    sleep(3)
     
 def test():
     runner = mozrunner.FirefoxRunner(binary='/Applications/Shiretoko.app',  cmdargs=['-jsbridge', '24242'])
     runner.profile.install_plugin(jsbridge.extension_path)
     runner.profile.install_plugin(extension_path)
+    runner.profile.install_plugin(os.path.join(os.path.dirname(__file__), 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
     runner.profile.install_plugin('/Users/mikeal/tmp/xush')
     runner.start()
     

@@ -17,8 +17,12 @@
       window.destFile = destFile;
   };
   
+  window.outerWidth = 994;
+  window.outerHeight = 580;
   window.innerWidth = 994;
   window.innerHeight = 580;
+  
+  
   
   RemoteCanvas.CANVAS_WIDTH = window.innerWidth;
   RemoteCanvas.CANVAS_HEIGHT = window.innerHeight;
@@ -44,8 +48,12 @@
 
   RemoteCanvas.prototype.remotePageLoaded = function() {
       // Look back up the iframe by id
+      compare.sleep(5000)
+      window.outerWidth = 994;
+      window.outerHeight = 580;
       window.innerWidth = 994;
-      window.innerHeight = 609;
+      window.innerHeight = 580;
+      
       var ldrFrame = document.getElementById("test-iframe");
       // Get a reference to the window object you need for the canvas
       // drawWindow method
@@ -78,10 +86,14 @@
                      windowWidth, windowHeight,
                      "rgb(0,0,0)");
       ctx.restore();
+      window.outerWidth = 994;
+      window.outerHeight = 580;
       window.innerWidth = 994;
-      window.innerHeight = 609;
-      compare.sleep(3000)
+      window.innerHeight = 580;
+      
       saveCanvas(canvas, window.destFile);
+      compare.sleep(1000)
+      jsbridge.fireEvent('sitecompare.save', compare.PATH)
   };
   
   function saveCanvas(canvas, destFile) {
@@ -113,11 +125,12 @@
     persist.saveURI(source, null, null, null, null, file);
   }
   
+  jsbridge = {}; Components.utils.import('resource://jsbridge/modules/events.js', jsbridge);
   compare = {}; Components.utils.import("resource://sitecompare/modules/compare.js", compare);
   
   var remoteCanvas = new RemoteCanvas(compare.URI, compare.PATH);
   remoteCanvas.load();
-    
+      
 </script>
 </body>
 </html>
