@@ -1,0 +1,31 @@
+<html>
+<head><title>SiteCompare</title></head>
+
+<body>
+<link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />   
+
+<style type="text/css">
+input {
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:20px;
+}
+
+div.add-page-form {
+  text-align:center;
+}
+</style>
+
+<h1>Site Compare</h1>
+
+
+<form method="post" action="pages">
+  <div class="add-page-form">
+    <input type="text" name="uri"  style="width: 500px;"/><br>
+    <input type="submit" value="add a page"/>
+  </div>
+</form>
+
+
+</body>
+

@@ -4,14 +4,18 @@ import math
 import operator
 import shutil
 from distutils import dir_util
+from datetime import datetime
 from time import sleep
 from PIL import Image, ImageChops
 from optparse import OptionParser
 
 copytree = dir_util.copy_tree
 
+import couchquery
 import jsbridge
 import mozrunner
+
+db = couchquery.CouchDatabase("http://127.0.0.1:5984/brasstacks")
 
 parent_path = os.path.abspath(os.path.dirname(__file__))
 extension_path = os.path.join(parent_path, 'extension')
@@ -34,14 +38,36 @@ class CompareSites(object):
         self.finished = False
         
         self.all_sites = {
-            "google":"http://www.google.com",            
-            'wikipedia':"http://en.wikipedia.org/wiki/Main_Page",
+            "google": "http://www.google.com",
+            "yahoo": "http://www.yahoo.com",            
+            "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
             "ebay": "http://www.ebay.com",
             "google-china": "http://www.google.cn",
             "fc2": "http://fc2.com",
             "craigslist": "http://www.craigslist.com",
             "hi5": "http://www.hi5.com",
-            "mail-ru": "http://www.mail.ru"}
+            "mail-ru": "http://www.mail.ru",
+            "aol": "http://www.aol.com",
+            "flickr": "http://www.flickr.com",
+            "amazon": "http://www.amazon.com",
+            "google-jp": "http://www.google.co.jp",
+            "doubleclick": "http://www.doubleclick.com",
+            "photobucket": "http://www.photobucket.com",
+            "orkut": "http://orkut.com.br",
+            "twitter": "http://www.twitter.com",
+            "youtube": "http://www.youtube.com",
+            "facebook": "http://www.facebook.com",
+            "windows-live": "http://live.com",
+            "msn": "http://www.msn.com",
+            "blogger": "http://blogger.com",
+            "baidu": "http://baidu.com",
+            "qq": "http://qq.com",
+            "microsoft": "http://www.microsoft.com",
+            # "sina": "http://sina.com.cn",
+            "rapidshare": "http://rapidshare.com",
+            "google.fr": "http://google.fr",
+            "wordpress": "http://www.wordpress.com",
+            }
             
         self.saved_release_images = []
         self.saved_nightly_images = []
@@ -63,10 +89,18 @@ class CompareSites(object):
         sleep(5)
         js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
         self.c1 = jsbridge.JSObject(self.bridge1, js)
-        self.c2 = jsbridge.JSObject(self.bridge2, js) 
+        self.c2 = jsbridge.JSObject(self.bridge2, js)
         
+        run = {"type":"comparison-run", "allsites":self.all_sites, 
+               "starttime":datetime.now().isoformat(), "status":"running"}
+        
+        self.run_info = db.create(run)         
         
         self.do_all_images()
+        
+        obj = db.get(self.run_info['id'])
+        obj['status'] = "done"
+        db.update(obj)
         
     def save_nightly_listener(self, obj):
         self.saved_nightly_images.append(obj)
@@ -79,6 +113,7 @@ class CompareSites(object):
         file2 = filename+'.nightly.png'
         self.c1.doURI(uri, file1)
         self.c2.doURI(uri, file2)
+
         while file1 not in self.saved_release_images and file2 not in self.saved_nightly_images:
             sleep(1)
         rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
@@ -115,6 +150,10 @@ class CompareSites(object):
     def do_all_images(self):
         for name, site in self.all_sites.items():
             result = self.test_uri(name, site)
+            obj = {"type":"comparison-test", "page-id":name, "uri":site, 
+                   "run-id":self.run_info['id'], "result":result,
+                   "timestamp":datetime.now().isoformat()}
+            db.create(obj)
             print name, 'differs by ', str(result['difference'])
     
     def stop(self):
@@ -161,6 +200,8 @@ def cli():
     
     runner1.profile.install_plugin(os.path.join(base_path, 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
     runner2.profile.install_plugin(os.path.join(base_path, 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
+    runner1.profile.install_plugin('/Users/mikeal/tmp/xush')
+    runner2.profile.install_plugin('/Users/mikeal/tmp/xush')
     
     copytree(os.path.join(base_path, 'adblockplus'), 
              os.path.join(runner1.profile.profile, 'adblockplus'))
@@ -180,7 +221,6 @@ def test():
     runner = mozrunner.FirefoxRunner(binary='/Applications/Shiretoko.app',  cmdargs=['-jsbridge', '24242'])
     runner.profile.install_plugin(jsbridge.extension_path)
     runner.profile.install_plugin(extension_path)
-    runner.profile.install_plugin(os.path.join(os.path.dirname(__file__), 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
     runner.profile.install_plugin('/Users/mikeal/tmp/xush')
     runner.start()
     
@@ -188,10 +228,8 @@ def test():
     sleep(3)
     js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
     c = jsbridge.JSObject(bridge, js)
-    sleep(3)
-    c.doURI('http://www.google.com', '/Users/mikeal/Desktop/screenshot.png')
     sleep(5)
-    c.doURI('http://www.yahoo.com', '/Users/mikeal/Desktop/screenshot2.png')
+    c.doURI('http://http://en.wikipedia.org/wiki/Main_Page', '/Users/mikeal/Desktop/screenshot2.png')
     sleep(5)
     try:
         runner.wait()
