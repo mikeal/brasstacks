@@ -3,7 +3,7 @@
 
 <body>
 <link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />   
-<h1>Site Compare</h1>
+<div class="site-title">Site Compare</div>
 % if query:
   <div class="error-message">
 % if query['m'] == ["already"]:
@@ -11,7 +11,7 @@ Site already existed.
 % endif
   </div>
 % endif  
-<h2>${uri}</h2>
+<div class="page-name-time">${uri}</div>
 
 
 

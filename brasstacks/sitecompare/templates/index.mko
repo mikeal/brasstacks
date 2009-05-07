@@ -16,8 +16,7 @@ div.add-page-form {
 }
 </style>
 
-<h1>Site Compare</h1>
-
+<div class="site-title">Site Compare</div>
 
 <form method="post" action="pages">
   <div class="add-page-form">

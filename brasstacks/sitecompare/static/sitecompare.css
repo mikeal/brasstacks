@@ -1,4 +1,4 @@
-h1 {
+div.site-title {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
@@ -7,9 +7,10 @@ h1 {
   font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
   font-size:36px;
   padding-top:20px;
+  font-weight: bold;  
   }
 
-h2 {
+div.page-name-time {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
@@ -17,6 +18,7 @@ h2 {
   font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
   font-size:30px;
   padding-top:20px;
+  font-weight: bold;
   }
 
 div.error-message {
@@ -29,5 +31,8 @@ div.error-message {
   padding-top:20px;
 }
 
+div.pages-list {
+  width: 400px;
+}
 
 
