@@ -8,9 +8,11 @@ import couchquery
 
 template_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 static_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
-index_template = os.path.join(template_dir, 'index.mko')
-page_template = os.path.join(template_dir, 'page.mko')
-pages_template = os.path.join(template_dir, 'pages.mko')
+
+class MakoResponse(webenv.HtmlResponse):
+    def __init__(self, name, **kwargs):
+        self.body = Template(filename=os.path.join(template_dir, name+'.mko')).render(**kwargs)
+        self.headers = []
 
 db = couchquery.CouchDatabase("http://127.0.0.1:5984/brasstacks")
 db.sync_design_doc("sitecompare", os.path.join(os.path.abspath(os.path.dirname(__file__)), 'views'))
@@ -32,18 +34,33 @@ class SiteCompareApplication(RestApplication):
     
     def GET(self, request, collection=None, resource=None):
         if collection is None:
-            return webenv.HtmlResponse(Template(filename=index_template).render())
+            latest = db.views.sitecompare.runByTime(descending=True, limit=1).rows[0]
+            latest.tests = db.views.sitecompare.testByRun(
+                startkey=latest._id, endkey=latest._id+'0').rows
+            
+            return MakoResponse('index', latest=latest)
         if collection == "pages":
             if resource is None:
                 view_result = db.views.sitecompare.byType(startkey="page", endkey="page0")
-                resp = Template(filename=pages_template).render(pages=view_result.rows)
-                return webenv.HtmlResponse(resp)
+                return MakoResponse('pages', pages=view_result.rows)
             else:
-                d = db.get(resource).dict
-                d['query'] = dict(request.query)
-            
-                resp = Template(filename=page_template).render(**d)
-                return webenv.HtmlResponse(resp)
+                d = db.get(resource)
+                d.query = dict(request.query)
+                return MakoResponse('page', **dict(d))
+        if collection == 'runs':
+            if resource is None:
+                runs = db.views.sitecompare.runByTime(descending=True).rows
+                return MakoResponse('runs', runs=runs)
+            else:
+                run = db.get(resource)
+                run.tests = db.views.sitecompare.testByRun(startkey=run._id, endkey=run._id+'0').rows
+                return MakoResponse('run', run=run)
+        if collection == 'tests':
+            if resource is None:
+                pass
+            else:
+                test = db.get(resource)
+                return MakoResponse('test', test=test)
             
     def POST(self, request, collection=None, resource=None):
         if collection == "pages":
@@ -66,11 +83,17 @@ class SiteCompareApplication(RestApplication):
                 elif request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
                     resp = self.pages_collection.update_resource(dict(request.body))
 
+
 application = SiteCompareApplication()
 application.add_resource('static', FileServerApplication(static_dir))
 
 if __name__ == "__main__":
+    class Stub(RestApplication):
+        def GET(self, request, *args):
+            return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
+    a = Stub()
+    a.add_resource('sitecompare', application)
     from wsgiref.simple_server import make_server
-    httpd = make_server('', 8888, application)
-    print "Serving on http://localhost:8888/"
+    httpd = make_server('', 8888, a)
+    print "Serving on http://localhost:8888/sitecompare"
     httpd.serve_forever()

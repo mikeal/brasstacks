@@ -1,0 +1,22 @@
+<html>
+<head><title>SiteCompare - Runs</title></head>
+
+<body>
+<link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />   
+<div class="site-title">Site Compare</div>
+
+<div class="runs-test-number">${len(runs)}</div>
+
+<br>
+
+<table class="all-runs">
+% for run in runs:
+  <tr>
+    <td><a href="/sitecompare/runs/${run._id}">${run.starttime}</a></td>
+    <td>${run.endtime}</td>
+    <td>${str(len(run.allsites))}
+  </tr>
+% endfor  
+</table>
+
+</body>

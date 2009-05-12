@@ -1,0 +1,24 @@
+<html>
+<head><title>SiteCompare - ${run.endtime}</title></head>
+
+<body>
+<link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />   
+<div class="site-title">Site Compare</div>
+
+<div class="run-starttime">${run.starttime}</div>
+<div class="run-endtime">${run.endtime}</div>
+<div class="run-test-number">${len(run.tests)}</div>
+
+<br>
+
+<table class="run-tests">
+% for d, test in reversed(sorted([(t.result.get('difference'), t) for t in run.tests])):
+  <tr>
+    <td><a href="/sitecompare/tests/${test._id}">${str(d)}</a></td>
+    <td><a href="/sitecompare/pages/${test['page-id']}">${test.uri}</a></td>
+  </tr>
+% endfor  
+</table>
+
+</body>
+

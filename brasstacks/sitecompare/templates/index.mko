@@ -2,7 +2,7 @@
 <head><title>SiteCompare</title></head>
 
 <body>
-<link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />   
+<link rel="stylesheet" type="text/css" href="/sitecompare/static/sitecompare.css" />   
 
 <style type="text/css">
 input {
@@ -25,6 +25,15 @@ div.add-page-form {
   </div>
 </form>
 
-
+<div class="latest-run">Latest Run @ <a href="/sitecompare/runs/${latest['_id']}">${latest.endtime}</a></div>
+  
+<table class="latest-test-run">
+% for d, test in reversed(sorted([(t.result.get('difference'), t) for t in latest.tests])):
+  <tr>
+    <td>${str(d)}</td>
+    <td>${test.uri}</td>
+  </tr>
+% endfor
+</table>
 </body>
 

@@ -4,13 +4,14 @@
 <body>
 <link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />
 
-<link type="text/css" href="/static/jquery-custom/css/smoothness/jquery-ui-1.7.1.custom.css" rel="Stylesheet" />	
+<!-- <link type="text/css" href="/static/jquery-custom/css/smoothness/jquery-ui-1.7.1.custom.css" rel="Stylesheet" /> 
 <script type="text/javascript" src="/static/jquery-custom/js/jquery-1.3.2.min.js"></script>
 <script type="text/javascript" src="/static/jquery-custom/js/jquery-ui-1.7.1.custom.min.js"></script>
+-->
 
-<div class="site-title">Site Compare</div>
+<div class="site-title">Site Compare</div> 
 
-<div id="pages-list">
+<div class="pages-list">
 <div id="accordion">
 % for page in pages:
   <h3><a href="#">${page[u"uri"]}</a></h3>
@@ -24,12 +25,18 @@
 </div>
 </div>
 
-<script type="text/javascript">
-	$(function() {
-		$("#accordion").accordion();
-	});
-</script>
+<!-- <script type="text/javascript">
+  $(function() {
+    $("#accordion").accordion();
+  });
+</script> -->
 
 
 </body>
+
+
+
+
+
+
 
