@@ -1,0 +1,75 @@
+<html>
+<head><title>SiteCompare - ${build.buildid}</title></head>
+
+<body>
+<link rel="stylesheet" type="text/css" href="/sitecompare/static/sitecompare.css" />   
+<div class="site-title">Site Compare</div>
+<div class="build-title">${build.productType}-${build['appInfo.platformVersion']}-${build.buildid}</div>
+
+<style type="text/css">
+td.t-title {
+}
+div.build-title {
+  padding-bottom:30px;
+}
+
+div.info-container {
+  margin:0 auto;
+  width:90%;
+  font-size:18px;
+}
+div.t-title {
+  float:left;
+  width:49%;
+  text-align:right;
+  font-weight:bold;
+}
+div.t-value {
+  float:right;
+  width:49%;
+  text-align:left;
+}
+
+div.table-title {
+  padding-top: 100px;
+  text-align: center;
+  font-weight:bold;
+  font-size:22;
+  padding-bottom:10px;
+}
+
+table {
+  width:100%;
+}
+td.time {
+  width:38.5%;
+  text-align:right;
+}
+td.release {
+  width:25%;
+  text-align:center;
+}
+td.nightly {
+  width:38.5%;
+  text-align:left;
+}
+
+</style>
+
+<div class="info-container">
+<div class="t-title">Product</div><div class="t-value">${build.productType}</div>
+<div class="t-title">Platform</div><div class="t-value">${build['appInfo.platformVersion']}</div>
+<div class="t-title">BuildID</div><div class="t-value">${build.buildid}</div>
+</div>
+
+<div class="table-title">Runs</div>
+<table>
+% for run in runs:
+<tr>
+  <td class="time"><a href="/sitecompare/runs/${run._id}">${run.endtime}</a></td>
+  <td class="release"><a href="/sitecompare/runs/${run.release_docid}">${run.get("release_buildstring", run.release_buildid)}</a></td>
+  <td class="nightly"><a href="/sitecompare/runs/${run.release_docid}">${run.get("nightly_buildstring", run.nightly_buildid)}</a></td>
+</tr>
+% endfor
+</body>
+</html>

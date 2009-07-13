@@ -46,7 +46,8 @@ class SiteCompareApplication(RestApplication):
             else:
                 d = db.get(resource)
                 d.query = dict(request.query)
-                return MakoResponse('page', **dict(d))
+                tests = db.views.sitecompare.testByPage(d._id).rows
+                return MakoResponse('page', tests=tests, **dict(d))
         if collection == 'runs':
             if resource is None:
                 runs = db.views.sitecompare.runByTime(descending=True).rows
@@ -60,7 +61,15 @@ class SiteCompareApplication(RestApplication):
                 pass
             else:
                 test = db.get(resource)
-                return MakoResponse('test', test=test)
+                run = db.get(test['run-id'])
+                return MakoResponse('test', test=test, run=run)
+        if collection == 'builds':
+            if resource is None:
+                pass
+            else:
+                build = db.get(resource)
+                runs = db.views.sitecompare.runByBuild(startkey=build._id, endkey=build._id+'0').rows
+                return MakoResponse('build', build=build, runs=runs)
             
     def POST(self, request, collection=None, resource=None):
         if collection == "pages":

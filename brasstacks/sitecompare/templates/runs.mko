@@ -2,7 +2,7 @@
 <head><title>SiteCompare - Runs</title></head>
 
 <body>
-<link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />   
+<link rel="stylesheet" type="text/css" href="/sitecompare/static/sitecompare.css" />   
 <div class="site-title">Site Compare</div>
 
 <div class="runs-test-number">${len(runs)}</div>
@@ -10,13 +10,14 @@
 <br>
 
 <table class="all-runs">
-% for run in runs:
+% for run in [r for r in runs if r.has_key('endtime')]:
   <tr>
     <td><a href="/sitecompare/runs/${run._id}">${run.starttime}</a></td>
     <td>${run.endtime}</td>
-    <td>${str(len(run.allsites))}
+    <td>${str(len(run.allsites))}</td>
   </tr>
 % endfor  
 </table>
 
 </body>
+</html>

@@ -1,3 +1,9 @@
+body {
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  text-align:center;
+}
+
 div.site-title {
   text-align: center;
   margin-left: auto;

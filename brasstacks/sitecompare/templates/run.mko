@@ -1,8 +1,25 @@
 <html>
 <head><title>SiteCompare - ${run.endtime}</title></head>
 
-<body>
-<link rel="stylesheet" type="text/css" href="/static/sitecompare.css" />   
+<body>  
+<link rel="stylesheet" type="text/css" href="/sitecompare/static/sitecompare.css" />   
+
+<style type="text/css">
+table.run-tests {
+  padding-top:20px;
+  width: 95%;
+}
+td.rms {
+  width:30%;
+  text-align:right;
+}
+td.page {
+  padding-left:5px;
+  width:70%;
+  text-align:left;
+}
+</style>
+
 <div class="site-title">Site Compare</div>
 
 <div class="run-starttime">${run.starttime}</div>
@@ -14,11 +31,11 @@
 <table class="run-tests">
 % for d, test in reversed(sorted([(t.result.get('difference'), t) for t in run.tests])):
   <tr>
-    <td><a href="/sitecompare/tests/${test._id}">${str(d)}</a></td>
-    <td><a href="/sitecompare/pages/${test['page-id']}">${test.uri}</a></td>
+    <td class="rms"><a href="/sitecompare/tests/${test._id}">${str(d)}</a></td>
+    <td class="page"><a href="/sitecompare/pages/${test['page-id']}">${test.uri}</a></td>
   </tr>
 % endfor  
 </table>
 
 </body>
-
+</html>

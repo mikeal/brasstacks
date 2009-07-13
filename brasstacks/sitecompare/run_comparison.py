@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import tempfile
 import os
 import math
@@ -20,6 +21,8 @@ db = couchquery.CouchDatabase("http://127.0.0.1:5984/brasstacks")
 parent_path = os.path.abspath(os.path.dirname(__file__))
 extension_path = os.path.join(parent_path, 'extension')
 
+appInfoJs = "Components.classes['@mozilla.org/xre/app-info;1'].getService(Components.interfaces.nsIXULAppInfo)"
+
 def diff_images(file1, file2):
     """Image diff code from http://snipplr.com/view/757/compare-two-pil-images-in-python/"""
     image1, image2 = Image.open(file1), Image.open(file2)
@@ -30,44 +33,46 @@ def diff_images(file1, file2):
     return ( rms, image1, image2, h1, h2, )
 
 class CompareSites(object):
-    def __init__(self, runner1, runner2, report, directory):
+    def __init__(self, runner1, runner2, report):
         self.runner1 = runner1; self.runner2 = runner2
-        self.report = report; self.directory = os.path.abspath(directory)
-        if not os.path.isdir(directory):
-            os.mkdir(directory)
+        self.report = report; 
+        self.base_directory = os.path.abspath(os.path.dirname(__file__))
         self.finished = False
         
-        self.all_sites = {
-            "google": "http://www.google.com",
-            "yahoo": "http://www.yahoo.com",            
-            "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
-            "ebay": "http://www.ebay.com",
-            "google-china": "http://www.google.cn",
-            "fc2": "http://fc2.com",
-            "craigslist": "http://www.craigslist.com",
-            "hi5": "http://www.hi5.com",
-            "mail-ru": "http://www.mail.ru",
-            "aol": "http://www.aol.com",
-            "flickr": "http://www.flickr.com",
-            "amazon": "http://www.amazon.com",
-            "google-jp": "http://www.google.co.jp",
-            "doubleclick": "http://www.doubleclick.com",
-            "photobucket": "http://www.photobucket.com",
-            "orkut": "http://orkut.com.br",
-            "twitter": "http://www.twitter.com",
-            "youtube": "http://www.youtube.com",
-            "facebook": "http://www.facebook.com",
-            "windows-live": "http://live.com",
-            "msn": "http://www.msn.com",
-            "blogger": "http://blogger.com",
-            "baidu": "http://baidu.com",
-            "qq": "http://qq.com",
-            "microsoft": "http://www.microsoft.com",
-            # "sina": "http://sina.com.cn",
-            "rapidshare": "http://rapidshare.com",
-            "google.fr": "http://google.fr",
-            "wordpress": "http://www.wordpress.com",
-            }
+        rows = db.views.sitecompare.pageByURI().rows
+        self.all_sites = dict([(r._id, r.uri,) for r in rows if not hasattr(r, 'enabled') or r.enabled ])
+        
+        # self.all_sites = {
+        #     "google": "http://www.google.com",
+        #     "yahoo": "http://www.yahoo.com",            
+        #     "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
+        #     "ebay": "http://www.ebay.com",
+        #     "google-china": "http://www.google.cn",
+        #     "fc2": "http://fc2.com",
+        #     "craigslist": "http://www.craigslist.com",
+        #     "hi5": "http://www.hi5.com",
+        #     "mail-ru": "http://www.mail.ru",
+        #     "aol": "http://www.aol.com",
+        #     "flickr": "http://www.flickr.com",
+        #     "amazon": "http://www.amazon.com",
+        #     "google-jp": "http://www.google.co.jp",
+        #     "doubleclick": "http://www.doubleclick.com",
+        #     "photobucket": "http://www.photobucket.com",
+        #     "orkut": "http://orkut.com.br",
+        #     "twitter": "http://www.twitter.com",
+        #     "youtube": "http://www.youtube.com",
+        #     "facebook": "http://www.facebook.com",
+        #     "windows-live": "http://live.com",
+        #     "msn": "http://www.msn.com",
+        #     "blogger": "http://blogger.com",
+        #     "baidu": "http://baidu.com",
+        #     "qq": "http://qq.com",
+        #     "microsoft": "http://www.microsoft.com",
+        #     # "sina": "http://sina.com.cn",
+        #     "rapidshare": "http://rapidshare.com",
+        #     "google.fr": "http://google.fr",
+        #     "wordpress": "http://www.wordpress.com",
+        #     }
             
         self.saved_release_images = []
         self.saved_nightly_images = []
@@ -87,6 +92,10 @@ class CompareSites(object):
         #     print 'gl', name, obj
         # self.back_channel1.add_global_listener(gl)
         sleep(5)
+        
+        self.build1 = self.get_build(self.bridge1)
+        self.build2 = self.get_build(self.bridge2)
+        
         js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
         self.c1 = jsbridge.JSObject(self.bridge1, js)
         self.c2 = jsbridge.JSObject(self.bridge2, js)
@@ -95,13 +104,38 @@ class CompareSites(object):
                "starttime":datetime.now().isoformat(), "status":"running"}
         
         self.run_info = db.create(run)         
+        self.directory = os.path.join(self.base_directory, 'static', 'runs', self.run_info['id'])
+        os.mkdir(self.directory)
         
         self.do_all_images()
         
         obj = db.get(self.run_info['id'])
+        obj['release_buildid'] = self.build1.buildid
+        obj['release_docid'] = self.build1._id
+        obj['release_buildstring'] = self.build1.productType+'-'+self.build1['appInfo.platformVersion']+'-'+self.build1.buildid
+        obj['nightly_buildid'] = self.build2.buildid
+        
+        obj['nightly_docid'] = self.build2._id
+        obj['nightly_buildstring'] = self.build2.productType+'-'+self.build2['appInfo.platformVersion']+'-'+self.build2.buildid
         obj['endtime'] = datetime.now().isoformat()
         obj['status'] = "done"
         db.update(dict(obj))
+    
+    def get_build(self, bridge):    
+        appInfo = jsbridge.JSObject(bridge, appInfoJs)
+        buildid = appInfo.appBuildID
+        query = db.views.sitecompare.firefoxByBuildid(startkey=buildid, endkey=buildid+"0")
+        if len(query.rows) is 0:
+            build = {}
+            build['appInfo.id'] = str(appInfo.ID)
+            build['type'] = 'productBuild'
+            build['productType'] = 'firefox'
+            build['buildid'] = str(appInfo.appBuildID)
+            build['appInfo.platformVersion'] = appInfo.platformVersion
+            build['appInfo.platformBuildID'] = appInfo.platformBuildID
+            return db.get(db.create(build)['id'])
+        else:
+            return query.rows[0]
         
     def save_nightly_listener(self, obj):
         self.saved_nightly_images.append(obj)
@@ -120,8 +154,11 @@ class CompareSites(object):
         try:
             rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
         except:
-            sleep(10)
-            rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
+            sleep(120)
+            try:
+                rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
+            except:
+                print "Images for "+uri+" weren't created."
         result = {"uri":uri, "release_image":file1, "nightly_image":file2, "difference":rms}
         if rms  != 0:
             result["images_differ"] = True
@@ -159,7 +196,7 @@ class CompareSites(object):
                    "run-id":self.run_info['id'], "result":result,
                    "timestamp":datetime.now().isoformat()}
             db.create(obj)
-            print name, 'differs by ', str(result['difference'])
+            print site, 'differs by ', str(result['difference'])
     
     def stop(self):
         sleep(3)
@@ -168,8 +205,6 @@ class CompareSites(object):
 
 def cli():
     parser = OptionParser()
-    parser.add_option("-d", "--directory", dest="directory",
-                      help="Save directory.")
     parser.add_option("-b", "--binary1", dest="binary1",
                       help="The latest release binary.")
     parser.add_option("-B", "--binary2", dest="binary2",
@@ -205,17 +240,13 @@ def cli():
     
     runner1.profile.install_plugin(os.path.join(base_path, 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
     runner2.profile.install_plugin(os.path.join(base_path, 'adblock_plus-1.0.2-fx+sm+tb.xpi'))
-    runner1.profile.install_plugin('/Users/mikeal/tmp/xush')
-    runner2.profile.install_plugin('/Users/mikeal/tmp/xush')
     
     copytree(os.path.join(base_path, 'adblockplus'), 
              os.path.join(runner1.profile.profile, 'adblockplus'))
     copytree(os.path.join(base_path, 'adblockplus'), 
              os.path.join(runner2.profile.profile, 'adblockplus'))
     
-    if options.directory is None:
-        raise Exception("Must specify directory for tests to be saved to.")
-    c = CompareSites(runner1, runner2, options.report, options.directory)
+    c = CompareSites(runner1, runner2, options.report)
     c.start()
     
     sleep(2)

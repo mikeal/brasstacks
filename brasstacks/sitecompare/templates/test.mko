@@ -1,0 +1,77 @@
+<html>
+<head><title>SiteCompare - Test</title></head>
+
+<body>
+<link rel="stylesheet" type="text/css" href="/sitecompare/static/sitecompare.css" />   
+<div class="site-title">Site Compare</div>
+
+<style type="text/css">
+
+div.test-title {
+  font-size:18;
+}
+div.test-difference {
+  font-size:22;
+}
+
+div.test-diff-images {
+  font-size:30px;
+  padding-top:10px;
+  padding-bottom:10px;
+}
+
+img.diff-image {
+  width:95%;
+  text-align:center;
+}
+
+tr.screenshots {
+  width:95%;
+}
+td.screenshot {
+  width:50%;
+  padding-left:3px;
+  padding-right:3px;
+  text-align:center;
+}
+img.screenshot {
+  width:100%;
+}
+td a:link {
+  text-decoration:none;
+}
+td a:visited {
+  text-decoration:none;
+}
+
+img {
+  border-style:none;
+}
+
+</style>
+
+<div class="test-title"><a href="/sitecompare/pages/${test['page-id']}">${test.uri}</a> @ <a href="/sitecompare/runs/${test['run-id']}">${test.timestamp}</a></div>
+<div class="test-difference">Difference: ${str(test.result['difference'])}</div>
+
+<br>
+
+<table>
+  <tr class="screenshots">
+    <td class="screenshot"><a href="/sitecompare/builds/${run.release_docid}">Release</a></td>
+    <td class="screenshot"><a href="/sitecompare/builds/${run.nightly_docid}">Nightly</a></td>
+  </tr>
+  <tr class="screenshots">
+    <td class="screenshot"><a href="/sitecompare${test.result['release_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"><img class="screenshot" src="/sitecompare${test.result['release_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"></a></td>
+    <td class="screenshot"><a href"/sitecompare${test.result['nightly_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"><img class="screenshot" src="/sitecompare${test.result['nightly_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"></a></td>
+  </tr>
+</table>
+% for k, v in [(k, v) for k, v in test.result.items() if hasattr(v, 'endswith') and v.endswith('png') and k.startswith('diff')]:
+
+<div class="test-diff-images">
+  <div class="test-image-title">${k}</div>
+  <a href="/sitecompare${v.split('brasstacks/brasstacks/sitecompare')[-1]}"><img class='diff-image' src="/sitecompare${v.split('brasstacks/brasstacks/sitecompare')[-1]}" /></a>
+</div>
+
+% endfor  
+</body>
+</html>

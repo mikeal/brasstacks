@@ -14,6 +14,31 @@ input {
 div.add-page-form {
   text-align:center;
 }
+table.latest-test-run {
+  width:90%;
+}
+td.rms {
+  width:20%;
+  text-align:right;
+}
+td.uri {
+  padding-left:5px;
+  width:80%;
+  text-align:left;
+}
+
+td a:link {
+  font-size:12px;
+  text-decoration: none;
+  font-weight:bold;
+}
+td a:visited {
+  font-size:12px;
+  text-decoration: none;
+  font-weight:bold;
+}
+
+
 </style>
 
 <div class="site-title">Site Compare</div>
@@ -25,15 +50,25 @@ div.add-page-form {
   </div>
 </form>
 
-<div class="latest-run">Latest Run @ <a href="/sitecompare/runs/${latest['_id']}">${latest.endtime}</a></div>
+<div class="latest-run"><a href="/sitecompare/runs/${latest['_id']}">Latest Run @ 
+% if latest.has_key('endtime'):
+  ${latest.endtime}
+% endif
+</a></div>
   
 <table class="latest-test-run">
 % for d, test in reversed(sorted([(t.result.get('difference'), t) for t in latest.tests])):
   <tr>
-    <td>${str(d)}</td>
-    <td>${test.uri}</td>
+% if d > 1:
+<%
+  d = int(d)
+%>
+% endif
+    <td class="rms">${str(d)}</td>
+    <td class="uri">${test.uri} <a href="/sitecompare/tests/${test._id}">>>></a></td>
   </tr>
 % endfor
 </table>
 </body>
+</html>
 
