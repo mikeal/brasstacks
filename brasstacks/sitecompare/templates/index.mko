@@ -43,7 +43,7 @@ td a:visited {
 
 <div class="site-title">Site Compare</div>
 
-<form method="post" action="pages">
+<form method="post" action="/sitecompare/pages">
   <div class="add-page-form">
     <input type="text" name="uri"  style="width: 500px;"/><br>
     <input type="submit" value="add a page"/>
