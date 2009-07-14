@@ -1,5 +1,8 @@
 import os
-import simplejson
+try:
+    import json as simplejson
+except ImportError:
+    import simplejson
 from mako.template import Template
 import webenv
 from webenv.applications import FileServerApplication
