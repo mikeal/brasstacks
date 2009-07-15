@@ -1,4 +1,4 @@
-import sitecompare
+from brasstacks import sitecompare
 application = sitecompare.application
 from webenv.rest import RestApplication
 

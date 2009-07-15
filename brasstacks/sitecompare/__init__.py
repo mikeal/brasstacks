@@ -8,6 +8,7 @@ import webenv
 from webenv.applications import FileServerApplication
 from webenv.rest import RestApplication
 import couchquery
+import httplib2
 
 template_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 static_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
@@ -17,7 +18,7 @@ class MakoResponse(webenv.HtmlResponse):
         self.body = Template(filename=os.path.join(template_dir, name+'.mko')).render(**kwargs)
         self.headers = []
 
-db = couchquery.CouchDatabase("http://127.0.0.1:5984/brasstacks")
+db = couchquery.CouchDatabase("http://localhost:5984/sitecompare")
 db.sync_design_doc("sitecompare", os.path.join(os.path.abspath(os.path.dirname(__file__)), 'views'))
 
 class ResourceCollection(object):
@@ -48,7 +49,7 @@ class SiteCompareApplication(RestApplication):
             else:
                 d = db.get(resource)
                 d.query = dict(request.query)
-                tests = db.views.sitecompare.testByPage(d._id).rows
+                tests = db.views.sitecompare.testByPage(startkey=[d._id,0], endkey=[d._id,{}]).rows
                 return MakoResponse('page', tests=tests, **dict(d))
         if collection == 'runs':
             if resource is None:
