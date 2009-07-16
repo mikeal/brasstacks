@@ -16,7 +16,7 @@ import couchquery
 import jsbridge
 import mozrunner
 
-db = couchquery.CouchDatabase("http://127.0.0.1:5984/brasstacks")
+db = couchquery.CouchDatabase("http://127.0.0.1:5984/sitecompare")
 
 parent_path = os.path.abspath(os.path.dirname(__file__))
 extension_path = os.path.join(parent_path, 'extension')
@@ -103,20 +103,23 @@ class CompareSites(object):
         run = {"type":"comparison-run", "allsites":self.all_sites, 
                "starttime":datetime.now().isoformat(), "status":"running"}
         
+        run['release_buildid'] = self.build1.buildid
+        run['release_docid'] = self.build1._id
+        run['release_buildstring'] = self.build1.productType+'-'+self.build1['appInfo.platformVersion']+'-'+self.build1.buildid
+        run['nightly_buildid'] = self.build2.buildid
+
+        run['nightly_docid'] = self.build2._id
+        run['nightly_buildstring'] = self.build2.productType+'-'+self.build2['appInfo.platformVersion']+'-'+self.build2.buildid
+        
+        
         self.run_info = db.create(run)         
         self.directory = os.path.join(self.base_directory, 'static', 'runs', self.run_info['id'])
         os.mkdir(self.directory)
         
+        obj = db.get(self.run_info['id'])
         self.do_all_images()
         
         obj = db.get(self.run_info['id'])
-        obj['release_buildid'] = self.build1.buildid
-        obj['release_docid'] = self.build1._id
-        obj['release_buildstring'] = self.build1.productType+'-'+self.build1['appInfo.platformVersion']+'-'+self.build1.buildid
-        obj['nightly_buildid'] = self.build2.buildid
-        
-        obj['nightly_docid'] = self.build2._id
-        obj['nightly_buildstring'] = self.build2.productType+'-'+self.build2['appInfo.platformVersion']+'-'+self.build2.buildid
         obj['endtime'] = datetime.now().isoformat()
         obj['status'] = "done"
         db.update(dict(obj))
