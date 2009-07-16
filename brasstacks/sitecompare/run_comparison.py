@@ -194,6 +194,7 @@ class CompareSites(object):
         
     def do_all_images(self):
         for name, site in self.all_sites.items():
+            print 'testing '+site
             result = self.test_uri(name, site)
             obj = {"type":"comparison-test", "page-id":name, "uri":site, 
                    "run-id":self.run_info['id'], "result":result,
