@@ -62,7 +62,11 @@ img {
   </tr>
   <tr class="screenshots">
     <td class="screenshot"><a href="/sitecompare${test.result['release_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"><img class="screenshot" src="/sitecompare${test.result['release_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"></a></td>
-    <td class="screenshot"><a href"/sitecompare${test.result['nightly_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"><img class="screenshot" src="/sitecompare${test.result['nightly_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"></a></td>
+    <td class="screenshot">
+      <a href="/sitecompare${test.result['nightly_image'].split('brasstacks/brasstacks/sitecompare')[-1]}">
+        <img class="screenshot" src="/sitecompare${test.result['nightly_image'].split('brasstacks/brasstacks/sitecompare')[-1]}">
+      </a>
+    </td>
   </tr>
 </table>
 % for k, v in [(k, v) for k, v in test.result.items() if hasattr(v, 'endswith') and v.endswith('png') and k.startswith('diff')]:
