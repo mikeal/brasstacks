@@ -12,11 +12,10 @@ from optparse import OptionParser
 
 copytree = dir_util.copy_tree
 
+import httplib2
 import couchquery
 import jsbridge
 import mozrunner
-
-db = couchquery.CouchDatabase("http://127.0.0.1:5984/sitecompare")
 
 parent_path = os.path.abspath(os.path.dirname(__file__))
 extension_path = os.path.join(parent_path, 'extension')
@@ -33,49 +32,22 @@ def diff_images(file1, file2):
     return ( rms, image1, image2, h1, h2, )
 
 class CompareSites(object):
-    def __init__(self, runner1, runner2, report):
+    def __init__(self, runner1, runner2, report, all_sites=None, store=True, db=None):
         self.runner1 = runner1; self.runner2 = runner2
         self.report = report; 
         self.base_directory = os.path.abspath(os.path.dirname(__file__))
         self.finished = False
         
-        rows = db.views.sitecompare.pageByURI().rows
-        self.all_sites = dict([(r._id, r.uri,) for r in rows if not hasattr(r, 'enabled') or r.enabled ])
+        self.db = db
         
-        # self.all_sites = {
-        #     "google": "http://www.google.com",
-        #     "yahoo": "http://www.yahoo.com",            
-        #     "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
-        #     "ebay": "http://www.ebay.com",
-        #     "google-china": "http://www.google.cn",
-        #     "fc2": "http://fc2.com",
-        #     "craigslist": "http://www.craigslist.com",
-        #     "hi5": "http://www.hi5.com",
-        #     "mail-ru": "http://www.mail.ru",
-        #     "aol": "http://www.aol.com",
-        #     "flickr": "http://www.flickr.com",
-        #     "amazon": "http://www.amazon.com",
-        #     "google-jp": "http://www.google.co.jp",
-        #     "doubleclick": "http://www.doubleclick.com",
-        #     "photobucket": "http://www.photobucket.com",
-        #     "orkut": "http://orkut.com.br",
-        #     "twitter": "http://www.twitter.com",
-        #     "youtube": "http://www.youtube.com",
-        #     "facebook": "http://www.facebook.com",
-        #     "windows-live": "http://live.com",
-        #     "msn": "http://www.msn.com",
-        #     "blogger": "http://blogger.com",
-        #     "baidu": "http://baidu.com",
-        #     "qq": "http://qq.com",
-        #     "microsoft": "http://www.microsoft.com",
-        #     # "sina": "http://sina.com.cn",
-        #     "rapidshare": "http://rapidshare.com",
-        #     "google.fr": "http://google.fr",
-        #     "wordpress": "http://www.wordpress.com",
-        #     }
-            
+        if all_sites is None:
+            rows = self.db.views.sitecompare.pageByURI().rows
+            self.all_sites = dict([(r._id, r.uri,) for r in rows if not hasattr(r, 'enabled') or r.enabled ])
+        else:
+            self.all_sites = all_sites
         self.saved_release_images = []
         self.saved_nightly_images = []
+        self.store = store
         
     def start(self):
         self.runner1.start()
@@ -93,41 +65,46 @@ class CompareSites(object):
         # self.back_channel1.add_global_listener(gl)
         sleep(5)
         
-        self.build1 = self.get_build(self.bridge1)
-        self.build2 = self.get_build(self.bridge2)
-        
         js = "Components.utils.import('resource://sitecompare/modules/compare.js')"
         self.c1 = jsbridge.JSObject(self.bridge1, js)
         self.c2 = jsbridge.JSObject(self.bridge2, js)
         
-        run = {"type":"comparison-run", "allsites":self.all_sites, 
-               "starttime":datetime.now().isoformat(), "status":"running"}
+        if self.store:
+            self.build1 = self.get_build(self.bridge1)
+            self.build2 = self.get_build(self.bridge2)
+            run = {"type":"comparison-run", "allsites":self.all_sites, 
+                   "starttime":datetime.now().isoformat(), "status":"running"}
         
-        run['release_buildid'] = self.build1.buildid
-        run['release_docid'] = self.build1._id
-        run['release_buildstring'] = self.build1.productType+'-'+self.build1['appInfo.platformVersion']+'-'+self.build1.buildid
-        run['nightly_buildid'] = self.build2.buildid
+            run['release_buildid'] = self.build1.buildid
+            run['release_docid'] = self.build1._id
+            run['release_buildstring'] = self.build1.productType+'-'+self.build1['appInfo.platformVersion']+'-'+self.build1.buildid
+            run['nightly_buildid'] = self.build2.buildid
 
-        run['nightly_docid'] = self.build2._id
-        run['nightly_buildstring'] = self.build2.productType+'-'+self.build2['appInfo.platformVersion']+'-'+self.build2.buildid
-        
-        
-        self.run_info = db.create(run)         
+            run['nightly_docid'] = self.build2._id
+            run['nightly_buildstring'] = self.build2.productType+'-'+self.build2['appInfo.platformVersion']+'-'+self.build2.buildid
+            
+            self.run_info = self.db.create(run)
+        else:
+            import uuid
+            self.run_info = {"id":str(uuid.uuid1())}
+                     
         self.directory = os.path.join(self.base_directory, 'static', 'runs', self.run_info['id'])
         os.mkdir(self.directory)
         
-        obj = db.get(self.run_info['id'])
+        
         self.do_all_images()
         
-        obj = db.get(self.run_info['id'])
-        obj['endtime'] = datetime.now().isoformat()
-        obj['status'] = "done"
-        db.update(dict(obj))
+        if self.store:
+            obj = self.db.get(self.run_info['id'])
+            obj = self.db.get(self.run_info['id'])
+            obj['endtime'] = datetime.now().isoformat()
+            obj['status'] = "done"
+            self.db.update(dict(obj))
     
     def get_build(self, bridge):    
         appInfo = jsbridge.JSObject(bridge, appInfoJs)
         buildid = appInfo.appBuildID
-        query = db.views.sitecompare.firefoxByBuildid(startkey=buildid, endkey=buildid+"0")
+        query = self.db.views.sitecompare.firefoxByBuildid(startkey=buildid, endkey=buildid+"0")
         if len(query.rows) is 0:
             build = {}
             build['appInfo.id'] = str(appInfo.ID)
@@ -136,7 +113,9 @@ class CompareSites(object):
             build['buildid'] = str(appInfo.appBuildID)
             build['appInfo.platformVersion'] = appInfo.platformVersion
             build['appInfo.platformBuildID'] = appInfo.platformBuildID
-            return db.get(db.create(build)['id'])
+            if self.store:
+                build = self.db.get(self.db.create(build)['id'])
+            return build
         else:
             return query.rows[0]
         
@@ -157,7 +136,7 @@ class CompareSites(object):
         try:
             rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
         except:
-            sleep(120)
+            sleep(30)
             try:
                 rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
             except:
@@ -199,7 +178,8 @@ class CompareSites(object):
             obj = {"type":"comparison-test", "page-id":name, "uri":site, 
                    "run-id":self.run_info['id'], "result":result,
                    "timestamp":datetime.now().isoformat()}
-            db.create(obj)
+            if self.store:
+                self.db.create(obj)
             print site, 'differs by ', str(result['difference'])
     
     def stop(self):
@@ -217,8 +197,10 @@ def cli():
                       help="The latest release default profile.")
     parser.add_option("-P", "--profile2", dest="profile2", default=None,
                       help="The next release default profile.")
-    parser.add_option("-r", "--report", dest="report",
+    parser.add_option("-r", "--report", dest="report", default=None,
                       help="URI for report server.")
+    parser.add_option("-t", "--test", dest="test", default=False, action="store_true",
+                       help="Run the test dataset")
     
     (options, args) = parser.parse_args()
     
@@ -250,12 +232,64 @@ def cli():
     copytree(os.path.join(base_path, 'adblockplus'), 
              os.path.join(runner2.profile.profile, 'adblockplus'))
     
-    c = CompareSites(runner1, runner2, options.report)
+    if options.test is True:
+        all_sites = test_all_sites
+        store = False
+    else:
+        all_sites = None
+        store = True
+    
+    if options.report is None:
+        db = couchquery.CouchDatabase("http://127.0.0.1:5984/sitecompare")
+    else:
+        if '@' in options.report:
+            user, password = options.report.strip('http://').split('@')[0].split(':')
+            url = 'http://'+options.report.split('@')[1]
+            http = httplib2.Http('.cache')
+            http.add_credentials(user, password)
+            db = couchquery.CouchDatabase(url, http=http)
+        else: db = couchquery.CouchDatabase(options.report)
+    
+    c = CompareSites(runner1, runner2, options.report, all_sites=all_sites, store=store, db=db)
     c.start()
     
     sleep(2)
     c.stop()
     sleep(3)
+
+
+test_all_sites = {
+        # "myspace": "http://www.myspace.com",
+        "google": "http://www.google.com",
+        "yahoo": "http://www.yahoo.com",            
+        "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
+        "ebay": "http://www.ebay.com",
+        "google-china": "http://www.google.cn",
+        "fc2": "http://fc2.com",
+        "craigslist": "http://www.craigslist.com",
+        "hi5": "http://www.hi5.com",
+        "mail-ru": "http://www.mail.ru",
+        "aol": "http://www.aol.com",
+        "flickr": "http://www.flickr.com",
+        "amazon": "http://www.amazon.com",
+        "google-jp": "http://www.google.co.jp",
+        "doubleclick": "http://www.doubleclick.com",
+        "photobucket": "http://www.photobucket.com",
+        "orkut": "http://orkut.com.br",
+        "twitter": "http://www.twitter.com",
+        "youtube": "http://www.youtube.com",
+        "facebook": "http://www.facebook.com",
+        "windows-live": "http://live.com",
+        "msn": "http://www.msn.com",
+        "blogger": "http://blogger.com",
+        "baidu": "http://baidu.com",
+        "qq": "http://qq.com",
+        "microsoft": "http://www.microsoft.com",
+        "sina": "http://sina.com.cn",
+        "rapidshare": "http://rapidshare.com",
+        "google.fr": "http://google.fr",
+        "wordpress": "http://www.wordpress.com",
+        }
     
 def test():
     runner = mozrunner.FirefoxRunner(binary='/Applications/Shiretoko.app',  cmdargs=['-jsbridge', '24242'])

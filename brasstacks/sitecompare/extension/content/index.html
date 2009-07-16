@@ -11,6 +11,8 @@
 </head>
 <body style="padding:0px;margin:0px;">
 <script type="text/javascript" charset="utf-8">
+var aConsoleService = Components.classes["@mozilla.org/consoleservice;1"].
+     getService(Components.interfaces.nsIConsoleService);
   RemoteCanvas = function(url, destFile) {
       this.url = url;
       this.destFile = destFile;
@@ -21,7 +23,6 @@
   window.outerHeight = 580;
   window.innerWidth = 994;
   window.innerHeight = 580;
-  
   
   
   RemoteCanvas.CANVAS_WIDTH = window.innerWidth;
@@ -40,20 +41,24 @@
       iframe.src = this.url;
       // Here is where the magic happens... add a listener to the
       // frame's onload event
+      // var doRemote = function (e) {if (!remoteFired) {this.remotePageLoaded()}}
       iframe.addEventListener("load", this.remotePageLoaded, true);
+      // setTimeout(doRemote, 30000)
       //append to the end of the page
       window.document.body.appendChild(iframe);
+      aConsoleService.logStringMessage("Finished mainLoad");
       return;
   };
 
   RemoteCanvas.prototype.remotePageLoaded = function() {
+      aConsoleService.logStringMessage("after remote page load")
       // Look back up the iframe by id
       compare.sleep(5000)
       window.outerWidth = 994;
       window.outerHeight = 580;
       window.innerWidth = 994;
       window.innerHeight = 580;
-      
+
       var ldrFrame = document.getElementById("test-iframe");
       // Get a reference to the window object you need for the canvas
       // drawWindow method
@@ -70,7 +75,7 @@
       canvas.style.height = RemoteCanvas.CANVAS_HEIGHT + "px";
       canvas.width = RemoteCanvas.CANVAS_WIDTH;
       canvas.height = RemoteCanvas.CANVAS_HEIGHT;
-      
+
       var windowWidth = window.innerWidth - 25;
       var windowHeight = window.innerHeight;
 
@@ -90,13 +95,14 @@
       window.outerHeight = 580;
       window.innerWidth = 994;
       window.innerHeight = 580;
-      
+
       saveCanvas(canvas, window.destFile);
       compare.sleep(3000);
       jsbridge.fireEvent('sitecompare.save', compare.PATH)
   };
   
   function saveCanvas(canvas, destFile) {
+    aConsoleService.logStringMessage("saveCanvas")
     // convert string filepath to an nsIFile
     var file = Components.classes["@mozilla.org/file/local;1"]
                          .createInstance(Components.interfaces.nsILocalFile);
