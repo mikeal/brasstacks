@@ -133,14 +133,14 @@ class CompareSites(object):
 
         while file1 not in self.saved_release_images and file2 not in self.saved_nightly_images:
             sleep(1)
-        try:
-            rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
-        except:
-            sleep(30)
+            
+        rms = None
+        while rms is None:
             try:
                 rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
             except:
-                print "Images for "+uri+" weren't created."
+                print 'Image is not ready, waiting 10 seconds.'
+                sleep(10)
         result = {"uri":uri, "release_image":file1, "nightly_image":file2, "difference":rms}
         if rms  != 0:
             result["images_differ"] = True
