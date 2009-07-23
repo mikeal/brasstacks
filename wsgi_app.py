@@ -1,5 +1,7 @@
 import brasstacks
+import couchquery
 from brasstacks import sitecompare
 
 application = brasstacks.application
-application.add_resource('sitecompare', sitecompare.application)
+site_compare = sitecompare.SiteCompareApplication(couchquery.CouchDatabase("http://localhost:5984"))
+application.add_resource('sitecompare', site_compare)

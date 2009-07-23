@@ -57,6 +57,8 @@ setup(name=PACKAGE_NAME,
       entry_points="""
           [console_scripts]
           brasstacks = brasstacks:cli
+          brasstacks_cron = brasstacks:cron
+          sitecompare = brasstacks.sitecompare:cli
         """,
       platforms =['Any'],
       install_requires = ['webenv',],

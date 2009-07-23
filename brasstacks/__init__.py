@@ -1,6 +1,10 @@
 import os, sys
 from webenv.rest import RestApplication
-# 
+
+import cronjob
+
+cron = cronjob.run
+
 # from mako.lookup import TemplateLookup
 # 
 # this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -32,9 +36,11 @@ from webenv.rest import RestApplication
 #         httpd.start()
 #     except KeyboardInterrupt:
 #         httpd.stop()
-#         
+
 class Stub(RestApplication):
     def GET(self, request, *args):
         return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
 
 application = Stub()
+
+
