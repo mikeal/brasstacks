@@ -6,7 +6,7 @@ from webenv.rest import RestApplication
 from webenv import HtmlResponse
 import couchquery
 
-me = "noreply@mikealrogers.com"
+me = "noreply@brasstacks.mozilla.com"
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -19,6 +19,7 @@ def send_email(to, subject, text):
     # Send the message via our own SMTP server, but don't include the
     # envelope header.
     s = smtplib.SMTP()
+    s.connect()
     if type(to) is not list:
         to = [to]
     s.sendmail(me, to, msg.as_string())

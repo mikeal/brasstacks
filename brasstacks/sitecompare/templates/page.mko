@@ -25,6 +25,10 @@ a:visited {
 a:hover {
   text-decoration:underline;
 }
+form {
+  text-align:right;
+}
+
 </style>
 
 <body>
@@ -39,10 +43,19 @@ Site already existed.
 % endif  
 <div class="page-name-time">${uri}</div>
 
+<form method="post" action="/sitecompare/add_notification/${_id}">
+  <div class="add-notification-form">
+    <span>threshold</span><input type="text" name="threshold" style="width: 40px;"/>
+    <span>email</span><input type="text" name="email"  style="width: 100px;"/><br>
+    <input type="submit" value="add notification"/>
+  </div>
+</form>
+
 <div class="tests-container">
 % for t in tests:
 <a href="/sitecompare/tests/${t._id}"><div class="rms">${str(t.result['difference'])}</div><div class="time">${t.timestamp}</div></a>
 % endfor
 </div>
+
 </body>
 </html>

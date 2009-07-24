@@ -7,7 +7,10 @@ from mako.template import Template
 import webenv
 from webenv.applications import FileServerApplication
 from webenv.rest import RestApplication
+from webenv import HtmlResponse
 import couchquery
+
+from brasstacks.users import Users, UsersApplication
 
 template_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 static_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
@@ -34,6 +37,7 @@ class SiteCompareApplication(RestApplication):
     def __init__(self, db):
         super(SiteCompareApplication, self).__init__()
         self.db = db
+        self.users = Users(db)
         self.pages_collection = PagesCollection(db)
         self.add_resource('static', FileServerApplication(static_dir))
     
@@ -95,6 +99,22 @@ class SiteCompareApplication(RestApplication):
                                 simplejson.loads(str(request.body)))
                 elif request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
                     resp = self.pages_collection.update_resource(dict(request.body))
+        elif collection == "add_notification":
+            user = self.users.get_user_by_email(request.body.form['email'])
+            threshold = request.body.form['threshold']
+            if not threshold:
+                threshold = 0
+            threshold = int(threshold)
+            notifications = user.setdefault('email_notifications', {}).setdefault("site_compare", [])
+            if resource not in notifications:
+                user['email_notifications']['site_compare'].append({"threshold":threshold,"pageid":resource})
+                self.db.update(user)
+            if user.email_verified:
+                return HtmlResponse("<html><title>Hurray!</title><body>You will be notified when this page differs above your threshold.</body></html>")
+            else:
+                return HtmlResponse("<html><title>Verification Pending</title><body>A verification email was sent to your Inbox and we are waiting for it to be verified.</body></html>") 
+                
+            
 
 def get_wsgi_server(db):
     class Stub(RestApplication):
@@ -102,6 +122,8 @@ def get_wsgi_server(db):
             return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
     a = Stub()
     a.add_resource('sitecompare', SiteCompareApplication(db))
+    users_application = UsersApplication(db)
+    a.add_resource('users', users_application)
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd
@@ -113,7 +135,9 @@ def cli():
         db = couchquery.CouchDatabase(db[0])
     else:
         db = couchquery.CouchDatabase('http://localhost:5984/sitecompare')
+    import brasstacks
     db.sync_design_doc("sitecompare", design_doc)
+    db.sync_design_doc("brasstacks", brasstacks.design_doc)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/sitecompare"
     httpd.serve_forever()

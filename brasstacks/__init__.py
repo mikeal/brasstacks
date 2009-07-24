@@ -7,7 +7,8 @@ cron = cronjob.run
 
 # from mako.lookup import TemplateLookup
 # 
-# this_dir = os.path.abspath(os.path.dirname(__file__))
+this_dir = os.path.abspath(os.path.dirname(__file__))
+design_doc = os.path.join(this_dir, 'views')
 # 
 # lookup = TemplateLookup(directories=[os.path.join(this_dir, 'templates')])
 # 
