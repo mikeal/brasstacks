@@ -1,5 +1,8 @@
 import os, sys
+
 from webenv.rest import RestApplication
+import webenv
+import couchquery
 
 import cronjob
 
@@ -37,6 +40,35 @@ design_doc = os.path.join(this_dir, 'views')
 #         httpd.start()
 #     except KeyboardInterrupt:
 #         httpd.stop()
+
+
+def get_wsgi_server(db):
+    from fennec import FennecApplication
+    from users import UsersApplication
+    from sitecompare import SiteCompareApplication
+    a = Stub()
+    a.add_resource('sitecompare', SiteCompareApplication(db))
+    users_application = UsersApplication(db)
+    fennec_application = FennecApplication(db)
+    a.add_resource('users', users_application)
+    a.add_resource('fennec', fennec_application)
+    from wsgiref.simple_server import make_server
+    httpd = make_server('', 8888, a)
+    return httpd    
+
+def cli():
+    import sys
+    db = [i for i in sys.argv if i.startswith('http')]
+    if len(db) is 1:
+        db = couchquery.CouchDatabase(db[0])
+    else:
+        db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
+    import brasstacks
+    db.sync_design_doc("sitecompare", design_doc)
+    db.sync_design_doc("brasstacks", brasstacks.design_doc)
+    httpd = get_wsgi_server(db)
+    print "Serving on http://localhost:8888/"
+    httpd.serve_forever()
 
 class Stub(RestApplication):
     def GET(self, request, *args):
