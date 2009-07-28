@@ -48,6 +48,67 @@ td a:visited {
   <div class="link"><a href="/fennec/tests">tests</a></div>
 </div>
 
+<div class="results">Products: 
+% for prod in products['rows']:
+  ${prod['key']} (${prod['value']}), 
+% endfor
+</div>
+<div class="results">Test types: 
+% for testtype in testtypes['rows']:
+  ${testtype['key']} (${testtype['value']}), 
+% endfor
+</div>
+<div class="results">Operating Systems: 
+% for os in oses['rows']:
+  ${os['key']} (${os['value']}), 
+% endfor
+</div>
+
+<table class="results">
+  <tr>
+    <th>Build ID</th>
+    <th>Test type</th>
+    <th>Result</th>
+  </tr>
+% for row in summary['rows']:
+  <tr>
+    <td>${row['key'][1]}</td>
+    <td>${row['key'][0]}</td>
+    % if row['value'] == {}: 
+    <td></td>
+    % else: 
+    <td>fail  (${row['value']['fail']}), pass  (${row['value']['pass']}), todo  (${row['value']['todo']})</td>
+    % endif
+  </tr>
+% endfor
+</table>
+
+<table class="results">
+  <tr>
+    <th>Document ID</th>
+    <th>Build ID</th>
+    <th>Metadata</th>
+  </tr>
+% for row in metadata['rows']:
+  <tr>
+    <td>${row['id']}</td>
+    <td>${row['key']}</td>
+    <td>${row['value']['metadata']}</td>
+  </tr>
+% endfor
+</table>
+
+<div class="results">
+  ${metadata['total_rows']}
+</div>
+<div class="results">
+  ${metadata['offset']}
+</div>
+<div class="results">
+% for row in metadata['rows']:
+  ${row} <br />
+% endfor
+</div>
 </body>
 </html>
 

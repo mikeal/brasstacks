@@ -2,6 +2,7 @@ README
 setup.py
 brasstacks/__init__.py
 brasstacks/cronjob.py
+brasstacks/fennec.py
 brasstacks/models.py
 brasstacks/notifications.py
 brasstacks/rest.py

@@ -24,29 +24,39 @@ class FennecApplication(RestApplication):
         self.db = db
     def GET(self, request, collection=None, resource=None):
         if collection is None:
-            return MakoResponse("index")
-        if collection == "builds":
-            if resource is None:
-                # List of last 100 builds by timestamp
-                pass
-            else:
-                # Test info for specific build
-                pass
-        if collection == "products":
-            if resource is None:
-                products = set(self.db.views.metadata.products(reduce=False).rows.keys())
-                return MakoResponse("products", products=products)
-            else:
-                tests = self.db.views.fennecBrasstacks.testsByProduct(key=resource).rows
-                return MakoResponse("product", tests=tests)
-        if collection == "testtypes":
-            pass
-        if collection == "tests":
-            if resource is None:
-                # List of last 100 tests by timestamp
-                pass
-            else:
-                test = self.db.get(resource)
-                # This is crap code, it's just there to show the whole object
-                return MakoResponse("test", test=test)
+            products = self.db.views.metadata.products(reduce = True, group = True)
+            testtypes = self.db.views.metadata.testtypes(reduce = True, group = True)
+            oses = self.db.views.metadata.operatingSystems(reduce = True, group = True)
+            metadata = self.db.views.metadata.displayMetadata(reduce = True)
+            summary = self.db.views.results.summary(reduce = True, group = True)
+            return MakoResponse("index", 
+              products = products, 
+              metadata = metadata, 
+              testtypes = testtypes, 
+              oses = oses,
+              summary = summary)
+        # if collection == "builds":
+            # if resource is None:
+                # # List of last 100 builds by timestamp
+                # pass
+            # else:
+                # # Test info for specific build
+                # pass
+        # if collection == "products":
+            # if resource is None:
+                # products = set(self.db.views.metadata.products(reduce=False).rows.keys())
+                # return MakoResponse("products", products=products)
+            # else:
+                # tests = self.db.views.fennecBrasstacks.testsByProduct(key=resource).rows
+                # return MakoResponse("product", tests=tests)
+        # if collection == "testtypes":
+            # pass
+        # if collection == "tests":
+            # if resource is None:
+                # # List of last 100 tests by timestamp
+                # pass
+            # else:
+                # test = self.db.get(resource)
+                # # This is crap code, it's just there to show the whole object
+                # return MakoResponse("test", test=test)
 
