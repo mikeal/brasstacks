@@ -64,8 +64,10 @@ def cli():
     else:
         db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
     import brasstacks
+    import fennec
     db.sync_design_doc("sitecompare", design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
+    db.sync_design_doc("fennecBrasstacks", fennec.design_doc)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()

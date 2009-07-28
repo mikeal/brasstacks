@@ -1,5 +1,5 @@
 <html>
-<head><title>SiteCompare</title></head>
+<head><title>Fennec</title></head>
 
 <body>
 
@@ -41,6 +41,12 @@ td a:visited {
 </style>
 
 <div class="site-title">Fennec Results</div>
+
+<div class="header">
+  <div class="link"><a href="/fennec/builds">builds</a></div>
+  <div class="link"><a href="/fennec/products">products</a></div>
+  <div class="link"><a href="/fennec/tests">tests</a></div>
+</div>
 
 </body>
 </html>
