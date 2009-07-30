@@ -85,6 +85,7 @@ class FennecApplication(RestApplication):
           build2 = Build(self.db.views.results.allData(key = buildid2))
           
           if build1['rows'] != [] and build2['rows'] != []:
+            # compare which one is newer build1.newer(build2)
             answer = build1.compare(build2)
             # answer = 'both'
           elif build1['rows'] != [] or build2['rows'] != []:
@@ -110,7 +111,7 @@ class Build():
     self.tests = doc['rows'][0]['value']['tests']
     # compareToPrevious(doc)
 
-  def compare(doc = None):
+  def compare(self, doc = None):
     
     if doc is None:
       #compare to previous
@@ -122,17 +123,51 @@ class Build():
       pass
     
     newtests = []
-      for testfile1 in tests1:
-        testfile2 = tests2.find(testfile1)
-        if testfile2 is None:
-          newtests.add(testfile1)
-        else:
-          if (sumoftests(testfile1) == sumoftests(testfile2)):
-            
-          elif (sumoftests(testfile1) < sumoftests(testfile2)):
-            
+    
+    for testfile1 in tests1:
+      
+      testfile2 = tests2.find(testfile1)
+      
+      if testfile2 is None:
+        newtests.add(testfile1)
+      
+      else:
+        if sumoftests(testfile1) == sumoftests(testfile2):
+          if testfile1.morefail(testfile2):
+            prevlynotfails.add(testfile1)
+          elif testfile1.morepass(testfile2):
+            prevlynotpasses.add(testfile1)
+          elif testfile1.moretodo(testfile2):
+            prevlynottodos.add(testfile1)
           else:
-            
+            stabletests.add(testfile1)
+        
+        elif (sumoftests(testfile1) < sumoftests(testfile2)):
+          
+        else:
+    
+    for remainingtest in tests2:
+      missingtests.add(remainingtest)
+    
+  def newer(self, doc):
+    return False
+
+  def previous(self, doc):
+    return False
+
+class TestsResult():
+  def __init__(self, tests):
+    self.testcount = 0
+    self.tests = 0
+
+class TestDelta():
+  def __init__(self, name, notes, delta):
+    self.name = ''
+    self.failnotes = ''
+    self.count = 0
+  def parsefailnotes(self):
+    return False
+
 # class ComparisonResult():
   # def __init__(self):
     # pass
