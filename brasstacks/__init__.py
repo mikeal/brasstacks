@@ -46,12 +46,15 @@ def get_wsgi_server(db):
     from fennec import FennecApplication
     from users import UsersApplication
     from sitecompare import SiteCompareApplication
+    from tcm import TestCaseManagerApplication
     a = Stub()
     a.add_resource('sitecompare', SiteCompareApplication(db))
     users_application = UsersApplication(db)
     fennec_application = FennecApplication(db)
+    tcm_application = TestCaseManagerApplication(db)
     a.add_resource('users', users_application)
     a.add_resource('fennec', fennec_application)
+    a.add_resource('tcm', tcm_application)
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd    
@@ -65,9 +68,11 @@ def cli():
         db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
     import brasstacks
     import fennec
+    import tcm
     db.sync_design_doc("sitecompare", design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
     db.sync_design_doc("fennecBrasstacks", fennec.design_doc)
+    db.sync_design_doc("tcm", tcm.design_doc)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()

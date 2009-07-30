@@ -1,0 +1,21 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+<style type="text/css">
+h3 {
+  text-align:center;
+}
+div.index-do {
+  padding-top:10px;
+  text-align:center;
+  font-size:30px;
+}
+</style>
+
+<h3> Mozilla TestCase Manager </h3>
+
+<div class="index-do"><a href="/tcm/run_test">Run a Test!</a></div>
+<div class="index-do"><a id="write_test" href="/tcm/write_test">Write a Test!</a></div>
+
+</%def>

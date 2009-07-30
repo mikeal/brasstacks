@@ -1,0 +1,77 @@
+<%def name="body()">
+
+<style type="text/css">
+table {
+  padding-top:10px;
+  width:100%;
+}
+td.form-pad-left {
+  width:20%;
+  text-align:left;
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:20px;
+}
+td.form-pad-right {
+  width:20%;
+}
+td.form-cell {
+  width:80%;
+}
+div.form-cell-products {
+  width:80%;
+  text-align:center;
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:24px;
+}
+td {
+  padding-top:4px;
+}
+input {
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:24px;
+}
+textarea.simple-editor-description {
+  width:80%;
+  height:500px;
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:18px;
+}
+
+input.simple-editor-title {
+  width:80%;
+  text-align:center;
+}
+input.simple-editor-tags {
+  width:80%;
+}
+
+</style>
+<form class="simple-editor-form">
+  <table>
+    <tr><td class="form-pad-left">Product:</td><td class="form-cell-products">
+    <div class="form-cell-products">
+% for p in ["Firefox", "Thunderbird", "Fennec", "Sunbird"]:
+% if p == product:
+    <input type="radio" name="product" value="${p}" enabled>${p}</input>
+% else:
+    <input type="radio" name="product" value="${p}" >${p}</input>
+% endif      
+        
+% endfor
+    </div></td><td class="form-pad-right"></td>
+    <tr><td class="form-pad-left">Title:</td><td class="form-cell">
+      <input type="text" class="simple-editor-title"/>
+    </td><td class="form-pad-right"></td>
+    <tr><td class="form-pad-left">Description:</td><td class="form-cell">
+      <textarea class="simple-editor-description"></textarea>
+    </td><td class="form-pad-right"></td>
+    <tr><td class="form-pad-left">Tags:</td><td class="form-cell">
+      <input type="text" class="simple-editor-tags"/>
+    </td><td class="form-pad-right"></td>
+  </table>
+</form>
+</%def>
