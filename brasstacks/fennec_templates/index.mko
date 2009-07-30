@@ -48,9 +48,17 @@ td a:visited {
   <div class="link"><a href="/fennec/tests">tests</a></div>
 </div>
 
+<form method="post" action="/fennec/compare">
+  <div class="compare-results-form">
+    <input type="text" name="buildid1"  style="width: 300px;"/><br>
+    <input type="text" name="buildid2"  style="width: 300px;"/><br>
+    <input type="submit" value="Compare them"/>
+  </div>
+</form>
+
 <div class="results">Products: 
 % for prod in products['rows']:
-  ${prod['key']} (${prod['value']}), 
+  <a href="/fennec/categories/${prod['key']}">${prod['key']}</a> (${prod['value']}), 
 % endfor
 </div>
 <div class="results">Test types: 
@@ -72,7 +80,7 @@ td a:visited {
   </tr>
 % for row in summary['rows']:
   <tr>
-    <td>${row['key'][1]}</td>
+    <td><a href="/fennec/builds/${row['key'][1]}">${row['key'][1]}</a></td>
     <td>${row['key'][0]}</td>
     % if row['value'] == {}: 
     <td></td>
@@ -109,6 +117,7 @@ td a:visited {
   ${row} <br />
 % endfor
 </div>
+<div class="results">${all}</div>
 </body>
 </html>
 
