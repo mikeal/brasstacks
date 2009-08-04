@@ -50,12 +50,12 @@ td a:visited {
 
 <form method="post" action="/fennec/compare">
   <div class="compare-results-form">
-    <input type="text" name="buildid1"  style="width: 300px;"/><br>
-    <input type="text" name="buildid2"  style="width: 300px;"/><br>
+    <input type="text" name="buildid1" style="width: 300px;" value="build1"/><br>
+    <input type="text" name="buildid2" style="width: 300px;" value="build2"/><br>
     <input type="submit" value="Compare them"/>
   </div>
 </form>
-
+<!--
 <div class="results">Products: 
 % for prod in products['rows']:
   <a href="/fennec/categories/${prod['key']}">${prod['key']}</a> (${prod['value']}), 
@@ -117,7 +117,8 @@ td a:visited {
   ${row} <br />
 % endfor
 </div>
-<div class="results">${all}</div>
+
+<div class="results">${all}</div>-->
 </body>
 </html>
 

@@ -10,5 +10,5 @@ body {
   font-size:18px;
 }
 </style>
-<div class="header">${doc1.tests} ${doc1.testtype}</div>
+<div class="header">${doc1}</div>
 </body>
