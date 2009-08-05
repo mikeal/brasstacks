@@ -55,7 +55,7 @@ import mozrunner
 test_all_sites = {
         # "myspace": "http://www.myspace.com", # Frame Buster
         # "rapidshare": "http://rapidshare.com", # Frame Buster
-        "busted": "http://miketaylr.com/test/block_anchors.html"
+        "busted": "http://miketaylr.com/test/block_anchors.html",
         "google": "http://www.google.com",
         "yahoo": "http://www.yahoo.com",            
         "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
