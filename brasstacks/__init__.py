@@ -89,7 +89,7 @@ def sync():
     db = sys.argv[-1]
     import sitecompare
     import brasstacks
-    import fennecBrasstacks
+    import fennec
     db = couchquery.CouchDatabase(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
