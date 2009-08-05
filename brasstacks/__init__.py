@@ -84,7 +84,9 @@ class Stub(RestApplication):
 application = Stub()
 
 
-def sync(db):
+def sync():
+    import sys
+    db = sys.argv[-1]
     import sitecompare
     import brasstacks
     import fennecBrasstacks
