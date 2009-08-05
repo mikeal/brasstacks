@@ -84,3 +84,11 @@ class Stub(RestApplication):
 application = Stub()
 
 
+def sync(db):
+    import sitecompare
+    import brasstacks
+    import fennecBrasstacks
+    db = couchquery.CouchDatabase(db)
+    db.sync_design_doc("sitecompare", sitecompare.design_doc)
+    db.sync_design_doc("brasstacks", brasstacks.design_doc)
+    db.sync_design_doc("fennecBrasstacks", fennec.design_doc)
