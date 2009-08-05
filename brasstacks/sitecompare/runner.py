@@ -53,36 +53,37 @@ import jsbridge
 import mozrunner
 
 test_all_sites = {
-        # Frame Buster :: "myspace": "http://www.myspace.com", 
-        "google": "http://www.google.com",
-        "yahoo": "http://www.yahoo.com",            
-        "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
-        "ebay": "http://www.ebay.com",
-        "google-china": "http://www.google.cn",
-        "fc2": "http://fc2.com",
-        "craigslist": "http://www.craigslist.com",
-        "hi5": "http://www.hi5.com",
-        "mail-ru": "http://www.mail.ru",
-        "aol": "http://www.aol.com",
-        "flickr": "http://www.flickr.com",
-        "amazon": "http://www.amazon.com",
-        "google-jp": "http://www.google.co.jp",
-        "doubleclick": "http://www.doubleclick.com",
-        "photobucket": "http://www.photobucket.com",
-        "orkut": "http://orkut.com.br",
-        "twitter": "http://www.twitter.com",
-        "youtube": "http://www.youtube.com",
-        "facebook": "http://www.facebook.com",
-        "windows-live": "http://live.com",
-        "msn": "http://www.msn.com",
-        "blogger": "http://blogger.com",
-        "baidu": "http://baidu.com",
-        "qq": "http://qq.com",
-        "microsoft": "http://www.microsoft.com",
-        "sina": "http://sina.com.cn",
-        # Frame Buster :: "rapidshare": "http://rapidshare.com",
-        "google.fr": "http://google.fr",
-        "wordpress": "http://www.wordpress.com",
+        "myspace": "http://www.myspace.com", # Frame Buster
+        # "rapidshare": "http://rapidshare.com", # Frame Buster
+        "busted": "http://miketaylr.com/test/block_anchors.html"
+        # "google": "http://www.google.com",
+        # "yahoo": "http://www.yahoo.com",            
+        # "wikipedia": "http://en.wikipedia.org/wiki/Main_Page",
+        # "ebay": "http://www.ebay.com",
+        # "google-china": "http://www.google.cn",
+        # "fc2": "http://fc2.com",
+        # "craigslist": "http://www.craigslist.com",
+        # "hi5": "http://www.hi5.com",
+        # "mail-ru": "http://www.mail.ru",
+        # "aol": "http://www.aol.com",
+        # "flickr": "http://www.flickr.com",
+        # "amazon": "http://www.amazon.com",
+        # "google-jp": "http://www.google.co.jp",
+        # "doubleclick": "http://www.doubleclick.com",
+        # "photobucket": "http://www.photobucket.com",
+        # "orkut": "http://orkut.com.br",
+        # "twitter": "http://www.twitter.com",
+        # "youtube": "http://www.youtube.com",
+        # "facebook": "http://www.facebook.com",
+        # "windows-live": "http://live.com",
+        # "msn": "http://www.msn.com",
+        # "blogger": "http://blogger.com",
+        # "baidu": "http://baidu.com",
+        # "qq": "http://qq.com",
+        # "microsoft": "http://www.microsoft.com",
+        # "sina": "http://sina.com.cn",
+        # "google.fr": "http://google.fr",
+        # "wordpress": "http://www.wordpress.com",
         }
 
 parent_path = os.path.abspath(os.path.dirname(__file__))
@@ -281,8 +282,10 @@ class CLI(object):
                                                               runner_class=mozrunner.FirefoxRunner):
         if default_profile:
             profile = profile_class(default_profile=default_profile)
-        else: profile = None
-        runner = runner_class(binary=binary, profile=profile, 
+        else: 
+            profile = None
+            runner_class.profile_class = profile_class
+        runner = runner_class(binary=binary, profile=profile,
                               cmdargs=['-jsbridge', str(self.jsbridge_port)])
         self.jsbridge_port += 1
         
@@ -354,7 +357,7 @@ class Html4v5CLI(CLI):
         runner1, profile1 = self.get_runner_and_profile(self.options.binary, self.options.profile,
                                                         profile_class=Html4Profile)
         runner2, profile2 = self.get_runner_and_profile(self.options.binary, self.options.profile,
-                                                        profile_class=Html4Profile)
+                                                        profile_class=Html5Profile)
 
         return runner1, runner2, profile1, profile2
         
