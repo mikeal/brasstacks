@@ -1,0 +1,22 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+<style type="text/css">
+h3 {
+  text-align:center;
+}
+div.index-do {
+  padding-top:10px;
+  text-align:center;
+  font-size:30px;
+}
+</style>
+
+<h3> testcase :: ${testcase.title} </h3>
+
+${testcase}
+
+<a href="/tcm/edit/+${testcase._id}">edit</a>
+
+</%def>

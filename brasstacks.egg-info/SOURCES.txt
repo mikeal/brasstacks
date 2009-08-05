@@ -2,6 +2,7 @@ README
 setup.py
 brasstacks/__init__.py
 brasstacks/cronjob.py
+brasstacks/fennec.py
 brasstacks/models.py
 brasstacks/notifications.py
 brasstacks/rest.py
@@ -13,6 +14,7 @@ brasstacks.egg-info/entry_points.txt
 brasstacks.egg-info/requires.txt
 brasstacks.egg-info/top_level.txt
 brasstacks/sitecompare/__init__.py
-brasstacks/sitecompare/run_comparison.py
+brasstacks/sitecompare/runner.py
+brasstacks/tcm/__init__.py
 tests/__init__.py
 tests/test_runs.py

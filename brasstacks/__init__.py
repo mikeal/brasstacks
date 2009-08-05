@@ -66,11 +66,11 @@ def cli():
         db = couchquery.CouchDatabase(db[0])
     else:
         db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
-    import brasstacks
+    import sitecompare
     import fennec
     import tcm
-    db.sync_design_doc("sitecompare", design_doc)
-    db.sync_design_doc("brasstacks", brasstacks.design_doc)
+    db.sync_design_doc("sitecompare", sitecompare.design_doc)
+    db.sync_design_doc("brasstacks", design_doc)
     db.sync_design_doc("fennecBrasstacks", fennec.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
     httpd = get_wsgi_server(db)

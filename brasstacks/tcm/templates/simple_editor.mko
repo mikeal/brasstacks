@@ -50,7 +50,7 @@ input.simple-editor-tags {
 }
 
 </style>
-<form class="simple-editor-form">
+<form class="simple-editor-form" method="post" action="/tcm/write_test">
   <table>
     <tr><td class="form-pad-left">Product:</td><td class="form-cell-products">
     <div class="form-cell-products">
@@ -64,13 +64,16 @@ input.simple-editor-tags {
 % endfor
     </div></td><td class="form-pad-right"></td>
     <tr><td class="form-pad-left">Title:</td><td class="form-cell">
-      <input type="text" class="simple-editor-title"/>
+      <input type="text" name="title" class="simple-editor-title"/>
     </td><td class="form-pad-right"></td>
-    <tr><td class="form-pad-left">Description:</td><td class="form-cell">
-      <textarea class="simple-editor-description"></textarea>
+    <tr><td class="form-pad-left" valign="top" style="padding-top:6px">Description:</td><td class="form-cell">
+      <textarea class="simple-editor-description" name="description"></textarea>
     </td><td class="form-pad-right"></td>
     <tr><td class="form-pad-left">Tags:</td><td class="form-cell">
-      <input type="text" class="simple-editor-tags"/>
+      <input type="text" name="tags" class="simple-editor-tags"/>
+    </td><td class="form-pad-right"></td>
+    <tr><td class="form-pad-left"></td><td class="form-cell">
+      <input type="submit" value="Create Test Case">
     </td><td class="form-pad-right"></td>
   </table>
 </form>

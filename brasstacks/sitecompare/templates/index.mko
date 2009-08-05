@@ -37,7 +37,17 @@ td a:visited {
   text-decoration: none;
   font-weight:bold;
 }
-
+div.latest-run {
+  width:100%;
+}
+div.latest-run-rvn {
+  width:50%;
+  float:left;
+}
+div.latest-run-h4v5 {
+  width:50%;
+  float:right;
+}
 
 </style>
 
@@ -50,14 +60,14 @@ td a:visited {
   </div>
 </form>
 
-<div class="latest-run"><a href="/sitecompare/runs/${latest['_id']}">Latest Run @ 
-% if latest.has_key('endtime'):
-  ${latest.endtime}
+<div class="latest-run">
+<div class="latest-run-rvn"><a href="/sitecompare/runs/${latest[0]['_id']}">Latest release vs. nightly @ 
+% if latest[0].has_key('endtime'):
+  ${latest[0].endtime}
 % endif
-</a></div>
-  
+
 <table class="latest-test-run">
-% for d, test in reversed(sorted([(t.result.get('difference'), t) for t in latest.tests])):
+% for d, test in reversed(sorted([(t.result.get('difference'), t) for t in latest[0].tests])):
   <tr>
 % if d > 1:
 <%
@@ -69,6 +79,31 @@ td a:visited {
   </tr>
 % endfor
 </table>
+
+</a></div>
+<div class="latest-run-h4v5"><a href="/sitecompare/runs/${latest[1]['_id']}">Latest HTML4v5 @ 
+% if latest[1].has_key('endtime'):
+  ${latest[1].endtime}
+% endif
+
+<table class="latest-test-run">
+% for d, test in reversed(sorted([(t.result.get('difference'), t) for t in latest[1].tests])):
+  <tr>
+% if d > 1:
+<%
+  d = int(d)
+%>
+% endif
+    <td class="rms">${str(d)}</td>
+    <td class="uri">${test.uri} <a href="/sitecompare/tests/${test._id}">>>></a></td>
+  </tr>
+% endfor
+</table>
+
+</a></div>  
+</div>
+  
+
 </body>
 </html>
 

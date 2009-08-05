@@ -55,10 +55,19 @@ img {
 
 <br>
 
+% if run.get("comparison_type", "releaseVSnightly") != "releaseVSnightly":
+<div class="test-buildid"><a href="/sitecompare/builds/${run.release_docid}">${run["release_buildstring"]}</a></div>
+% endif
+
 <table>
   <tr class="screenshots">
+% if run.get("comparison_type", "releaseVSnightly") == "releaseVSnightly":
     <td class="screenshot"><a href="/sitecompare/builds/${run.release_docid}">Release</a></td>
     <td class="screenshot"><a href="/sitecompare/builds/${run.nightly_docid}">Nightly</a></td>
+% else:
+    <td class="screenshot">${run['runner1_name']}</td>
+    <td class="screenshot">${run['runner2_name']}</td>
+% endif
   </tr>
   <tr class="screenshots">
     <td class="screenshot"><a href="/sitecompare${test.result['release_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"><img class="screenshot" src="/sitecompare${test.result['release_image'].split('brasstacks/brasstacks/sitecompare')[-1]}"></a></td>

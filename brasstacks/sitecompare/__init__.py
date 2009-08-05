@@ -43,10 +43,15 @@ class SiteCompareApplication(RestApplication):
     
     def GET(self, request, collection=None, resource=None):
         if collection is None:
-            latest = self.db.views.sitecompare.runByTime(descending=True, limit=1).rows[0]
-            latest.tests = self.db.views.sitecompare.testByRun(key=latest._id).rows
+            latest_rvn = self.db.views.sitecompare.runByTime(startkey=["releaseVSnightly", {}],
+                                                             descending=True, limit=1).rows[0]
             
-            return MakoResponse('index', latest=latest)
+            latest_rvn.tests = self.db.views.sitecompare.testByRun(key=latest_rvn._id).rows
+            latest_h4v5 = self.db.views.sitecompare.runByTime(startkey=["html4VShtml5", {}],
+                                                              descending=True, limit=1).rows[0]
+            latest_h4v5.tests = self.db.views.sitecompare.testByRun(key=latest_h4v5._id).rows
+            
+            return MakoResponse('index', latest=(latest_rvn, latest_h4v5,))
         if collection == "pages":
             if resource is None:
                 view_result = self.db.views.sitecompare.byType(key="page")
@@ -113,32 +118,34 @@ class SiteCompareApplication(RestApplication):
                 return HtmlResponse("<html><title>Hurray!</title><body>You will be notified when this page differs above your threshold.</body></html>")
             else:
                 return HtmlResponse("<html><title>Verification Pending</title><body>A verification email was sent to your Inbox and we are waiting for it to be verified.</body></html>") 
+
+
+
+
                 
-            
-
-def get_wsgi_server(db):
-    class Stub(RestApplication):
-        def GET(self, request, *args):
-            return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
-    a = Stub()
-    a.add_resource('sitecompare', SiteCompareApplication(db))
-    users_application = UsersApplication(db)
-    a.add_resource('users', users_application)
-    from wsgiref.simple_server import make_server
-    httpd = make_server('', 8888, a)
-    return httpd
-
-def cli():
-    import sys
-    db = [i for i in sys.argv if i.startswith('http')]
-    if len(db) is 1:
-        db = couchquery.CouchDatabase(db[0])
-    else:
-        db = couchquery.CouchDatabase('http://localhost:5984/sitecompare')
-    import brasstacks
-    db.sync_design_doc("sitecompare", design_doc)
-    db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    httpd = get_wsgi_server(db)
-    print "Serving on http://localhost:8888/sitecompare"
-    httpd.serve_forever()
+# def get_wsgi_server(db):
+#     class Stub(RestApplication):
+#         def GET(self, request, *args):
+#             return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
+#     a = Stub()
+#     a.add_resource('sitecompare', SiteCompareApplication(db))
+#     users_application = UsersApplication(db)
+#     a.add_resource('users', users_application)
+#     from wsgiref.simple_server import make_server
+#     httpd = make_server('', 8888, a)
+#     return httpd
+# 
+# def cli():
+#     import sys
+#     db = [i for i in sys.argv if i.startswith('http')]
+#     if len(db) is 1:
+#         db = couchquery.CouchDatabase(db[0])
+#     else:
+#         db = couchquery.CouchDatabase('http://localhost:5984/sitecompare')
+#     import brasstacks
+#     db.sync_design_doc("sitecompare", design_doc)
+#     db.sync_design_doc("brasstacks", brasstacks.design_doc)
+#     httpd = get_wsgi_server(db)
+#     print "Serving on http://localhost:8888/sitecompare"
+#     httpd.serve_forever()
     

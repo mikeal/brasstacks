@@ -41,7 +41,7 @@ desc = """BrassTacks."""
 summ = """BrassTacks."""
 
 PACKAGE_NAME = "brasstacks"
-PACKAGE_VERSION = "0.1"
+PACKAGE_VERSION = "0.2"
 
 setup(name=PACKAGE_NAME,
       version=PACKAGE_VERSION,
@@ -58,7 +58,8 @@ setup(name=PACKAGE_NAME,
           [console_scripts]
           brasstacks = brasstacks:cli
           brasstacks_cron = brasstacks:cron
-          sitecompare = brasstacks.sitecompare:cli
+          sitecompare = brasstacks.sitecompare.runner:cli
+          sitecompare-html4v5 = brasstacks.sitecompare.runner:html4v5
         """,
       platforms =['Any'],
       install_requires = ['webenv',],
