@@ -60,9 +60,9 @@ def cli():
     import sys
     db = [i for i in sys.argv if i.startswith('http')]
     if len(db) is 1:
-        db = couchquery.CouchDatabase(db[0])
+        db = couchquery.CouchDatabase(db[0], cache=Cache())
     else:
-        db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
+        db = couchquery.CouchDatabase('http://localhost:5984/brasstacks', cache=Cache())
     import brasstacks
     import fennec
     db.sync_design_doc("sitecompare", design_doc)
@@ -72,6 +72,14 @@ def cli():
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()
 
+class Cache(dict):
+    lambda *args, **kwargs: dict.__getitem__(*args, **kwargs)
+    lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
+    lambda *args, **kwargs: dict.__delitem__(*args, **kwargs)
+    # lambda get(self, *args, **kwargs): dict.__getitem__(*args, **kwargs)
+    # lambda set(self, *args, **kwargs): dict.__setitem__(*args, **kwargs)
+    # lambda del(self, *args, **kwargs): dict.__delitem__(*args, **kwargs)
+    
 class Stub(RestApplication):
     def GET(self, request, *args):
         return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')

@@ -1,6 +1,8 @@
 <html>
 <head><title>Fennec</title></head>
+
 <body>
+
 <style type="text/css">
 body {
   color:#222222;
@@ -8,19 +10,6 @@ body {
   font-size:18px;
 }
 </style>
-
-<div class="header">
-% for row in doc1:
-  ${row} <br />
-% endfor
-</div>
-<br />
-<div class="header">
-% for row in doc2:
-  ${row} <br />
-% endfor
-</div>
-<br />
-<div class="header">${answer}</div>
+<div class="header">Error: ${error}</div>
 </body>
 </html>
