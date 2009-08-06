@@ -29,23 +29,21 @@ class FennecApplication(RestApplication):
   def GET(self, request, collection=None, resource=None):
 
     if collection is None:
-      # products = 0 # self.db.views.metadata.products(reduce = True, group = True)
-      # testtypes = 0 # self.db.views.metadata.testtypes(reduce = True, group = True)
-      # oses = 0 # self.db.views.metadata.operatingSystems(reduce = True, group = True)
+      products = self.db.views.metadata.products(reduce = True, group = True)['rows']
+      testtypes = self.db.views.metadata.testtypes(reduce = True, group = True)['rows']
+      oses = self.db.views.metadata.operatingSystems(reduce = True, group = True)['rows']
       # metadata = 0 # self.db.views.metadata.displayMetadata(reduce = True)
-      # summary = 0 # self.db.views.results.summary(reduce = True, group = True)
+      summary = self.db.views.results.summary(reduce = True, group = True)['rows']
       # all = 0 # self.db.views.results.allData(key = 'sampletest')
       # return MakoResponse("index", products = products, metadata = metadata, testtypes = testtypes, oses = oses, summary = summary, all = all)
-      return MakoResponse("index")
+      return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, summary = summary)
       
-    # if collection == "builds":
-      # if resource is None:
-          # List of last 100 builds by timestamp
-          # pass
-      # else:
+    if collection == "build":
+      if resource is None:
+          return MakoResponse("error", error="no build id input is given")
+      else:
           # Test info for specific build
-          # build = self.db.views.results.allData(key = resource)
-          # return MakoResponse("builds", build = build)
+          return MakoResponse("build", build = Build(self.db.views.results.allData(key = resource)['rows']))
 
     if collection == "compare":
       if resource is None:
@@ -65,9 +63,10 @@ class FennecApplication(RestApplication):
             build2 = Build(doc2)
             
             answer = build1.compare(build2)
-            return MakoResponse("compare", doc1 = answer, doc2 = doc2)
+            return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
 
-    # if collection == "product":
+    if collection == "product":
+      return MakoResponse("error", error="not implemented yet")
       # if resource is None:
         # products = set(self.db.views.metadata.products(reduce=False).rows.keys())
         # return MakoResponse("products", products=products)
@@ -75,10 +74,10 @@ class FennecApplication(RestApplication):
         # tests = self.db.views.fennecBrasstacks.testsByProduct(key=resource).rows
         # return MakoResponse("product", tests=tests)
 
-    # if collection == "testtype":
-      # pass
-    # if collection == "platform":
-      # pass
+    if collection == "testtype":
+      return MakoResponse("error", error="not implemented yet")
+    if collection == "platform":
+      return MakoResponse("error", error="not implemented yet")
     # if collection == "tests":
       # if resource is None:
         # # List of last 100 tests by timestamp
@@ -123,9 +122,9 @@ class FennecApplication(RestApplication):
             # answer = 'None'
         
         return MakoResponse("compare", 
-          answer = simplejson.dumps(answer, indent=2, sort_keys=True), 
-          doc1 = doc1[0]['value']['tests'], 
-          doc2 = doc2[0]['value']['tests'])
+          answer = answer, 
+          doc1 = build1, 
+          doc2 = build2)
   
   def findPrevious(self, doc):
     
@@ -162,8 +161,8 @@ class Build():
   def __init__(self, doc):
    
     self.doc = doc[0]['value']
-    self.docId = doc[0]['value']['_id']
-    self.buildId = doc[0]['value']['build']
+    self.docid = doc[0]['value']['_id']
+    self.buildid = doc[0]['value']['build']
     self.product = doc[0]['value']['product']
     self.os = doc[0]['value']['os']
     self.testtype = doc[0]['value']['testtype']
@@ -214,6 +213,7 @@ class Build():
               prevlynotpasses.append(testfile1)
             if result1['todo'] > result2['todo']:
               prevlynottodos.append(testfile1)
+        
         elif sum1 < sum2:
           if result1['fail'] < result2['fail']:
             missingfails.append(testfile1)
@@ -221,6 +221,7 @@ class Build():
             missingpasses.append(testfile1)
           if result1['todo'] < result2['todo']:
             missingtodos.append(testfile1)
+        
         else:
           if result1['fail'] > result2['fail']:
             newfails.append(testfile1)
@@ -271,10 +272,9 @@ class Build():
     # true if self's time is later than build's time
     return dt > dt2
 
-class TestsResult():
+class TestsResult(dict):
   def __init__(self, tests):
-    self.testcount = 0
-    self.tests = 0
+    self.testcount = len(tests)
 
 class TestDelta():
   def __init__(self, name, notes, delta):

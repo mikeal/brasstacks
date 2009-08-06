@@ -11,6 +11,42 @@
   </div>
 </form>
 
+<div class="results">Products: 
+% for prod in products:
+  <a href="/fennec/product/${prod['key']}">${prod['key']}</a> (${prod['value']}), 
+% endfor
+</div>
+<div class="results">Test types: 
+% for testtype in testtypes:
+  <a href="/fennec/testtype/${testtype['key']}">${testtype['key']}</a> (${testtype['value']}), 
+% endfor
+</div>
+<div class="results">Operating Systems: 
+% for os in oses:
+  <a href="/fennec/platform/${os['key']}">${os['key']}</a> (${os['value']}), 
+% endfor
+</div>
+
+<table class="results">
+  <tr>
+    <th>Build ID</th>
+    <th>Metadata</th>
+    <th>Result</th>
+  </tr>
+% for row in summary:
+  <tr>
+    <td><a href="/fennec/build/${row['key'][1]}">${row['key'][1]}</a></td>
+    <td>${row['key'][0]}</td>
+    % if row['value'] == {}: 
+    <td></td>
+    % else: 
+    <td>fail  (${row['value']['fail']}), pass  (${row['value']['pass']}), todo  (${row['value']['todo']}) 
+    <a href="/fennec/compare/${row['key'][1]}">Compare to last</a></td>
+    % endif
+  </tr>
+% endfor
+</table>
+
 </body>
 </html>
 
