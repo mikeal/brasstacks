@@ -35,7 +35,7 @@
 #
 # ***** END LICENSE BLOCK *****
 
-import os
+import os, sys
 import math
 import operator
 import copy
