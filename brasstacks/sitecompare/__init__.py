@@ -97,7 +97,7 @@ class SiteCompareApplication(RestApplication):
                     if len(r) is not 0:
                         return webenv.Response303("/sitecompare/pages/"+str(r.rows[0]['_id'])+'?m=already')
                     resp = self.pages_collection.add_resource(dict(request.body))
-                    return webenv.Response303("/sitecompare/pages/"+str(resp['id']))
+                return webenv.Response303("/sitecompare/pages/"+str(resp['id']))
             else:
                 if request['CONTENT_TYPE'] == "application/json":
                     resp = self.pages_collection.update_resource(

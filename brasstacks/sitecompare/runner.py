@@ -130,6 +130,16 @@ class CompareSites(object):
                                         eventType='sitecompare.save')
         self.back_channel2.add_listener(self.save_nightly_listener, 
                                         eventType='sitecompare.save')
+        
+        self.back_channel1.add_listener(self.framebust_listener,
+                                        eventType='sitecompare.framebust')
+        self.back_channel2.add_listener(self.framebust_listener, 
+                                        eventType='sitecompare.framebust')
+        
+        self.back_channel1.add_listener(self.timeout_listener,
+                                        eventType='sitecompare.timeout')
+        self.back_channel2.add_listener(self.timeout_listener, 
+                                        eventType='sitecompare.timeout')
                                         
         # def gl(name, obj):
         #     print 'gl', name, obj
@@ -194,6 +204,14 @@ class CompareSites(object):
         self.saved_nightly_images.append(obj)
     def save_release_listener(self, obj):
         self.saved_release_images.append(obj)
+    
+    framebusters = []
+    def framebust_listener(self, uri):
+        self.framebusters.append(uri)
+    
+    timeouts = []
+    def timeout_listener(self, uri):
+        self.timeouts.append(uri)
         
     def test_uri(self, name, uri):
         filename = os.path.join(self.directory, name)
@@ -202,8 +220,15 @@ class CompareSites(object):
         self.c1.doURI(uri, file1)
         self.c2.doURI(uri, file2)
 
-        while file1 not in self.saved_release_images and file2 not in self.saved_nightly_images:
+        while ( file1 not in self.saved_release_images and file2 not in self.saved_nightly_images ) and (
+                uri not in self.framebusters) and (uri not in self.timeouts):
             sleep(1)
+        if (uri in self.framebusters):
+            print "FrameBusted "+uri
+            return
+        if (uri in self.timeouts):
+            print "Timeout "+uri
+            return
             
         rms = None
         while rms is None:
@@ -246,13 +271,19 @@ class CompareSites(object):
         for name, site in self.all_sites.items():
             print 'testing '+site
             result = self.test_uri(name, site)
-            obj = {"type":"comparison-test", "page-id":name, "uri":site, 
-                   "run-id":self.run_info['id'], "result":result,
-                   "timestamp":datetime.now().isoformat()}
-            obj.update(self.comparison_info)
-            if self.store:
-                self.db.create(obj)
-            print site, 'differs by ', str(result['difference'])
+            if result is not None:
+                obj = {"type":"comparison-test", "page-id":name, "uri":site, 
+                       "run-id":self.run_info['id'], "result":result,
+                       "timestamp":datetime.now().isoformat()}
+                obj.update(self.comparison_info)
+                if self.store:
+                    try:
+                        self.db.create(obj)
+                    except Exception, e:
+                        print "Exception while creating result object ", e
+                print site, 'differs by ', str(result['difference'])
+            else:
+                print "test_uri() returned none, likely due to framebust or timeout"
     
     def stop(self):
         sleep(3)

@@ -43,14 +43,31 @@ currentURI = null;
 
 saveDirectory = null;
 
+timeouts = {}; Components.utils.import('resource://sitecompare/stdlib/timeouts.js', timeouts);
+
 URI = null;
 PATH = null;
+FRAMEBUST_CHECK = function () {
+  jsbridge = {}; Components.utils.import('resource://jsbridge/modules/events.js', jsbridge);
+  if (getActiveTab().location.href != "chrome://sitecompare/content/index.html") {
+    jsbridge.fireEvent('sitecompare.framebust', URI);
+  };
+  timeouts.setTimeout(FRAMEBUST_CHECK, 15000)
+}
+timeouts.setTimeout(FRAMEBUST_CHECK, 120000)
 
 function doURI(uri, path) {
   currentURI = uri;
   URI = uri;
   PATH = path;
   getActiveTab().location.href = "chrome://sitecompare/content/index.html";
+  callback = function() {
+    if (URI == uri) {
+      jsbridge = {}; Components.utils.import('resource://jsbridge/modules/events.js', jsbridge);
+      jsbridge.fireEvent("sitecompare.timeout", URI);
+    }
+  }
+  timeouts.setTimeout(callback, 60000);
 }
 
 var browserWindow = wm.getMostRecentWindow("navigator:browser");
