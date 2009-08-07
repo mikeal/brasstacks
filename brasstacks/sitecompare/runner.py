@@ -339,6 +339,18 @@ class CLI(object):
         self.options = options; self.args = args
         runner1, runner2, profile1, profile2 = self.get_runners()
         
+        if sys.platform == 'linux2':
+            try:
+                from Xlib import X, display
+                d = display.Display()
+                s = d.screen()
+                root = s.root
+                root.warp_pointer(0,0)
+                d.sync()
+            except ImportError:
+                print "Xlib is not installed. Mouse may interfere with screenshots."
+            
+        
         if options.test is True:
             all_sites = test_all_sites
             store = False
