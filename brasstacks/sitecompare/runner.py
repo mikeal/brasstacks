@@ -231,12 +231,17 @@ class CompareSites(object):
             return
             
         rms = None
-        while rms is None:
+        counter = 0
+        while rms is None and counter < 6:
             try:
                 rms, image1, image2, hist1, hist2 = diff_images(file1, file2)
             except:
                 print 'Image is not ready, waiting 10 seconds.'
                 sleep(10)
+                counter += 1
+        if counter >= 6:
+            print "Timeout exceeded waiting for image to be saved"
+            return
         result = {"uri":uri, "release_image":file1, "nightly_image":file2, "difference":rms}
         if rms  != 0:
             result["images_differ"] = True
