@@ -43,15 +43,15 @@ design_doc = os.path.join(this_dir, 'views')
 
 
 def get_wsgi_server(db):
-    from fennec import FennecApplication
+    from buildcompare import BuildCompareApplication
     from users import UsersApplication
     from sitecompare import SiteCompareApplication
     a = Stub()
     a.add_resource('sitecompare', SiteCompareApplication(db))
     users_application = UsersApplication(db)
-    fennec_application = FennecApplication(db)
+    buildcompare_application = BuildCompareApplication(db)
     a.add_resource('users', users_application)
-    a.add_resource('fennec', fennec_application)
+    a.add_resource('buildcompare', buildcompare_application)
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd    
@@ -64,10 +64,10 @@ def cli():
     else:
         db = couchquery.CouchDatabase('http://localhost:5984/brasstacks', cache=Cache())
     import brasstacks
-    import fennec
+    import buildcompare
     db.sync_design_doc("sitecompare", design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecBrasstacks", fennec.design_doc)
+    db.sync_design_doc("fennecBrasstacks", buildcompare.design_doc)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()
