@@ -1,0 +1,7 @@
+results.allData for getting the entire build
+results.summary for getting some metadata and result aggregation
+metadata.products
+metadata.testtypes
+metadata.operatingSystems
+metadata.metadataAsKeys for finding previous
+metadata.displayMetadataByProduct for filtering by product 
