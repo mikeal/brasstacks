@@ -6,17 +6,58 @@
 h3 {
   text-align:center;
 }
-div.index-do {
+div.testcase-title {
   padding-top:10px;
   text-align:center;
   font-size:30px;
 }
+table {
+  padding-left:10%;
+  padding-right:10%;
+}
+td.cell-description {
+  font-size:20px;
+  background-color:#CCCCCC;
+}
+td.tags {
+  padding-top:10px;
+  font-size:24px;
+}
+td {
+  padding-top:4px;
+  padding-left:4px;
+}
+
 </style>
 
-<h3> testcase :: ${testcase.title} </h3>
+% if not testcase.rendered_description.has_key(locale):
+<%
+if testcase.rendered_description.has_key('en-us'):
+    new_locale = 'en-us'
+else:
+    new_locale = testcase.rendered_description.keys()[0]
+%>
+<div class="error-message">You current locale, ${locale}, is not supported by this test. Viewing testcase in ${new_locale} instead.</div>
+<%
+localization = new_locale
+%>
+% else:
+<%
+localization = locale
+%>
+% endif
 
-${testcase}
+<div class="testcase-title">${testcase.title[localization]}</div>
 
-<a href="/tcm/edit/+${testcase._id}">edit</a>
+<table>
+  <tr><td class="cell-name"></td><td class="cell-description">${testcase.rendered_description[localization]}</td></tr>
+  <tr class="tags-row"><td class="cell-name" class="tags"></td><td class="tags" class="cell-tags">
+% for tag in testcase.tags:
+    <span class="tag-link"><a href="/tcm/tags/${tag}">${tag}</a></span>
+% endfor
+    </td>
+  </tr>
+<table>
+
 
 </%def>
