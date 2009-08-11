@@ -1,0 +1,13 @@
+<html>
+<head><title>Fennec</title></head>
+<body>
+<style type="text/css">
+body {
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:18px;
+}
+</style>
+<div class="results">${builds}</div>
+</body>
+</html>

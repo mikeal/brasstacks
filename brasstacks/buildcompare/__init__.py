@@ -19,9 +19,10 @@ design_doc = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'views')
 
 class MakoResponse(HtmlResponse):
   def __init__(self, name, **kwargs):
-    # mylookup = TemplateLookup()
+    # mylookup = TemplateLookup() # TODO: have a base template for a uniform page layout
     # self.body = Template(filename=os.path.join(template_dir, name+'.mko'), lookup=mylookup).render(**kwargs)
     self.body = Template(filename=os.path.join(template_dir, name+'.mko')).render(**kwargs)
+    # self.body = mylookup.get_template(name + '.mko').render(**kwargs)
     self.headers = []
 
 class BuildCompareApplication(RestApplication):
@@ -30,16 +31,19 @@ class BuildCompareApplication(RestApplication):
     self.db = db
 
   def GET(self, request, collection=None, resource=None):
-
     if collection is None:
+      
       products = self.db.views.metadata.products(reduce = True, group = True)['rows']
       testtypes = self.db.views.metadata.testtypes(reduce = True, group = True)['rows']
-      oses = self.db.views.metadata.operatingSystems(reduce = True, group = True)['rows']
+      oses = self.db.views.metadata.operatingsystems(reduce = True, group = True)['rows']
+      
+      builds = self.db.views.metadata.builds(reduce = True, group = True)['rows']
+      
       # metadata = 0 # self.db.views.metadata.displayMetadata(reduce = True)
       summary = self.db.views.results.summary(reduce = True, group = True)['rows']
       # all = 0 # self.db.views.results.allData(key = 'sampletest')
       # return MakoResponse("index", products = products, metadata = metadata, testtypes = testtypes, oses = oses, summary = summary, all = all)
-      return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, summary = summary)
+      return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
       
     if collection == "build":
       if resource is None:
@@ -72,40 +76,41 @@ class BuildCompareApplication(RestApplication):
     if collection == "product":
       if resource is None:
         return MakoResponse("error", error="not implemented yet")
-        # products = set(self.db.views.metadata.products(reduce=False).rows.keys())
-        # return MakoResponse("products", products=products)
       else:
         buildsbyproduct = self.db.views.metadata.displayMetadataByProduct(
-          startkey=[resource, {}, {}],
-          endkey=[resource, 0, 0],
+          startkey=[resource, {}],
+          endkey=[resource, 0],
           descending=True)['rows']
         return MakoResponse("product", buildsbyproduct=buildsbyproduct)
 
     if collection == "testtype":
       return MakoResponse("error", error="not implemented yet")
+
     if collection == "platform":
       return MakoResponse("error", error="not implemented yet")
-    # if collection == "tests":
-      # if resource is None:
-        # # List of last 100 tests by timestamp
-        # pass
-      # else:
-        # test = self.db.get(resource)
-        # # This is crap code, it's just there to show the whole object
-        # return MakoResponse("test", test=test)
+
+    if collection == "builds":
+      if resource is None:
+        return MakoResponse("error", error="not implemented yet")
+      else:
+        input = resource.split('+')
+        builds = self.db.views.metadata.metadataAsKeys(
+          startkey=[input[0], input[1], input[2], {}], 
+          endkey=[input[0], input[1], input[2], 0], 
+          descending=True)['rows']
+        return MakoResponse("builds", builds=builds)
   
   def POST(self, request, collection = None, resource = None):
     if collection == "compare":
       if request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
-        
         if ('buildid1' in request.body) and ('buildid2' in request.body): # TODO: correctly check for blank input
           id1 = request.body['buildid1']
           id2 = request.body['buildid2']
         else: 
           return MakoResponse("error", error="inputs cannot be blank")
-          
-        doc1 = self.db.views.results.allData(key = id1)['rows'] # "20090729070913"
-        doc2 = self.db.views.results.allData(key = id2)['rows'] # "20090728200853"
+        
+        doc1 = self.db.views.results.allData(key = id1)['rows']
+        doc2 = self.db.views.results.allData(key = id2)['rows']
         
         build1 = Build(doc1)
         build2 = Build(doc2)
@@ -113,27 +118,7 @@ class BuildCompareApplication(RestApplication):
         if (doc1 == []) or (doc2 == []):
           return MakoResponse("error", error="input is not a valid build id")
         else: 
-          answer = build1.compare(build2)
-        # if doc1['rows'] != [] and doc2['rows'] != []:
-          # build1 = Build(doc1)
-          # build2 = Build(doc2)
-          # if build1.newer(build2):
-            # answer = build1.compare(build2)
-          # else:
-            # answer = build2.compare(build1)
-          # compare which one is newer build1.newer(build2)
-          # answer = build1.compare(build2)
-          # answer = 'both'
-        # elif doc1['rows'] != [] or doc2['rows'] != []:
-          # if doc1['rows'] != []:
-            # # self.findPrevious(doc1)
-            # answer = 'doc1'
-          # else:
-            # # answer = ComparisonResult(build2, findPrevious(build2))
-            # answer = 'doc2'
-        # else:
-            # answer = 'None'
-        
+          answer = build1.compare(build2)        
         return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
   
   def findPrevious(self, doc):
@@ -217,10 +202,10 @@ class Build():
         
         if sum1 == sum2: 
           if result1['fail'] == result2['fail'] and result1['pass'] == result2['pass'] and result1['todo'] == result2['todo']:
-            stabletests.append(testfile)
+            stabletests.append({'testfile': testfile, 'result': tests1[testfile]})
           else:
             if result1['fail'] > result2['fail']:
-              prevlynotfails.append(testfile)
+              prevlynotfails.append({'testfile': testfile, 'delta': result1['fail'] - result2['fail'], 'failnotes': result1['note'].split(', ')})
             if result1['pass'] > result2['pass']:
               prevlynotpasses.append(testfile)
             if result1['todo'] > result2['todo']:

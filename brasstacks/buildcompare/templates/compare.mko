@@ -63,5 +63,12 @@ ${doc2.timestamp}<br />
 % endfor
 </div>
 
+<h3>Tests that haven't changed: (${ len(answer['stabletests']) }):</h3>
+<div class="header">
+% for row in answer['stabletests']:
+  ${row} <br />
+% endfor
+</div>
+
 </body>
 </html>

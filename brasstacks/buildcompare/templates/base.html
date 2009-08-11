@@ -1,0 +1,23 @@
+## base.html
+<html>
+    <head><title>Fennec</title></head>
+    <body>
+        <div class="header">
+            ${self.header()}
+        </div>
+
+        ${self.body()}
+
+        <div class="footer">
+            ${self.footer()}
+        </div>
+    </body>
+</html>
+
+<%def name="header()">
+    this is the header
+</%def>
+
+<%def name="footer()">
+    this is the footer
+</%def>
