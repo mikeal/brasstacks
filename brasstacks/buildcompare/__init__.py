@@ -103,11 +103,11 @@ class BuildCompareApplication(RestApplication):
   def POST(self, request, collection = None, resource = None):
     if collection == "compare":
       if request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
-        if ('buildid1' in request.body) and ('buildid2' in request.body): # TODO: correctly check for blank input
-          id1 = request.body['buildid1']
-          id2 = request.body['buildid2']
-        else: 
-          return MakoResponse("error", error="inputs cannot be blank")
+        # if ('buildid1' in request.body) and ('buildid2' in request.body): # TODO: correctly check for blank input
+        id1 = request.body['buildid1']
+        id2 = request.body['buildid2']
+        # else: 
+          # return MakoResponse("error", error="inputs cannot be blank")
         
         doc1 = self.db.views.results.allData(key = id1)['rows']
         doc2 = self.db.views.results.allData(key = id2)['rows']
