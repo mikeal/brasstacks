@@ -40,10 +40,11 @@ class FennecApplication(RestApplication):
       
     if collection == "build":
       if resource is None:
-          return MakoResponse("error", error="no build id input is given")
+        return MakoResponse("error", error="no build id input is given")
       else:
-          # Test info for specific build
-          return MakoResponse("build", build = Build(self.db.views.results.allData(key = resource)['rows']))
+        build = Build(self.db.views.results.allData(key = resource)['rows'])
+        buildtests = build.getTests()
+        return MakoResponse("build", build = build, buildtests = buildtests)
 
     if collection == "compare":
       if resource is None:
@@ -91,16 +92,22 @@ class FennecApplication(RestApplication):
     if collection == "compare":
       if request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
         
-        id1 = request.body['buildid1']
-        id2 = request.body['buildid2'] # TODO: if either is blank, code breaks
-        
-        doc1 = self.db.views.results.allData(key = "20090729070913")['rows']
-        doc2 = self.db.views.results.allData(key = "20090728200853")['rows']
+        # if ('buildid1' in request.body) and ('buildid2' in request.body):
+          # id1 = request.body['buildid1']
+          # id2 = request.body['buildid2']
+        # else: 
+          # return MakoResponse("error", error="inputs cannot be blank")
+          
+        doc1 = self.db.views.results.allData(key = request.body['buildid1'])['rows'] # "20090729070913"
+        doc2 = self.db.views.results.allData(key = request.body['buildid2'])['rows'] # "20090728200853"
         
         build1 = Build(doc1)
         build2 = Build(doc2)
         
-        answer = build1.compare(build2)
+        if (doc1 == []) or (doc2 == []):
+          return MakoResponse("error", error="input is not a valid build id")
+        else: 
+          answer = build1.compare(build2)
         # if doc1['rows'] != [] and doc2['rows'] != []:
           # build1 = Build(doc1)
           # build2 = Build(doc2)
@@ -161,15 +168,18 @@ class Build():
   def __init__(self, doc):
    
     self.doc = doc[0]['value']
-    self.docid = doc[0]['value']['_id']
-    self.buildid = doc[0]['value']['build']
-    self.product = doc[0]['value']['product']
-    self.os = doc[0]['value']['os']
-    self.testtype = doc[0]['value']['testtype']
-    self.timestamp = doc[0]['value']['timestamp']
-    self.tests = doc[0]['value']['tests']
+    self.docid = self.doc['_id']
+    self.buildid = self.doc['build']
+    self.product = self.doc['product']
+    self.os = self.doc['os']
+    self.testtype = self.doc['testtype']
+    self.timestamp = self.doc['timestamp']
+    self.tests = self.doc['tests']
 
-  def compare(self, doc):
+  def getTests(self):
+    return TestsResult(self.tests)
+    
+  def compare(self, build):
     
     newtestfiles = []
     missingtestfiles = []
@@ -187,59 +197,57 @@ class Build():
     newtodos = []
     
     stabletests = []
-    x=[]
     
     tests1 = self.tests
-    tests2 = doc.tests
+    tests2 = build.tests
     
-    for testfile1 in tests1:
+    for testfile in tests1:
       
-      if testfile1 not in tests2:
-        newtestfiles.append(testfile1)
+      if testfile not in tests2:
+        newtestfiles.append({'testfile': testfile, 'result': tests1[testfile]})
       else:
-        result1 = tests1[testfile1]
-        result2 = tests2[testfile1]
+        result1 = tests1[testfile]
+        result2 = tests2[testfile]
 
         sum1 = result1['fail'] + result1['pass'] + result1['todo']
         sum2 = result2['fail'] + result2['pass'] + result2['todo']
         
         if sum1 == sum2: 
           if result1['fail'] == result2['fail'] and result1['pass'] == result2['pass'] and result1['todo'] == result2['todo']:
-            stabletests.append(testfile1)
+            stabletests.append(testfile)
           else:
             if result1['fail'] > result2['fail']:
-              prevlynotfails.append(testfile1)
+              prevlynotfails.append(testfile)
             if result1['pass'] > result2['pass']:
-              prevlynotpasses.append(testfile1)
+              prevlynotpasses.append(testfile)
             if result1['todo'] > result2['todo']:
-              prevlynottodos.append(testfile1)
+              prevlynottodos.append(testfile)
         
         elif sum1 < sum2:
           if result1['fail'] < result2['fail']:
-            missingfails.append(testfile1)
+            missingfails.append(testfile)
           if result1['pass'] < result2['pass']:
-            missingpasses.append(testfile1)
+            missingpasses.append(testfile)
           if result1['todo'] < result2['todo']:
-            missingtodos.append(testfile1)
+            missingtodos.append(testfile)
         
         else:
           if result1['fail'] > result2['fail']:
-            newfails.append(testfile1)
+            newfails.append(testfile)
           if result1['pass'] > result2['pass']:
-            newpasses.append(testfile1)
+            newpasses.append(testfile)
           if result1['todo'] > result2['todo']:
-            newtodos.append(testfile1)
+            newtodos.append(testfile)
 
-        del tests2[testfile1]
+        del tests2[testfile]
     
     for remainingtestfile in tests2:
-      missingtestfiles.append(remainingtestfile)
+      missingtestfiles.append({'testfile': remainingtestfile, 'result': tests2[remainingtestfile]})
     
     result = {}
     result['newtestfiles'] = newtestfiles
     result['missingtestfiles'] = missingtestfiles
-    result['testing'] = x
-    
+  
     result['stabletests'] = stabletests
     
     result['prevlynotfails'] = prevlynotfails
@@ -272,10 +280,23 @@ class Build():
     # true if self's time is later than build's time
     return dt > dt2
 
-class TestsResult(dict):
+class TestsResult():
   def __init__(self, tests):
-    self.testcount = len(tests)
-
+    self.numtestfiles = len(tests)
+    items = tests.iteritems()
+    
+    self.totalfails = 0
+    self.totalpasses = 0
+    self.totaltodos = 0
+    
+    for (key, value) in items:
+      self.totalfails = self.totalfails + value['fail']
+      self.totalpasses = self.totalpasses + value['pass']
+      self.totaltodos = self.totaltodos + value['todo']
+    
+    self.totaltests = self.totalfails + self.totalpasses + self.totaltodos
+    self.tests = tests.iteritems()
+    
 class TestDelta():
   def __init__(self, name, notes, delta):
     self.name = ''
@@ -284,6 +305,17 @@ class TestDelta():
   def parsefailnotes(self):
     return False
 
+class Test():
+  def __init__(self, testfile, result):
+    self.testfile = testfile
+    self.result = result
+    self.totalfail = self.result['fail']
+    self.totalpass = self.result['pass']
+    self.totaltodo = self.result['todo']
+    self.notes = self.result['note'].split(',')
+  def totaltests():
+    return self.totalfail + totalpass + totaltodo
+  
 # class ComparisonResult():
   # def __init__(self):
     # pass

@@ -41,13 +41,12 @@ td a:visited {
 </style>
 
 <div class="results">
-${build['rows'][0]['value']['build']}<br />
-${build['rows'][0]['value']['product']}<br />
-${build['rows'][0]['value']['os']}<br />
-${build['rows'][0]['value']['testtype']}<br />
-${build['rows'][0]['value']['timestamp']}<br />
-${build['rows'][0]['value']['tests']}<br />
-% for name in build['rows'][0]['value']['tests']:
+${build.buildid} (<a href="/fennec/compare/${build.buildid}">Compare to last</a>)<br />
+${build.testtype}<br />
+${build.product}<br />
+${build.os}<br />
+${build.timestamp}<br />
+% for name in build.tests:
   ${name} <br />
 % endfor
 </div>

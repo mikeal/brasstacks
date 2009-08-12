@@ -45,41 +45,55 @@ static_dir = os.path.join(this_dir, 'static')
 
 
 def get_wsgi_server(db):
-    from fennec import FennecApplication
+    from buildcompare import BuildCompareApplication
     from users import UsersApplication
     from sitecompare import SiteCompareApplication
     from tcm import TestCaseManagerApplication
+    from fennec import FennecApplication
     a = Stub()
-    a.add_resource('sitecompare', SiteCompareApplication(db))
     users_application = UsersApplication(db)
     fennec_application = FennecApplication(db)
     tcm_application = TestCaseManagerApplication(db)
+    buildcompare_application = BuildCompareApplication(db)
+    a.add_resource('sitecompare', SiteCompareApplication(db))
     a.add_resource('users', users_application)
     a.add_resource('fennec', fennec_application)
     a.add_resource('tcm', tcm_application)
     a.add_resource('static', FileServerApplication(static_dir))
+    a.add_resource('users', users_application)
+    a.add_resource('buildcompare', buildcompare_application)
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd    
 
 def cli():
-    import sys
     db = [i for i in sys.argv if i.startswith('http')]
     if len(db) is 1:
-        db = couchquery.CouchDatabase(db[0])
+        db = couchquery.CouchDatabase(db[0], cache=Cache())
     else:
         db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
     import sitecompare
     import fennec
     import tcm
+    db = couchquery.CouchDatabase('http://localhost:5984/brasstacks', cache=Cache())
+    import brasstacks
+    import buildcompare
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
-    db.sync_design_doc("brasstacks", design_doc)
-    db.sync_design_doc("fennecBrasstacks", fennec.design_doc)
+    db.sync_design_doc("brasstacks", brasstacks.design_doc)
+    db.sync_design_doc("fennecBrasstacks", buildcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()
 
+class Cache(dict):
+    def __init__(self, *args, **kwargs):
+        super(Cache, self)(*args, **kwargs)
+        setattr(self, 'del', lambda *args, **kwargs: dict.__delitem__(*args, **kwargs) )
+    get = lambda *args, **kwargs: dict.__getitem__(*args, **kwargs)
+    set = lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
+    
+    
 class Stub(RestApplication):
     def GET(self, request, *args):
         return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')

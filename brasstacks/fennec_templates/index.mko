@@ -3,50 +3,49 @@
 
 <body>
 
-<style type="text/css">
-input {
-  color:#222222;
-  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
-  font-size:20px;
-}
+<form method="post" action="/fennec/compare">
+  <div class="compare-results-form">
+    <input type="text" name="buildid1" style="width: 300px;" value="build1"/><br>
+    <input type="text" name="buildid2" style="width: 300px;" value="build2"/><br>
+    <input type="submit" value="Compare them"/>
+  </div>
+</form>
 
-div.add-page-form {
-  text-align:center;
-}
-table.latest-test-run {
-  width:90%;
-}
-td.rms {
-  width:20%;
-  text-align:right;
-}
-td.uri {
-  padding-left:5px;
-  width:80%;
-  text-align:left;
-}
-
-td a:link {
-  font-size:12px;
-  text-decoration: none;
-  font-weight:bold;
-}
-td a:visited {
-  font-size:12px;
-  text-decoration: none;
-  font-weight:bold;
-}
-
-
-</style>
-
-<div class="site-title">Fennec Results</div>
-
-<div class="header">
-  <div class="link"><a href="/fennec/builds">builds</a></div>
-  <div class="link"><a href="/fennec/products">products</a></div>
-  <div class="link"><a href="/fennec/tests">tests</a></div>
+<div class="results">Products: 
+% for prod in products:
+  <a href="/fennec/product/${prod['key']}">${prod['key']}</a> (${prod['value']}), 
+% endfor
 </div>
+<div class="results">Test types: 
+% for testtype in testtypes:
+  <a href="/fennec/testtype/${testtype['key']}">${testtype['key']}</a> (${testtype['value']}), 
+% endfor
+</div>
+<div class="results">Operating Systems: 
+% for os in oses:
+  <a href="/fennec/platform/${os['key']}">${os['key']}</a> (${os['value']}), 
+% endfor
+</div>
+
+<table class="results">
+  <tr>
+    <th>Build ID</th>
+    <th>Metadata</th>
+    <th>Result</th>
+  </tr>
+% for row in summary:
+  <tr>
+    <td><a href="/fennec/build/${row['key'][1]}">${row['key'][1]}</a></td>
+    <td>${row['key'][0]}</td>
+    % if row['value'] == {}: 
+    <td></td>
+    % else: 
+    <td>fail  (${row['value']['fail']}), pass  (${row['value']['pass']}), todo  (${row['value']['todo']}) 
+    <a href="/fennec/compare/${row['key'][1]}">Compare to last</a></td>
+    % endif
+  </tr>
+% endfor
+</table>
 
 </body>
 </html>

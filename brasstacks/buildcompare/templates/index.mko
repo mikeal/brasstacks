@@ -1,0 +1,57 @@
+<html>
+<head><title>Fennec</title></head>
+<body>
+
+<form method="post" action="/buildcompare/compare">
+  <div class="compare-results-form">
+    <input type="text" name="buildid1" style="width: 300px;" value="Build ID 1"/><br>
+    <input type="text" name="buildid2" style="width: 300px;" value="Build ID 2"/><br>
+    <input type="submit" value="Compare them"/>
+  </div>
+</form>
+
+<div class="results">Products: 
+% for prod in products:
+  <a href="/buildcompare/product/${prod['key']}">${prod['key']}</a> (${prod['value']}), 
+% endfor
+</div>
+<div class="results">Test types: 
+% for testtype in testtypes:
+  <a href="/buildcompare/testtype/${testtype['key']}">${testtype['key']}</a> (${testtype['value']}), 
+% endfor
+</div>
+<div class="results">Operating Systems: 
+% for os in oses:
+  <a href="/buildcompare/platform/${os['key']}">${os['key']}</a> (${os['value']}), 
+% endfor
+</div>
+<div class="results">Builds: <br />
+% for build in builds:
+  <a href="/buildcompare/builds/${build['key'][0]}+${build['key'][1]}+${build['key'][2]}">
+    ${build['key'][0]} ${build['key'][1]} ${build['key'][2]}
+  </a>(${build['value']})<br />
+% endfor
+</div>
+
+<table class="results">
+  <tr>
+    <th>Build ID</th>
+    <th>Metadata</th>
+    <th>Result</th>
+  </tr>
+% for row in summary:
+  <tr>
+    <td><a href="/buildcompare/build/${row['key'][1]}">${row['key'][1]}</a></td>
+    <td>${row['key'][0]}</td>
+    % if row['value'] == {}: 
+    <td></td>
+    % else: 
+    <td>fail  (${row['value']['fail']}), pass  (${row['value']['pass']}), todo  (${row['value']['todo']}) 
+    <a href="/buildcompare/compare/${row['key'][1]}">Compare to last</a></td>
+    % endif
+  </tr>
+% endfor
+</table>
+
+</body>
+</html>

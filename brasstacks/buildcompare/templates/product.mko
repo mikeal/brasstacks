@@ -1,0 +1,27 @@
+<html>
+<head><title>Fennec</title></head>
+<body>
+<style type="text/css">
+body {
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:18px;
+}
+</style>
+<table class="results">
+  <tr>
+    <th>Build ID</th>
+    <th>Metadata</th>
+  </tr>
+% for row in buildsbyproduct:
+  <tr>
+    <td><a href="/buildcompare/build/${row['value']['buildid']}">${row['value']['buildid']}</a></td>
+    <td>
+    ${row['value']['testtype']}, ${row['value']['product']}, ${row['value']['os']}, ${row['value']['timestamp']} 
+    <a href="/buildcompare/compare/${row['value']['buildid']}">(Compare to last)</a>
+    </td>
+  </tr>
+% endfor
+</table>
+</body>
+</html>

@@ -10,9 +10,9 @@ body {
   font-size:18px;
 }
 </style>
-<div class="tests">
-% for testtype, test in tests:
-<div class="link"><a href="/fennec/tests/${test['_id']}">${testtype} on ${test.get('os','')} @ ${test.get('timestamp', 'undefined')}</a></div>
+<div class="header">
+% for product in products:
+<div class="link"><a href="/buildcompare/products/${product}">${product}</a></div>
 % endfor
 </div>
 </body>

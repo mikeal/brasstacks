@@ -1,0 +1,74 @@
+<html>
+<head><title>Fennec</title></head>
+
+<body>
+
+<style type="text/css">
+input {
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+  font-size:20px;
+}
+
+div.add-page-form {
+  text-align:center;
+}
+table.latest-test-run {
+  width:90%;
+}
+td.rms {
+  width:20%;
+  text-align:right;
+}
+td.uri {
+  padding-left:5px;
+  width:80%;
+  text-align:left;
+}
+
+td a:link {
+  font-size:12px;
+  text-decoration: none;
+  font-weight:bold;
+}
+td a:visited {
+  font-size:12px;
+  text-decoration: none;
+  font-weight:bold;
+}
+
+
+</style>
+
+<div class="results">
+${build.buildid} (<a href="/buildcompare/compare/${build.buildid}">Compare to last</a>)<br />
+${build.testtype}<br />
+${build.product}<br />
+${build.os}<br />
+${build.timestamp}<br />
+<h2>Tests (test files: ${buildtests.numtestfiles}, 
+tests: ${buildtests.totaltests}, 
+passes: ${buildtests.totalpasses}, 
+fails: ${buildtests.totalfails}, 
+todos: ${buildtests.totaltodos}):
+</h2><br />
+<table class="results">
+  <tr>
+    <th>Test</th>
+    <th>Result</th>
+    <th>Messages</th>
+  </tr>
+% for (key, value) in buildtests.tests:
+  <tr>
+    <td>${key}</td>
+    <td>fail: ${value['fail']}, pass: ${value['pass']}, todo: ${value['todo']}</td>
+    <td>${value['note']}</td>
+  </tr>
+% endfor
+
+</table>
+</div>
+
+</body>
+</html>
+
