@@ -75,7 +75,6 @@ def cli():
     import sitecompare
     import fennec
     import tcm
-    db = couchquery.CouchDatabase('http://localhost:5984/brasstacks', cache=Cache())
     import brasstacks
     import buildcompare
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
