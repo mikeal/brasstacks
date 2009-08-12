@@ -2,11 +2,13 @@
 
 <%def name="body()">
 
+<script type="text/javascript" src="/static/jquery-1.3.1.js" ></script>
+
 <style type="text/css">
 h3 {
   text-align:center;
 }
-div.testcase-title {
+div.testcase-title-container {
   padding-top:10px;
   text-align:center;
   font-size:30px;
@@ -27,15 +29,28 @@ td {
   padding-top:4px;
   padding-left:4px;
 }
-
+span.edit-title {
+  padding-left:15px;
+  font-size:18px;
+  text-align:right;
+}
+input.testcase-title-edit {
+  width:80%;
+  font-size:24px;
+  text-align:center;
+}
+.hide {display:none}
+.edit-link {
+  font-size:18px;
+}
 </style>
 
-% if not testcase.rendered_description.has_key(locale):
+% if not testcase.description_rendered.has_key(locale) and not force_locale:
 <%
-if testcase.rendered_description.has_key('en-us'):
+if testcase.description_rendered.has_key('en-us'):
     new_locale = 'en-us'
 else:
-    new_locale = testcase.rendered_description.keys()[0]
+    new_locale = testcase.description_rendered.keys()[0]
 %>
 <div class="error-message">You current locale, ${locale}, is not supported by this test. Viewing testcase in ${new_locale} instead.</div>
 <%
@@ -43,21 +58,69 @@ localization = new_locale
 %>
 % else:
 <%
-localization = locale
+if force_locale:
+    localization = force_locale
+else:
+    localization = locale
 %>
 % endif
 
-<div class="testcase-title">${testcase.title[localization]}</div>
+<script type="text/javascript">
+var _id = ${simplejson.dumps(testcase['_id'])};
+var _rev = ${simplejson.dumps(testcase['_rev'])};
+
+editTitle = function () {
+  $('#testcase-title').hide();
+  $('#testcase-title-edit').show();
+}
+saveTitle = function () {
+  
+}
+editDesc = function () {
+  
+}
+% if testcase.title.has_key(localization):
+$(document).ready = function () { editTitle(); }
+% endif
+
+% if testcase.description_raw.has_key(localization):
+$(document).ready = function () { editDesc(); }
+% endif
+
+</script>
+
+<div class="testcase-title-container">
+  <div id="testcase-title" class="testcase-title">
+    ${testcase.title.get(localization, '')}<span class="edit-title"><a href='#' onclick="editTitle()">edit</a></span>
+  </div>
+  <span id="testcase-title-edit" style="{display:none}">
+    <div id="title-save-status" ></div>
+    <input type="text" name="testcase-title-edit" 
+           class="testcase-title-edit" class="hide" value='${testcase.title.get(localization, '')}'>
+           <a class="edit-link" onclick="saveTitle()" href='#'>save</a>
+  </span>
+</div>
 
 <table>
-  <tr><td class="cell-name"></td><td class="cell-description">${testcase.rendered_description[localization]}</td></tr>
-  <tr class="tags-row"><td class="cell-name" class="tags"></td><td class="tags" class="cell-tags">
-% for tag in testcase.tags:
-    <span class="tag-link"><a href="/tcm/tags/${tag}">${tag}</a></span>
-% endfor
+  <tr>
+    <td class="cell-name">
     </td>
+    <td class="cell-description">${testcase.description_rendered[localization]}</td>
+    <td class="edit" valign="top"><a href="/">edit</a></td>
+  </tr>
+  <tr class="tags-row">
+    <td class="cell-name" class="tags"></td>
+    <td class="tags" class="cell-tags">
+% if len(testcase.tags) is 0:
+      No Tags
+% else:
+  % for tag in testcase.tags:
+        <span class="tag-link"><a href="/tcm/tags/${tag}">${tag}</a></span>
+  % endfor
+% endif
+    </td>
+  <td class="edit"><a href="" id="edit-tags">edit</a></td>
   </tr>
 <table>
-
 
 </%def>

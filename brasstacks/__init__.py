@@ -1,6 +1,7 @@
 import os, sys
 
 from webenv.rest import RestApplication
+from webenv.applications.file_server import FileServerApplication
 import webenv
 import couchquery
 
@@ -12,6 +13,7 @@ cron = cronjob.run
 # 
 this_dir = os.path.abspath(os.path.dirname(__file__))
 design_doc = os.path.join(this_dir, 'views')
+static_dir = os.path.join(this_dir, 'static')
 # 
 # lookup = TemplateLookup(directories=[os.path.join(this_dir, 'templates')])
 # 
@@ -55,6 +57,7 @@ def get_wsgi_server(db):
     a.add_resource('users', users_application)
     a.add_resource('fennec', fennec_application)
     a.add_resource('tcm', tcm_application)
+    a.add_resource('static', FileServerApplication(static_dir))
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd    
