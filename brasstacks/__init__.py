@@ -88,7 +88,7 @@ def cli():
 
 class Cache(dict):
     def __init__(self, *args, **kwargs):
-        super(Cache, self)(*args, **kwargs)
+        super(Cache, self).__init__(*args, **kwargs)
         setattr(self, 'del', lambda *args, **kwargs: dict.__delitem__(*args, **kwargs) )
     get = lambda *args, **kwargs: dict.__getitem__(*args, **kwargs)
     set = lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
