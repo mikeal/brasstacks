@@ -21,7 +21,7 @@ product_map = {"3":'Thunderbird',"1":"Firefox","2":"SeaMonkey","5":"Calendar",
 
 if not os.path.isfile('invalid_pks.json'):
     f = open('invalid_pks.json', 'w')
-    f.write('[]')
+    f.write('[7836]')
     f.flush()
     f.close()
 
