@@ -19,7 +19,7 @@ lookup = TemplateLookup(directories=[os.path.join(this_directory, 'templates')],
 products = ["Firefox", "Thunderbird", "Fennec", "Sunbird"]
 
 def render_description(body):
-    return markdown(body, safe_mode=True)
+    return markdown(body, safe_mode="escape")
 
 def get_locale(request):
     if request.headers.has_key('accept-language'):
