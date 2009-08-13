@@ -33,7 +33,7 @@ class BuildCompareApplication(RestApplication):
   def GET(self, request, collection=None, resource=None):
     if collection is None:
       
-      products = self.db.views.metadata.products(reduce = True, group = True)['rows']
+      products = self.db.views.fennecResults.productCounts(reduce = True, group = True)['rows']
       testtypes = self.db.views.fennecResults.testtypeCounts(reduce = True, group = True)['rows']
       oses = self.db.views.fennecResults.osCounts(reduce = True, group = True)['rows']
       builds = self.db.views.fennecResults.buildCounts(reduce = True, group = True)['rows']

@@ -3,4 +3,3 @@ function (doc) {
     emit(doc.product, [doc.testtype, doc]); 
   }
 }
-
