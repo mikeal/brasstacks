@@ -92,13 +92,11 @@ class Cache(dict):
     get = lambda *args, **kwargs: dict.__getitem__(*args, **kwargs)
     set = lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
     
-    
 class Stub(RestApplication):
     def GET(self, request, *args):
         return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
 
 application = Stub()
-
 
 def sync():
     import sys
@@ -106,7 +104,10 @@ def sync():
     import sitecompare
     import brasstacks
     import fennec
+    import buildcompare
+    import tcm
     db = couchquery.CouchDatabase(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecBrasstacks", fennec.design_doc)
+    # db.sync_design_doc("fennecBrasstacks", buildcompare.design_doc)
+    db.sync_design_doc("tcm", tcm.design_doc)

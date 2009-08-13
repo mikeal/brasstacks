@@ -6,7 +6,8 @@ import brasstacks
 from brasstacks import sitecompare
 from brasstacks import users
 from brasstacks import fennec
-
+from brasstacks import tcm
+from brasstacks import buildcompare
 
 class Stub(RestApplication):
     def GET(self, request, *args):
@@ -18,10 +19,14 @@ sitecompare_application = sitecompare.SiteCompareApplication(
 db = couchquery.CouchDatabase("http://localhost:5984/brasstacks")
 users_application = users.UsersApplication(db)
 fennec_application = fennec.FennecApplication(db)
+tcm_application = tcm.TestCaseManagerApplication(couchquery.Database("http://localhost:5984/tcm"))
+buildcompare_application = buildcompare.BuildCompareApplication("http:localhost:5984/fennec")
 application = Stub()
 application.add_resource('sitecompare', sitecompare_application)
 application.add_resource('users', users_application)
 application.add_resource('fennec', fennec_application)
+application.add_resource('buildcompare', buildcompare_application)
+application.add_resource('tcm', tcm_application)
 
 
 
