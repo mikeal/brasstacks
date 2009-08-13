@@ -1,7 +1,10 @@
 import os, sys
 
 import httplib2
-import simplejson
+try:
+    import json as simplejson
+except:
+    import simplejson
 from brasstacks import sitecompare
 
 this_dir = os.path.abspath(os.path.dirname(__file__))

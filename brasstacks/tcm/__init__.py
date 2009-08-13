@@ -6,7 +6,10 @@ from webenv.rest import RestApplication
 from mako.lookup import TemplateLookup
 from markdown import markdown
 from cgi import escape
-import simplejson
+try:
+    import json as simplejson
+except:
+    import simplejson
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 design_doc = os.path.join(this_directory, 'views')

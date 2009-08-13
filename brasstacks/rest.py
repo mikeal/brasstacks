@@ -1,6 +1,9 @@
 import os, sys
 
-import simplejson
+try:
+    import json as simplejson
+except:
+    import simplejson
 from webenv import Response, HtmlResponse
 from webenv.rest import RestApplication
 from webenv.applications.file_server import FileServerApplication

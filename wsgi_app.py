@@ -1,7 +1,6 @@
 import os
 os.environ['PYTHON_EGG_CACHE'] = os.path.expanduser('~/.eggs')
 
-
 import webenv
 from webenv.rest import RestApplication
 import couchquery

@@ -1,4 +1,8 @@
-import simplejson
+try:
+    import json as simplejson
+except:
+    import simplejson
+
 import httplib2
 import markdown
 import sys, os
