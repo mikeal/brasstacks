@@ -17,9 +17,15 @@ table {
   padding-left:10%;
   padding-right:10%;
 }
-td.cell-description {
+.cell-description {
   font-size:20px;
   background-color:#CCCCCC;
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+}
+textarea.cell-description {
+  font-size:18px;
+  background-color:#FFFFFF;
 }
 td.tags {
   padding-top:10px;
@@ -74,39 +80,107 @@ editTitle = function () {
   $('#testcase-title-edit').show();
 }
 saveTitle = function () {
-  
+  var t = document.getElementById('title-input');
+  options = {
+    url : '/tcm/api/editcase/${testcase._id}?rev='+_rev,
+    data : JSON.stringify({title:{"${localization}":t.value}}),
+    dataTyle : 'text',
+    error : function (xhttp, status, err) {
+      // TODO: populate the error screen
+    },
+    success: function (data, status) {
+      result = JSON.parse(data);
+      _rev = result._rev;
+      document.getElementById('title-span').textContent = result['title']['${localization}'];
+      document.getElementById('title-input').value = result['title']['${localization}'];
+      $('#testcase-title-edit').hide();
+      $('#testcase-title').show();
+    },
+    type: 'PUT',
+  },
+  jQuery.ajax(options);
 }
 editDesc = function () {
-  
+  var d = document.getElementById('description');
+  var e = document.getElementById('description-edit');
+  var t = document.getElementById('description-edit-box');
+  e.style.width = d.offsetWidth;
+  e.style.height = d.offsetHeight;
+  t.style.width = d.offsetWidth;
+  t.style.height = d.offsetHeight;
+  $('#description-row').hide();
+  $('#description-edit-row').show();
 }
-% if testcase.title.has_key(localization):
-$(document).ready = function () { editTitle(); }
-% endif
+saveDesc = function () {
+  var t = document.getElementById('description-edit-box');
+  options = {
+    url : '/tcm/api/editcase/${testcase._id}?rev='+_rev,
+    data : JSON.stringify({description_raw:{"${localization}":t.value}}),
+    dataTyle : 'text',
+    error : function (xhttp, status, err) {
+      // TODO: populate the error screen
+    },
+    success: function (data, status) {
+      result = JSON.parse(data);
+      _rev = result._rev
+      document.getElementById('description').innerHTML = result['description_rendered']['${localization}']
+      document.getElementById('description-edit-box').value = result['description_raw']['${localization}']
+      $('#description-edit-row').hide();
+      $('#description-row').show();
+    },
+    type: 'PUT',
+  },
+  jQuery.ajax(options);
+}
 
-% if testcase.description_raw.has_key(localization):
-$(document).ready = function () { editDesc(); }
-% endif
+newLocale = function () {
+  l = document.getElementById('new-locale').value;
+  // if (l.length == 0) {
+  //   // Do error
+  // } 
+  href = window.location.href.replace("${localization}", l);
+  window.location.href = href; 
+}
+
+$(document).ready( function () { 
+  if (document.getElementById('title-span').textContent.length == 0) {
+    editTitle();
+  }
+  if (document.getElementById('description').textContent.length == 0) {
+    var d = document.getElementById('description');
+    var e = document.getElementById('description-edit');
+    var t = document.getElementById('description-edit-box');
+    d.style.width = '700px';
+    d.style.height = '400px';
+    editDesc();
+  }
+} )
 
 </script>
 
 <div class="testcase-title-container">
-  <div id="testcase-title" class="testcase-title">
-    ${testcase.title.get(localization, '')}<span class="edit-title"><a href='#' onclick="editTitle()">edit</a></span>
+  <div id="testcase-title" class="testcase-title"><span id="title-span">${testcase.title.get(localization, '')}</span><span class="edit-title"><a href='#' onclick="editTitle()">edit</a></span>
   </div>
   <span id="testcase-title-edit" style="{display:none}">
     <div id="title-save-status" ></div>
-    <input type="text" name="testcase-title-edit" 
+    <input type="text" name="testcase-title-edit" id='title-input'
            class="testcase-title-edit" class="hide" value='${testcase.title.get(localization, '')}'>
            <a class="edit-link" onclick="saveTitle()" href='#'>save</a>
   </span>
 </div>
 
 <table>
-  <tr>
-    <td class="cell-name">
+  <tr id="description-row">
+    <td class="cell-name"></td>
+    <td class="cell-description" id="description">${testcase.description_rendered.get(localization,'')}</td>
+    <td class="edit" valign="top"><a href="#" onclick="editDesc()">edit</a></td>
+  </tr>
+  <tr style="{display:none}" id="description-edit-row">
+    <td class="cell-name"></td>
+    <td class="cell-description" id="description-edit">
+      <textarea class="cell-description" id="description-edit-box">${testcase.description_raw.get(localization, '')}</textarea>
     </td>
-    <td class="cell-description">${testcase.description_rendered[localization]}</td>
-    <td class="edit" valign="top"><a href="/">edit</a></td>
+    <td class="edit" valign="top"><a href="#" onclick="saveDesc()">save</a></td>
   </tr>
   <tr class="tags-row">
     <td class="cell-name" class="tags"></td>
@@ -119,8 +193,20 @@ $(document).ready = function () { editDesc(); }
   % endfor
 % endif
     </td>
-  <td class="edit"><a href="" id="edit-tags">edit</a></td>
+    <td class="edit"><a href="" id="edit-tags">edit</a></td>
   </tr>
+  <tr>
+    <td>Localizations:</td>
+    <td>
+% for key in testcase.title.keys():
+<a href="/tcm/testcase/${testcase._id}/${key}">${key}</a>
+% endfor
+    </td>
+    <td></td>
+  <tr>
+    <td></td>
+    <td><a href="#" onclick="newLocale()">Create localization in</a> <input size="5px" id="new-locale"></input></td>
+    <td></td>
 <table>
 
 </%def>

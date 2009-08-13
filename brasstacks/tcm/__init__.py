@@ -61,7 +61,7 @@ class TestCaseManagerAPI(RestApplication):
                 rev = request.query['rev']
                 doc = self.db.get(resource)
                 assert rev == doc._rev
-                changes = simplejson.loads(request.body)
+                changes = simplejson.loads(str(request.body))
                 if changes.has_key('description_raw'):
                     for locale, desc in changes['description_raw'].items():
                         doc['description_raw'][locale] = desc
@@ -73,7 +73,8 @@ class TestCaseManagerAPI(RestApplication):
                         changes.pop('title')
                 for k, v in changes.items():
                     doc[k] = v
-                return JSONResponse(self.db.save(doc))
+                info = self.db.save(doc)
+                return JSONResponse(self.db.get(info['id']))
 
 class TestCaseManagerApplication(RestApplication):
     def __init__(self, db):

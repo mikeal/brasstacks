@@ -31,6 +31,7 @@ $(document).ready(function()
 <tr> 
     <th>Created</th> 
     <th>Title</th> 
+    <th>Locale</th>
     <th>Last Modified</th> 
 </tr>
 </thead> 
@@ -40,6 +41,7 @@ $(document).ready(function()
     <td id="${testcase._id}-creation">${testcase.creation_dt}</td> 
 % for locale, title in testcase.title.items():
     <td><a href="/tcm/testcase/${testcase._id}/${locale}">${testcase.title[locale]}</a></td> 
+    <td>${locale}</td>
 % endfor 
     <td id="${testcase._id}-lastmodifed}">${testcase.get('lastmodified_dt', testcase.creation_dt)}</td>
 </tr>
