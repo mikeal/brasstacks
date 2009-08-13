@@ -4,8 +4,8 @@ os.environ['PYTHON_EGG_CACHE'] = os.path.expanduser('~/.eggs')
 import webenv
 from webenv.rest import RestApplication
 import couchquery
+couchquery.debugging = False
 
-import brasstacks
 from brasstacks import sitecompare
 from brasstacks import users
 from brasstacks import fennec
@@ -23,7 +23,7 @@ db = couchquery.CouchDatabase("http://localhost:5984/brasstacks")
 users_application = users.UsersApplication(db)
 fennec_application = fennec.FennecApplication(db)
 tcm_application = tcm.TestCaseManagerApplication(couchquery.Database("http://localhost:5984/tcm"))
-buildcompare_application = buildcompare.BuildCompareApplication("http:localhost:5984/fennec")
+buildcompare_application = buildcompare.BuildCompareApplication(couchquery.Database("http:localhost:5984/fennec"))
 application = Stub()
 application.add_resource('sitecompare', sitecompare_application)
 application.add_resource('users', users_application)
