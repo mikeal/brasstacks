@@ -10,7 +10,7 @@ from brasstacks import tcm
 from brasstacks import buildcompare
 
 class Stub(RestApplication):
-    def GET(self, request, *args):
+    def GET(self, request):
         return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
 
 sitecompare_application = sitecompare.SiteCompareApplication(
