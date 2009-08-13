@@ -109,5 +109,5 @@ def sync():
     db = couchquery.CouchDatabase(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    # db.sync_design_doc("fennecBrasstacks", buildcompare.design_doc)
+    db.sync_design_doc("fennecResults", buildcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
