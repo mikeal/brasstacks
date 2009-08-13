@@ -4,7 +4,7 @@ except:
     import simplejson
 
 import httplib2
-import markdown
+import markdown2
 import sys, os
 import couchquery
 import timeout

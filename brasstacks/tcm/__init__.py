@@ -4,7 +4,7 @@ from datetime import datetime
 from webenv import HtmlResponse, Response303, Response
 from webenv.rest import RestApplication
 from mako.lookup import TemplateLookup
-from markdown import markdown
+from markdown2 import markdown
 from cgi import escape
 try:
     import json as simplejson
