@@ -1,4 +1,4 @@
-function (keys, values, rereduce) {
+function (keys, values) {
 
   //for some reason key is [key, doc._id]
   //so emit([doc.testtype, doc.build], doc.tests)
@@ -8,8 +8,8 @@ function (keys, values, rereduce) {
   retval["pass"] = 0;
   retval["fail"] = 0;
   retval["todo"] = 0;
-  for (v in value[0]) {
-    test = value[0][v];
+  for (v in values[0]) {
+    test = values[0][v];
     retval.pass = retval.pass + test.pass;
     retval.fail = retval.fail + test.fail;
     retval.todo = retval.todo + test.todo;    
