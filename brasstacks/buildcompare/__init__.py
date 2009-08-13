@@ -15,6 +15,8 @@ from webenv.rest import RestApplication
 template_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 design_doc = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'views')
 
+
+
 class MakoResponse(HtmlResponse):
   def __init__(self, name, **kwargs):
     # mylookup = TemplateLookup() # TODO: have a base template for a uniform page layout
@@ -31,23 +33,20 @@ class BuildCompareApplication(RestApplication):
   def GET(self, request, collection=None, resource=None):
     if collection is None:
       
-      products = self.db.views.metadata.products(reduce = True, group = True)['rows']
-      testtypes = self.db.views.metadata.testtypes(reduce = True, group = True)['rows']
-      oses = self.db.views.metadata.operatingsystems(reduce = True, group = True)['rows']
+      products = self.db.views.fennecResults.productCounts(reduce = True, group = True)['rows']
+      testtypes = self.db.views.fennecResults.testtypeCounts(reduce = True, group = True)['rows']
+      oses = self.db.views.fennecResults.osCounts(reduce = True, group = True)['rows']
+      builds = self.db.views.fennecResults.buildCounts(reduce = True, group = True)['rows']
       
-      builds = self.db.views.metadata.builds(reduce = True, group = True)['rows']
+      summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True)['rows']
       
-      # metadata = 0 # self.db.views.metadata.displayMetadata(reduce = True)
-      summary = self.db.views.results.summary(reduce = True, group = True)['rows']
-      # all = 0 # self.db.views.results.allData(key = 'sampletest')
-      # return MakoResponse("index", products = products, metadata = metadata, testtypes = testtypes, oses = oses, summary = summary, all = all)
       return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
       
     if collection == "build":
       if resource is None:
         return MakoResponse("error", error="no build id input is given")
       else:
-        build = Build(self.db.views.results.allData(key = resource)['rows'])
+        build = Build(self.db.views.fennecResults.entireBuildsById(key = resource)['rows'])
         buildtests = build.getTests()
         return MakoResponse("build", build = build, buildtests = buildtests)
 
@@ -55,7 +54,7 @@ class BuildCompareApplication(RestApplication):
       if resource is None:
         return MakoResponse("error", error="no input is given")
       else:
-        doc1 = self.db.views.results.allData(key=resource)['rows']
+        doc1 = self.db.views.fennecResults.entireBuildsById(key=resource)['rows']
         if doc1 == []:
           return MakoResponse("error", error="build id cannot be found")
         else:
@@ -63,7 +62,7 @@ class BuildCompareApplication(RestApplication):
           if buildid2 == None:
             return MakoResponse("error", error="this build has no prior builds")
           else:
-            doc2 = self.db.views.results.allData(key=buildid2)['rows']
+            doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2)['rows']
             
             build1 = Build(doc1)
             build2 = Build(doc2)
@@ -75,7 +74,7 @@ class BuildCompareApplication(RestApplication):
       if resource is None:
         return MakoResponse("error", error="not implemented yet")
       else:
-        buildsbyproduct = self.db.views.metadata.displayMetadataByProduct(
+        buildsbyproduct = self.db.views.fennecResults.metadataByProduct(
           startkey=[resource, {}],
           endkey=[resource, 0],
           descending=True)['rows']
@@ -92,7 +91,7 @@ class BuildCompareApplication(RestApplication):
         return MakoResponse("error", error="not implemented yet")
       else:
         input = resource.split('+')
-        builds = self.db.views.metadata.metadataAsKeys(
+        builds = self.db.views.fennecResults.buildIdsByMetadata(
           startkey=[input[0], input[1], input[2], {}], 
           endkey=[input[0], input[1], input[2], 0], 
           descending=True)['rows']
@@ -107,8 +106,8 @@ class BuildCompareApplication(RestApplication):
         # else: 
           # return MakoResponse("error", error="inputs cannot be blank")
         
-        doc1 = self.db.views.results.allData(key = id1)['rows']
-        doc2 = self.db.views.results.allData(key = id2)['rows']
+        doc1 = self.db.views.fennecResults.entireBuildsById(key = id1)['rows']
+        doc2 = self.db.views.fennecResults.entireBuildsById(key = id2)['rows']
         
         build1 = Build(doc1)
         build2 = Build(doc2)
@@ -139,7 +138,7 @@ class BuildCompareApplication(RestApplication):
       testtype = doc[0]['value']['testtype']
       timestamp = doc[0]['value']['timestamp']
       
-      similardocs = self.db.views.metadata.metadataAsKeys(
+      similardocs = self.db.views.fennecResults.buildIdsByMetadata(
         startkey=[product, os, testtype, timestamp], 
         endkey=[product, os, testtype, 0], 
         descending=True, 

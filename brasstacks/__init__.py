@@ -79,7 +79,7 @@ def cli():
     import buildcompare
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecBrasstacks", buildcompare.design_doc)
+    db.sync_design_doc("fennecResults", buildcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
