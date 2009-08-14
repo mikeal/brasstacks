@@ -93,7 +93,7 @@ class Cache(dict):
     set = lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
     
 class Stub(RestApplication):
-    def GET(self, request, *args):
+    def GET(self, request):
         html = '<html><head><title>Current Applications on Brasstacks</title><head><body>'
         for application in self.rest_resources.keys():
             html += '<div><a href="/'+application+'">'+application+'</a></div>'
