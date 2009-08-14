@@ -1,20 +1,20 @@
-function (keys, values) {
-
-  //for some reason key is [key, doc._id]
-  //so emit([doc.testtype, doc.build], doc.tests)
-  //doc.build = key[0][0][1]
-  //if (parseInt(key[0][0][1]) > 0) {
-  retval = {};
-  retval["pass"] = 0;
-  retval["fail"] = 0;
-  retval["todo"] = 0;
-  for (v in values[0]) {
-    test = values[0][v];
+function (keys, values, rereduce) {
+  retval = {pass:0, fail:0, todo:0}
+  var doTest = function (test) {
     retval.pass = retval.pass + test.pass;
     retval.fail = retval.fail + test.fail;
-    retval.todo = retval.todo + test.todo;    
+    retval.todo = retval.todo + test.todo;
+  }
+  if (!rereduce) {
+    for (i in values) {
+      for (v in values[i]) {
+        doTest(values[i][v]);
+      }
+    }
+  } else {
+    for (i in values) {
+      doTest(values[i]);
+    }
   }
   return retval;
-  //}
-  //return {};
 }
