@@ -94,7 +94,11 @@ class Cache(dict):
     
 class Stub(RestApplication):
     def GET(self, request, *args):
-        return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
+        html = '<html><head><title>Current Applications on Brasstacks</title><head><body>'
+        for application in self.rest_resources.keys():
+            html += '<div><a href="/'+application+'">'+application+'</a></div>'
+        html += '</body></html>'
+        return webenv.HtmlResponse(html)
 
 application = Stub()
 
