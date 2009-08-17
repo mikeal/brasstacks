@@ -4,6 +4,7 @@
     <title>Fennec</title>
     <script type="text/javascript" src="/static/tablesorter/jquery-latest.js"></script>
     <script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
     <div class="header">
