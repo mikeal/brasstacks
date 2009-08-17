@@ -50,11 +50,13 @@ def get_wsgi_server(db):
     from sitecompare import SiteCompareApplication
     from tcm import TestCaseManagerApplication
     from fennec import FennecApplication
+    from brasstacks.mozmill import MozmillApplication
     a = Stub()
     users_application = UsersApplication(db)
     fennec_application = FennecApplication(db)
     tcm_application = TestCaseManagerApplication(db)
     buildcompare_application = BuildCompareApplication(db)
+    mozmill_application = MozmillApplication(db)
     a.add_resource('sitecompare', SiteCompareApplication(db))
     a.add_resource('users', users_application)
     a.add_resource('fennec', fennec_application)
@@ -62,6 +64,7 @@ def get_wsgi_server(db):
     a.add_resource('static', FileServerApplication(static_dir))
     a.add_resource('users', users_application)
     a.add_resource('buildcompare', buildcompare_application)
+    a.add_resource('mozmill', mozmill_application)
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd    
