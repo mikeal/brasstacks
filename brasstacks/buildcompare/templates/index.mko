@@ -1,6 +1,4 @@
-<html>
-<head><title>Fennec</title></head>
-<body>
+<%inherit file="base.mko"/>
 
 <form method="post" action="/buildcompare/compare">
   <div class="compare-results-form">
@@ -52,6 +50,3 @@
   </tr>
 % endfor
 </table>
-
-</body>
-</html>

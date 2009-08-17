@@ -1,28 +1,25 @@
 import os
+from datetime import datetime
+
 try:
   import json as simplejson
 except ImportError:
   import simplejson
-    
-from datetime import datetime
-from markdown import markdown
 
+from markdown import markdown
 from webenv import HtmlResponse
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from webenv.rest import RestApplication
 
-template_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
-design_doc = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'views')
-
-
+this_directory = os.path.abspath(os.path.dirname(__file__))
+template_dir = os.path.join(this_directory, 'templates')
+design_doc = os.path.join(this_directory, 'views')
+lookup = TemplateLookup(directories=[template_dir], encoding_errors='ignore', input_encoding='utf-8', output_encoding='utf-8')
 
 class MakoResponse(HtmlResponse):
   def __init__(self, name, **kwargs):
-    # mylookup = TemplateLookup() # TODO: have a base template for a uniform page layout
-    # self.body = Template(filename=os.path.join(template_dir, name+'.mko'), lookup=mylookup).render(**kwargs)
-    self.body = Template(filename=os.path.join(template_dir, name+'.mko')).render(**kwargs)
-    # self.body = mylookup.get_template(name + '.mko').render(**kwargs)
+    self.body = lookup.get_template(name + '.mko').render_unicode(**kwargs).encode('utf-8', 'replace')
     self.headers = []
 
 class BuildCompareApplication(RestApplication):
@@ -203,6 +200,7 @@ class Build():
           else:
             if result1['fail'] > result2['fail']:
               prevlynotfails.append({'testfile': testfile, 'delta': result1['fail'] - result2['fail'], 'failnotes': result1['note'].split(', ')})
+              # prevlynotfails.append({'testfile': testfile, 'delta': result1['fail'] - result2['fail'], 'failnotes': result1['note']})
             if result1['pass'] > result2['pass']:
               prevlynotpasses.append(testfile)
             if result1['todo'] > result2['todo']:
@@ -298,6 +296,7 @@ class Test():
     self.totalpass = self.result['pass']
     self.totaltodo = self.result['todo']
     self.notes = self.result['note'].split(',')
+    # self.notes = self.result['note']
   def totaltests():
     return self.totalfail + totalpass + totaltodo
   

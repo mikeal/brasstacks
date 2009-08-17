@@ -1,23 +1,27 @@
 ## base.mko
 <html>
-    <head><title>Fennec</title></head>
-    <body>
-        <div class="header">
-            ${self.header()}
-        </div>
+  <head>
+    <title>Fennec</title>
+    <script type="text/javascript" src="/static/tablesorter/jquery-latest.js"></script>
+    <script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+  </head>
+  <body>
+    <div class="header">
+      ${self.header()}
+    </div>
 
-        ${self.body()}
+    ${self.body()}
 
-        <div class="footer">
-            ${self.footer()}
-        </div>
-    </body>
+    <div class="footer">
+      ${self.footer()}
+    </div>
+  </body>
 </html>
 
 <%def name="header()">
-    this is the header
+  this is the header
 </%def>
 
 <%def name="footer()">
-    this is the footer
+  this is the footer
 </%def>

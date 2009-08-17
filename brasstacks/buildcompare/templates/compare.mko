@@ -1,6 +1,5 @@
-<html>
-<head><title>Fennec</title></head>
-<body>
+<%inherit file="base.mko"/>
+
 <style type="text/css">
 body {
   color:#222222;
@@ -69,6 +68,3 @@ ${doc2.timestamp}<br />
   ${row} <br />
 % endfor
 </div>
-
-</body>
-</html>
