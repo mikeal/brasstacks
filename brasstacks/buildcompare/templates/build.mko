@@ -9,11 +9,17 @@ $(document).ready(function()
 </script>
 
 <div class="results">
+<h2>This Build:</h2>
 ${build.buildid} (<a href="/buildcompare/compare/${build.buildid}">Compare to last</a>)<br />
 ${build.testtype}<br />
 ${build.product}<br />
 ${build.os}<br />
 ${build.timestamp}<br />
+<h2>10 Builds Before:</h2>
+
+% for row in similardocs:
+${row['key'][3]} (<a href="/buildcompare/compare/${build.buildid}&${row['value']}">Compare to this</a>)<br />
+% endfor
 <h2>Tests (test files: ${buildtests.numtestfiles}, 
 tests: ${buildtests.totaltests}, 
 passes: ${buildtests.totalpasses}, 
@@ -24,7 +30,9 @@ todos: ${buildtests.totaltodos}):
   <thead>
   <tr>
     <th>Test</th>
-    <th>Result</th>
+    <th>Fail</th>
+    <th>Pass</th>
+    <th>Todo</th>
     <th>Messages</th>
   </tr>
   </thead>
@@ -32,8 +40,14 @@ todos: ${buildtests.totaltodos}):
 % for (key, value) in buildtests.tests:
   <tr>
     <td>${key}</td>
-    <td>fail: ${value['fail']}, pass: ${value['pass']}, todo: ${value['todo']}</td>
-    <td>${value['note']}</td>
+    <td>${value['fail']}</td>
+    <td>${value['pass']}</td>
+    <td>${value['todo']}</td>
+    <td>
+    % for note in value['note']:
+    ${note}<br />
+    % endfor
+    </td>
   </tr>
 % endfor
   </tbody>

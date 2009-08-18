@@ -43,14 +43,19 @@ class BuildCompareApplication(RestApplication):
       if resource is None:
         return MakoResponse("error", error="no build id input is given")
       else:
-        build = Build(self.db.views.fennecResults.entireBuildsById(key = resource)['rows'])
-        buildtests = build.getTests()
-        return MakoResponse("build", build = build, buildtests = buildtests)
+        doc = self.db.views.fennecResults.entireBuildsById(key = resource)['rows']
+        if doc == []:
+          return MakoResponse("error", error="build id cannot be found")
+        else:
+          similardocs = self.findAllPrevious(doc)
+          build = Build(doc)
+          buildtests = build.getTests()
+          return MakoResponse("build", build = build, buildtests = buildtests, similardocs = similardocs['rows'])
 
     if collection == "compare":
       if resource is None:
         return MakoResponse("error", error="no input is given")
-      else:
+      else:        
         doc1 = self.db.views.fennecResults.entireBuildsById(key=resource)['rows']
         if doc1 == []:
           return MakoResponse("error", error="build id cannot be found")
@@ -116,13 +121,23 @@ class BuildCompareApplication(RestApplication):
         return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
   
   def findPrevious(self, doc):
-    
     # querying must return two results: the current and its previous
-    minlength = 2
-    
+    minlength = 2    
     # when sorted in reverse-chronological order from the current build, 
     # the index of the previous build is 1
     previous = 1
+    
+    similardocs = findAllPrevious(doc)
+    
+    if similardocs == None:
+      return None
+    else:
+      if len(similardocs['rows']) < minlength:
+        return None
+      else:
+        return similardocs['rows'][previous]['value']
+  
+  def findAllPrevious(self, doc):
     
     # max limit of the results
     maxlength = 10
@@ -140,12 +155,9 @@ class BuildCompareApplication(RestApplication):
         endkey=[product, os, testtype, 0], 
         descending=True, 
         limit=maxlength)
-
-      if len(similardocs['rows']) < minlength:
-        return None
-      else:
-        return similardocs['rows'][previous]['value']
-        
+      
+      return similardocs
+      
 class Build():
   def __init__(self, doc):
    
@@ -199,28 +211,28 @@ class Build():
             stabletests.append({'testfile': testfile, 'result': tests1[testfile]})
           else:
             if result1['fail'] > result2['fail']:
-              prevlynotfails.append({'testfile': testfile, 'delta': result1['fail'] - result2['fail'], 'failnotes': result1['note'].split(', ')})
-              # prevlynotfails.append({'testfile': testfile, 'delta': result1['fail'] - result2['fail'], 'failnotes': result1['note']})
+              # prevlynotfails.append({'testfile': testfile, 'delta': result1['fail'] - result2['fail'], 'failnotes': result1['note'].split(', ')})
+              prevlynotfails.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['fail'] - result2['fail']})
             if result1['pass'] > result2['pass']:
-              prevlynotpasses.append(testfile)
+              prevlynotpasses.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['pass'] - result2['pass']})
             if result1['todo'] > result2['todo']:
-              prevlynottodos.append(testfile)
+              prevlynottodos.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['todo'] - result2['todo']})
         
         elif sum1 < sum2:
           if result1['fail'] < result2['fail']:
-            missingfails.append(testfile)
+            missingfails.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result2['fail'] - result1['fail']})
           if result1['pass'] < result2['pass']:
-            missingpasses.append(testfile)
+            missingpasses.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result2['fail'] - result1['fail']})
           if result1['todo'] < result2['todo']:
-            missingtodos.append(testfile)
+            missingtodos.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result2['fail'] - result1['fail']})
         
         else:
           if result1['fail'] > result2['fail']:
-            newfails.append(testfile)
+            newfails.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['fail'] - result2['fail']})
           if result1['pass'] > result2['pass']:
-            newpasses.append(testfile)
+            newpasses.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['fail'] - result2['fail']})
           if result1['todo'] > result2['todo']:
-            newtodos.append(testfile)
+            newtodos.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['fail'] - result2['fail']})
 
         del tests2[testfile]
     
@@ -295,8 +307,8 @@ class Test():
     self.totalfail = self.result['fail']
     self.totalpass = self.result['pass']
     self.totaltodo = self.result['todo']
-    self.notes = self.result['note'].split(',')
-    # self.notes = self.result['note']
+    # self.notes = self.result['note'].split(',')
+    self.notes = self.result['note']
   def totaltests():
     return self.totalfail + totalpass + totaltodo
   
