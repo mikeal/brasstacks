@@ -1,13 +1,10 @@
-<html>
-<head><title>Fennec</title></head>
-<body>
-<style type="text/css">
-body {
-  color:#222222;
-  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
-  font-size:18px;
-}
-</style>
-<div class="results">${builds}</div>
-</body>
-</html>
+<%inherit file="base.mko"/>
+
+<div class="results">
+${len(builds)}
+% for build in builds:
+  ${build['key']} 
+  <a href="/buildcompare/build/${build['value']}">${build['value']}</a> 
+  (<a href="/buildcompare/compare/${build['value']}">Compare to last</a>)<br />
+% endfor 
+</div>

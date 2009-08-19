@@ -30,7 +30,7 @@
   </a>(${build['value']})<br />
 % endfor
 </div>
-
+<%doc>
 <table class="results">
   <tr>
     <th>Build ID</th>
@@ -50,3 +50,4 @@
   </tr>
 % endfor
 </table>
+</%doc>

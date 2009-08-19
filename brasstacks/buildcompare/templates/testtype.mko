@@ -1,11 +1,11 @@
 <%inherit file="base.mko"/>
-<h2>${buildsbyproduct[0]['key'][0]}: ${len(buildsbyproduct)}</h2>
+<h2>${buildsbytesttype[0]['key'][0]}: ${len(buildsbytesttype)}</h2>
 <table class="results">
   <tr>
     <th>Build ID</th>
     <th>Metadata</th>
   </tr>
-% for row in buildsbyproduct:
+% for row in buildsbytesttype:
   <tr>
     <td><a href="/buildcompare/build/${row['value']['buildid']}">${row['value']['buildid']}</a></td>
     <td>

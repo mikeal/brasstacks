@@ -1,70 +1,98 @@
 <%inherit file="base.mko"/>
 
-<style type="text/css">
-body {
-  color:#222222;
-  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
-  font-size:18px;
-}
-</style>
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("#compareTable").tablesorter(); 
+    } 
+);
+</script>
 
 <h2>Build 1:</h2>
-<div class="header">
 <a href="/buildcompare/build/${doc1.buildid}">${doc1.buildid}</a><br />
 ${doc1.testtype}<br />
 ${doc1.product}<br />
 ${doc1.os}<br />
 ${doc1.timestamp}<br />
-</div>
-<br />
+
 <h2>Build 2:</h2>
-<div class="header">
 <a href="/buildcompare/build/${doc2.buildid}">${doc2.buildid}</a><br />
 ${doc2.testtype}<br />
 ${doc2.product}<br />
 ${doc2.os}<br />
 ${doc2.timestamp}<br />
-</div>
+
 <h2>Comparison:</h2>
 
-<h3>New tests that failed (${len(answer['newfails'])}):</h3>
-<div class="header">
-% for row in answer['newfails']:
-  ${row} <br />
-% endfor
-</div>
+newtestfiles: ${len(answer['newtestfiles'])} <br />
+missingtestfiles: ${len(answer['missingtestfiles'])} <br />
+stabletests: ${len(answer['stabletests'])} <br />
+
+prevlynotfails: ${len(answer['prevlynotfails'])} <br />
+prevlynotpasses: ${len(answer['prevlynotpasses'])} <br />
+prevlynottodos: ${len(answer['prevlynottodos'])} <br />
+
+missingfails: ${len(answer['missingfails'])} <br />
+missingpasses: ${len(answer['missingpasses'])} <br />
+missingtodos: ${len(answer['missingtodos'])} <br />
+
+newfails: ${len(answer['newfails'])} <br />
+newpasses: ${len(answer['newpasses'])} <br />
+newtodos: ${len(answer['newtodos'])} <br />
+
+
+<h2>Comparison Detail:</h2>
+
+<h3>New failures (${len(answer['newfails'])}):</h3>
+
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Test</th>
+      <th>Delta</th>
+      <th>build 1</th>
+      <th>build 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['newfails']:
+    <tr>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>${row['result1']['fail']} ${row['result1']['pass']} ${row['result1']['todo']}</td>
+      <td>${row['result2']['fail']} ${row['result2']['pass']} ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
 
 <h3>Missing passes (${ len(answer['missingpasses']) }):</h3>
-<div class="header">
+
 % for row in answer['missingpasses']:
   ${row} <br />
 % endfor
-</div>
 
 <h3>Tests that did not pass in build 2 (${ len(answer['prevlynotpasses']) }):</h3>
-<div class="header">
+
 % for row in answer['prevlynotpasses']:
   ${row} <br />
 % endfor
-</div>
+
 
 <h3>Tests that did not fail in build 2 (${ len(answer['prevlynotfails']) }):</h3>
-<div class="header">
+
 % for row in answer['prevlynotfails']:
   ${row} <br />
 % endfor
-</div>
 
 <h3>Missing test files: (${ len(answer['missingtestfiles']) }):</h3>
-<div class="header">
+
 % for row in answer['missingtestfiles']:
   ${row} <br />
 % endfor
-</div>
 
 <h3>Tests that haven't changed: (${ len(answer['stabletests']) }):</h3>
-<div class="header">
+
 % for row in answer['stabletests']:
   ${row} <br />
 % endfor
-</div>

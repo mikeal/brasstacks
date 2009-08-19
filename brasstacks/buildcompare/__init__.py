@@ -15,6 +15,7 @@ from webenv.rest import RestApplication
 this_directory = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(this_directory, 'templates')
 design_doc = os.path.join(this_directory, 'views')
+testdesign_doc = os.path.join(this_directory, 'testviews')
 lookup = TemplateLookup(directories=[template_dir], encoding_errors='ignore', input_encoding='utf-8', output_encoding='utf-8')
 
 class MakoResponse(HtmlResponse):
@@ -26,7 +27,7 @@ class BuildCompareApplication(RestApplication):
   def __init__(self, db):
     super(BuildCompareApplication, self).__init__()
     self.db = db
-
+  
   def GET(self, request, collection=None, resource=None):
     if collection is None:
       
@@ -35,9 +36,9 @@ class BuildCompareApplication(RestApplication):
       oses = self.db.views.fennecResults.osCounts(reduce = True, group = True)['rows']
       builds = self.db.views.fennecResults.buildCounts(reduce = True, group = True)['rows']
       
-      summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True)['rows']
-      
-      return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
+      # summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True)['rows']
+      return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds)
+      # return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
       
     if collection == "build":
       if resource is None:
@@ -47,30 +48,38 @@ class BuildCompareApplication(RestApplication):
         if doc == []:
           return MakoResponse("error", error="build id cannot be found")
         else:
-          similardocs = self.findAllPrevious(doc)
+          similardocs = self.find10Previous(doc)
           build = Build(doc)
           buildtests = build.getTests()
-          return MakoResponse("build", build = build, buildtests = buildtests, similardocs = similardocs['rows'])
+          return MakoResponse("build", build = build, buildtests = buildtests, similardocs = similardocs)
 
     if collection == "compare":
       if resource is None:
         return MakoResponse("error", error="no input is given")
-      else:        
-        doc1 = self.db.views.fennecResults.entireBuildsById(key=resource)['rows']
-        if doc1 == []:
-          return MakoResponse("error", error="build id cannot be found")
-        else:
-          buildid2 = self.findPrevious(doc1)
-          if buildid2 == None:
-            return MakoResponse("error", error="this build has no prior builds")
+      else:
+        inputs = resource.split('&')
+        
+        if len(inputs) == 1:
+          doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0])['rows']
+          if doc1 == []:
+            return MakoResponse("error", error="build id cannot be found")
           else:
-            doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2)['rows']
-            
-            build1 = Build(doc1)
-            build2 = Build(doc2)
-            
-            answer = build1.compare(build2)
-            return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
+            buildid2 = self.findPrevious(doc1)
+            if buildid2 == None:
+              return MakoResponse("error", error="this build has no prior builds")
+            else:
+              doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2)['rows']
+        elif len(inputs) == 2:
+          doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0])['rows']
+          doc2 = self.db.views.fennecResults.entireBuildsById(key=inputs[1])['rows']
+          if doc1 == [] or doc2 == []:
+            return MakoResponse("error", error="build ids cannot be found")
+        
+        build1 = Build(doc1)
+        build2 = Build(doc2)
+        
+        answer = build1.compare(build2)
+        return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
 
     if collection == "product":
       if resource is None:
@@ -83,10 +92,24 @@ class BuildCompareApplication(RestApplication):
         return MakoResponse("product", buildsbyproduct=buildsbyproduct)
 
     if collection == "testtype":
-      return MakoResponse("error", error="not implemented yet")
+      if resource is None:
+        return MakoResponse("error", error="not implemented yet")
+      else:
+        buildsbytesttype = self.db.views.fennecResults.metadataByTesttype(
+          startkey=[resource, {}],
+          endkey=[resource, 0],
+          descending=True)['rows']
+        return MakoResponse("testtype", buildsbytesttype=buildsbytesttype)
 
     if collection == "platform":
-      return MakoResponse("error", error="not implemented yet")
+      if resource is None:
+        return MakoResponse("error", error="not implemented yet")
+      else:
+        buildsbyplatform = self.db.views.fennecResults.metadataByPlatform(
+          startkey=[resource, {}],
+          endkey=[resource, 0],
+          descending=True)['rows']
+        return MakoResponse("platform", buildsbyplatform=buildsbyplatform)
 
     if collection == "builds":
       if resource is None:
@@ -98,7 +121,16 @@ class BuildCompareApplication(RestApplication):
           endkey=[input[0], input[1], input[2], 0], 
           descending=True)['rows']
         return MakoResponse("builds", builds=builds)
-  
+    if collection == "test":
+      if resource is None:
+        return MakoResponse("error", error="not implemented yet")
+      else:
+        results = self.db.views.fennecResults.tests(
+          startkey=[resource, {}], 
+          endkey=[resource, 0], 
+          descending=True)['rows']
+        return MakoResponse("test", results=results)
+      
   def POST(self, request, collection = None, resource = None):
     if collection == "compare":
       if request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
@@ -120,27 +152,11 @@ class BuildCompareApplication(RestApplication):
           answer = build1.compare(build2)        
         return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
   
-  def findPrevious(self, doc):
-    # querying must return two results: the current and its previous
-    minlength = 2    
-    # when sorted in reverse-chronological order from the current build, 
-    # the index of the previous build is 1
-    previous = 1
-    
-    similardocs = findAllPrevious(doc)
-    
-    if similardocs == None:
-      return None
-    else:
-      if len(similardocs['rows']) < minlength:
-        return None
-      else:
-        return similardocs['rows'][previous]['value']
-  
-  def findAllPrevious(self, doc):
-    
+  def find10Previous(self, doc):
     # max limit of the results
-    maxlength = 10
+    length = 11
+    # entry of self
+    selfentry = 0
     
     if doc == []:
       return None
@@ -154,10 +170,29 @@ class BuildCompareApplication(RestApplication):
         startkey=[product, os, testtype, timestamp], 
         endkey=[product, os, testtype, 0], 
         descending=True, 
-        limit=maxlength)
+        limit=length)['rows']
       
+      if len(similardocs) > 0:
+        del similardocs[selfentry]
       return similardocs
-      
+  
+  def findPrevious(self, doc):
+    # querying must return one result: its previous
+    minlength = 1
+    # when sorted in reverse-chronological order from the current build, 
+    # the index of the previous build is 0
+    previous = 0
+    
+    similardocs = self.find10Previous(doc)
+    
+    if similardocs == None:
+      return None
+    else:
+      if len(similardocs) < minlength:
+        return None
+      else:
+        return similardocs[previous]['value']
+
 class Build():
   def __init__(self, doc):
    

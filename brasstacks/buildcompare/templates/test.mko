@@ -1,16 +1,7 @@
-<html>
-<head><title>Fennec</title></head>
+<%inherit file="base.mko"/>
 
-<body>
-
-<style type="text/css">
-body {
-  color:#222222;
-  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
-  font-size:18px;
-}
-</style>
-
-${repr(test)}
-
-</body>
+<div class="results">
+% for result in results:
+ ${result['value'][0]} ${result['value'][1]} ${result['value'][2]} ${result['value'][3]} ${result['value'][4]['fail']} ${result['value'][4]['pass']} ${result['value'][4]['todo']} <br />
+% endfor
+</div>

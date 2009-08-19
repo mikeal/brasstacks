@@ -20,7 +20,7 @@
 </html>
 
 <%def name="header()">
-  this is the header
+  <a href="/buildcompare">BuildCompare</a>
 </%def>
 
 <%def name="footer()">
