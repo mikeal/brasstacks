@@ -21,6 +21,13 @@
 
 <%def name="header()">
   <a href="/buildcompare">BuildCompare</a>
+  <form method="post" action="/buildcompare/compare">
+  <div class="compare-results-form">
+    <input type="text" name="buildid1" style="width: 300px;" value="Build ID 1"/><br>
+    <input type="text" name="buildid2" style="width: 300px;" value="Build ID 2"/><br>
+    <input type="submit" value="Compare them"/>
+  </div>
+  </form>
 </%def>
 
 <%def name="footer()">

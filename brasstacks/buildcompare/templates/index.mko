@@ -1,13 +1,5 @@
 <%inherit file="base.mko"/>
 
-<form method="post" action="/buildcompare/compare">
-  <div class="compare-results-form">
-    <input type="text" name="buildid1" style="width: 300px;" value="Build ID 1"/><br>
-    <input type="text" name="buildid2" style="width: 300px;" value="Build ID 2"/><br>
-    <input type="submit" value="Compare them"/>
-  </div>
-</form>
-
 <div class="results">Products: 
 % for prod in products:
   <a href="/buildcompare/product/${prod['key']}">${prod['key']}</a> (${prod['value']}), 
