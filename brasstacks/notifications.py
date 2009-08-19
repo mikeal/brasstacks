@@ -28,7 +28,7 @@ def send_email(to, subject, text):
 # class TicketApplication(RestApplication):
 #     def __init__(self, dburl):
 #         super(self, RestApplication).__init__(self)
-#         self.db = couchquery.CouchDatabase(dburl)
+#         self.db = couchquery.Database(dburl)
 #         # self.db.sync_design_doc("tickets", os.path.join(this_dir, 'ticketviews'))
 #     
 #     def GET(self, request, uuid):

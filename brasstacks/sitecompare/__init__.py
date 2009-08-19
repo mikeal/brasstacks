@@ -139,9 +139,9 @@ class SiteCompareApplication(RestApplication):
 #     import sys
 #     db = [i for i in sys.argv if i.startswith('http')]
 #     if len(db) is 1:
-#         db = couchquery.CouchDatabase(db[0])
+#         db = couchquery.Database(db[0])
 #     else:
-#         db = couchquery.CouchDatabase('http://localhost:5984/sitecompare')
+#         db = couchquery.Database('http://localhost:5984/sitecompare')
 #     import brasstacks
 #     db.sync_design_doc("sitecompare", design_doc)
 #     db.sync_design_doc("brasstacks", brasstacks.design_doc)

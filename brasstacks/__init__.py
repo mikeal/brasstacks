@@ -72,9 +72,9 @@ def get_wsgi_server(db):
 def cli():
     db = [i for i in sys.argv if i.startswith('http')]
     if len(db) is 1:
-        db = couchquery.CouchDatabase(db[0], cache=Cache())
+        db = couchquery.Database(db[0], cache=Cache())
     else:
-        db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
+        db = couchquery.Database('http://localhost:5984/brasstacks')
     import sitecompare
     import fennec
     import tcm
@@ -113,7 +113,7 @@ def sync():
     import fennec
     import buildcompare
     import tcm
-    db = couchquery.CouchDatabase(db)
+    db = couchquery.Database(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
     db.sync_design_doc("fennecResults", buildcompare.design_doc)
