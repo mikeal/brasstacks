@@ -50,11 +50,13 @@ def get_wsgi_server(db):
     from sitecompare import SiteCompareApplication
     from tcm import TestCaseManagerApplication
     from fennec import FennecApplication
+    from brasstacks.mozmill import MozmillApplication
     a = Stub()
     users_application = UsersApplication(db)
     fennec_application = FennecApplication(db)
     tcm_application = TestCaseManagerApplication(db)
     buildcompare_application = BuildCompareApplication(db)
+    mozmill_application = MozmillApplication(db)
     a.add_resource('sitecompare', SiteCompareApplication(db))
     a.add_resource('users', users_application)
     a.add_resource('fennec', fennec_application)
@@ -62,6 +64,7 @@ def get_wsgi_server(db):
     a.add_resource('static', FileServerApplication(static_dir))
     a.add_resource('users', users_application)
     a.add_resource('buildcompare', buildcompare_application)
+    a.add_resource('mozmill', mozmill_application)
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd    
@@ -69,9 +72,9 @@ def get_wsgi_server(db):
 def cli():
     db = [i for i in sys.argv if i.startswith('http')]
     if len(db) is 1:
-        db = couchquery.CouchDatabase(db[0], cache=Cache())
+        db = couchquery.Database(db[0], cache=Cache())
     else:
-        db = couchquery.CouchDatabase('http://localhost:5984/brasstacks')
+        db = couchquery.Database('http://localhost:5984/brasstacks')
     import sitecompare
     import fennec
     import tcm
@@ -93,8 +96,12 @@ class Cache(dict):
     set = lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
     
 class Stub(RestApplication):
-    def GET(self, request, *args):
-        return webenv.HtmlResponse('<html><head><title>Nope.</title></head><body>Nope.</body></html>')
+    def GET(self, request):
+        html = '<html><head><title>Current Applications on Brasstacks</title><head><body>'
+        for application in self.rest_resources.keys():
+            html += '<div><a href="/'+application+'">'+application+'</a></div>'
+        html += '</body></html>'
+        return webenv.HtmlResponse(html)
 
 application = Stub()
 
@@ -106,7 +113,7 @@ def sync():
     import fennec
     import buildcompare
     import tcm
-    db = couchquery.CouchDatabase(db)
+    db = couchquery.Database(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
     db.sync_design_doc("fennecResults", buildcompare.design_doc)

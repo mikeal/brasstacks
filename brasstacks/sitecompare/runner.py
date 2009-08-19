@@ -364,15 +364,15 @@ class CLI(object):
             store = True
 
         if options.report is None:
-            db = couchquery.CouchDatabase("http://127.0.0.1:5984/sitecompare")
+            db = couchquery.Database("http://127.0.0.1:5984/sitecompare")
         else:
             if '@' in options.report:
                 user, password = options.report.strip('http://').split('@')[0].split(':')
                 url = 'http://'+options.report.split('@')[1]
                 http = httplib2.Http('.cache')
                 http.add_credentials(user, password)
-                db = couchquery.CouchDatabase(url, http=http)
-            else: db = couchquery.CouchDatabase(options.report)
+                db = couchquery.Database(url, http=http)
+            else: db = couchquery.Database(options.report)
 
         c = CompareSites(runner1, runner2, options.report, self.run_info, all_sites=all_sites, store=store, db=db)
         c.start()
@@ -468,15 +468,15 @@ def html4v5():
 #         store = True
 #     
 #     if options.report is None:
-#         db = couchquery.CouchDatabase("http://127.0.0.1:5984/sitecompare")
+#         db = couchquery.Database("http://127.0.0.1:5984/sitecompare")
 #     else:
 #         if '@' in options.report:
 #             user, password = options.report.strip('http://').split('@')[0].split(':')
 #             url = 'http://'+options.report.split('@')[1]
 #             http = httplib2.Http('.cache')
 #             http.add_credentials(user, password)
-#             db = couchquery.CouchDatabase(url, http=http)
-#         else: db = couchquery.CouchDatabase(options.report)
+#             db = couchquery.Database(url, http=http)
+#         else: db = couchquery.Database(options.report)
 #     
 #     c = CompareSites(runner1, runner2, options.report, all_sites=all_sites, store=store, db=db)
 #     c.start()
