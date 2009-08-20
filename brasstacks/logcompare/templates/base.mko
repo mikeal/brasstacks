@@ -25,7 +25,7 @@
     - A tool to display test results initially stored in log files at 
     <a href="http://tinderbox.mozilla.org/showbuilds.cgi?tree=Mobile">Tinderbox</a> 
     (<a href="http://tinderbox.mozilla.org/showlog.cgi?log=Mobile/1250755161.1250764588.16311.gz&fulltext=1">example</a>) 
-    in a more useful structure
+    in a more useful structure (currently using sample data)
   <div>
   <form method="post" action="/logcompare/compare">
   <div class="compare-results-form">
@@ -37,5 +37,8 @@
 </%def>
 
 <%def name="footer()">
-  this is the footer
+  footer
+  % if latency is not NoneType:
+    latency: ${latency}
+  % endif
 </%def>

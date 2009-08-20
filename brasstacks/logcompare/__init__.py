@@ -22,23 +22,32 @@ class MakoResponse(HtmlResponse):
   def __init__(self, name, **kwargs):
     self.body = lookup.get_template(name + '.mko').render_unicode(**kwargs).encode('utf-8', 'replace')
     self.headers = []
-
+    
+class LogCompareResponse(HtmlResponse):
+  def __init__(self, name, starttime=None, **kwargs):
+    if starttime is None:
+      kwargs['latency'] = starttime
+    else:
+      kwargs['latency'] = datetime.now() - starttime
+    self.body = lookup.get_template(name + '.mko').render_unicode(**kwargs).encode('utf-8', 'replace')
+    self.headers = []
+    
 class LogCompareApplication(RestApplication):
   def __init__(self, db):
     super(LogCompareApplication, self).__init__()
     self.db = db
   
   def GET(self, request, collection=None, resource=None):
+    starttime = datetime.now()
     if collection is None:
-      
       products = self.db.views.fennecResults.productCounts(reduce = True, group = True)['rows']
       testtypes = self.db.views.fennecResults.testtypeCounts(reduce = True, group = True)['rows']
       oses = self.db.views.fennecResults.osCounts(reduce = True, group = True)['rows']
       builds = self.db.views.fennecResults.buildCounts(reduce = True, group = True)['rows']
-      
       summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True)['rows']
-      # return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds)
+      
       return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
+      # return LogCompareResponse("index", starttime, products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
       
     if collection == "build":
       if resource is None:
