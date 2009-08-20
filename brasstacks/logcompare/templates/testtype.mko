@@ -1,0 +1,19 @@
+<%inherit file="base.mko"/>
+<h2>${buildsbytesttype[0]['key'][0]}: ${len(buildsbytesttype)}</h2>
+<table class="results">
+  <tr>
+    <th>Build ID</th>
+    <th>Metadata</th>
+  </tr>
+% for row in buildsbytesttype:
+  <tr>
+    <td>
+      <a href="/logcompare/build/${row['value']['buildid']}">See details</a>
+      <a href="/logcompare/compare/${row['value']['buildid']}">(Compare to last)</a>
+    </td>
+    <td>
+      ${row['value']['testtype']}, ${row['value']['product']}, ${row['value']['os']}, ${row['value']['timestamp']} 
+    </td>
+  </tr>
+% endfor
+</table>

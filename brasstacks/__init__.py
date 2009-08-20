@@ -45,7 +45,7 @@ static_dir = os.path.join(this_dir, 'static')
 
 
 def get_wsgi_server(db):
-    from buildcompare import BuildCompareApplication
+    from logcompare import LogCompareApplication
     from users import UsersApplication
     from sitecompare import SiteCompareApplication
     from tcm import TestCaseManagerApplication
@@ -55,7 +55,7 @@ def get_wsgi_server(db):
     users_application = UsersApplication(db)
     fennec_application = FennecApplication(db)
     tcm_application = TestCaseManagerApplication(db)
-    buildcompare_application = BuildCompareApplication(db)
+    logcompare_application = LogCompareApplication(db)
     mozmill_application = MozmillApplication(db)
     a.add_resource('sitecompare', SiteCompareApplication(db))
     a.add_resource('users', users_application)
@@ -63,7 +63,7 @@ def get_wsgi_server(db):
     a.add_resource('tcm', tcm_application)
     a.add_resource('static', FileServerApplication(static_dir))
     a.add_resource('users', users_application)
-    a.add_resource('buildcompare', buildcompare_application)
+    a.add_resource('logcompare', logcompare_application)
     a.add_resource('mozmill', mozmill_application)
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
@@ -79,10 +79,10 @@ def cli():
     import fennec
     import tcm
     import brasstacks
-    import buildcompare
+    import logcompare
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecResults", buildcompare.design_doc)
+    db.sync_design_doc("fennecResults", logcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
@@ -111,10 +111,10 @@ def sync():
     import sitecompare
     import brasstacks
     import fennec
-    import buildcompare
+    import logcompare
     import tcm
     db = couchquery.Database(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecResults", buildcompare.design_doc)
+    db.sync_design_doc("fennecResults", logcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)

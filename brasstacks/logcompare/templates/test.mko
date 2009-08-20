@@ -1,0 +1,7 @@
+<%inherit file="base.mko"/>
+
+<div class="results">
+% for result in results:
+ ${result['value'][0]} ${result['value'][1]} ${result['value'][2]} ${result['value'][3]} ${result['value'][4]['fail']} ${result['value'][4]['pass']} ${result['value'][4]['todo']} <br />
+% endfor
+</div>
