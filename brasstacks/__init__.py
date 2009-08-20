@@ -2,6 +2,7 @@ import os, sys
 
 from webenv.rest import RestApplication
 from webenv.applications.file_server import FileServerApplication
+from webenv import Response404
 import webenv
 import couchquery
 
@@ -96,7 +97,9 @@ class Cache(dict):
     set = lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
     
 class Stub(RestApplication):
-    def GET(self, request):
+    def GET(self, request, favicon=None):
+        if favicon:
+            return Response404('not found')
         html = '<html><head><title>Current Applications on Brasstacks</title><head><body>'
         for application in self.rest_resources.keys():
             html += '<div><a href="/'+application+'">'+application+'</a></div>'
