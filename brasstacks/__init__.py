@@ -81,10 +81,7 @@ def cli():
     import tcm
     import brasstacks
     import buildcompare
-    db.sync_design_doc("sitecompare", sitecompare.design_doc)
-    db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecResults", buildcompare.design_doc)
-    db.sync_design_doc("tcm", tcm.design_doc)
+    sync(db)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()
@@ -108,16 +105,17 @@ class Stub(RestApplication):
 
 application = Stub()
 
-def sync():
-    import sys
-    db = sys.argv[-1]
+def sync(db=None):
+    if db is None:
+        import sys
+        db = couchquery.Database(sys.argv[-1])
     import sitecompare
     import brasstacks
     import fennec
     import buildcompare
     import tcm
-    db = couchquery.Database(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
     db.sync_design_doc("fennecResults", buildcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
+    db.sync_design_doc("tcmTags", tcm.tags_design_doc)

@@ -1,0 +1,19 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+  <script type="text/javascript" src="/static/jquery-1.3.1.js" ></script>
+  <script type="text/javascript" src="/static/tagcloud/scripts/jquery.tagcloud.js" ></script>
+  <script type="text/javascript" src="/static/tagcloud/scripts/jquery.tinysort.min.js" ></script>
+  
+  
+  <ul id="tagcloud">
+% for tag, count in tags:
+		<li value="${count}"><a href="/tcm/tags/${tag}">${tag}</a> </li>
+% endfor
+	</ul>
+  
+  <script type="text/javascript">
+  $("#tagcloud").tagcloud({type:"list",sizemin:8}).find("li").tsort();;
+  </script>
+  
+</%def>

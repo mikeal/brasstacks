@@ -77,8 +77,8 @@ else:
 % endif
 
 <script type="text/javascript">
-var _id = ${simplejson.dumps(testcase['_id'])};
-var _rev = ${simplejson.dumps(testcase['_rev'])};
+var _id = ${json.dumps(testcase['_id'])};
+var _rev = ${json.dumps(testcase['_rev'])};
 
 editTitle = function () {
   $('#testcase-title').hide();

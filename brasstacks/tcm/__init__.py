@@ -7,12 +7,13 @@ from mako.lookup import TemplateLookup
 from markdown2 import markdown
 from cgi import escape
 try:
-    import json as simplejson
+    import json
 except:
-    import simplejson
+    import simplejson as json
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 design_doc = os.path.join(this_directory, 'views')
+tags_design_doc = os.path.join(this_directory, 'tagViews')
 
 lookup = TemplateLookup(directories=[os.path.join(this_directory, 'templates')], encoding_errors='ignore', input_encoding='utf-8', output_encoding='utf-8')
 
@@ -31,14 +32,14 @@ def get_locale(request):
 class MakoResponse(HtmlResponse):
     def __init__(self, name, **kwargs):
         template = lookup.get_template(name+'.mko')
-        kwargs['simplejson'] = simplejson
+        kwargs['json'] = json
         self.body = template.render_unicode(**kwargs).encode('utf-8', 'replace')
         self.headers = []
         
 class JSONResponse(Response):
     content_type = 'application/json'
     def __init__(self, obj):
-        self.body = simplejson.dumps(obj)
+        self.body = json.dumps(obj)
         self.headers = []
 
 class TestCaseManagerProducts(RestApplication):
@@ -64,7 +65,7 @@ class TestCaseManagerAPI(RestApplication):
                 rev = request.query['rev']
                 doc = self.db.get(resource)
                 assert rev == doc._rev
-                changes = simplejson.loads(str(request.body))
+                changes = json.loads(str(request.body))
                 if changes.has_key('tags'):
                     changes['tags'] = [t.replace(' ', '') for t in changes['tags']]
                 if changes.has_key('description_raw'):
@@ -81,22 +82,50 @@ class TestCaseManagerAPI(RestApplication):
                 info = self.db.save(doc)
                 return JSONResponse(self.db.get(info['id']))
 
+
+class TestCaseManagerTags(RestApplication):
+    def __init__(self, db):
+        super(TestCaseManagerTags, self).__init__()
+        self.db = db
+    def GET(self, request, tags=None, collection=None):
+        if tags is None:
+            rows = self.db.views.tcmTags.tagCount(group=True)
+            return MakoResponse('tags', tags=rows.items())
+        elif tags == "collection":
+            if collection is None:
+                pass
+                # collection index
+            else:
+                pass
+                # view for collection
+        else:
+            pass
+            # view for tag
+
 class TestCaseManagerApplication(RestApplication):
     def __init__(self, db):
         super(TestCaseManagerApplication, self).__init__()
         self.db = db
         self.add_resource('products', TestCaseManagerProducts(self.db))
         self.add_resource('api', TestCaseManagerAPI(self.db))
+        self.add_resource('tags', TestCaseManagerTags(self.db))
     def GET(self, request, collection=None, resource=None, force_locale=None):
-        if force_locale is not None:
+        if force_locale is not None and force_locale != 'advanced':
             locale = force_locale
         else: 
             locale = get_locale(request)
         
+        if force_locale == 'advanced':
+            advanced = True
+            force_locale = None
+        else:
+            advanced = False
+        
         if collection is None:
             return MakoResponse('index', locale=locale, force_locale=force_locale)
         if collection == 'write_test':
-            return MakoResponse('simple_editor', product=None, locale=locale, force_locale=force_locale)
+            return MakoResponse('simple_editor', product=None, locale=locale, force_locale=force_locale, 
+                                advanced=advanced)
         if collection == "testcase":
             if resource is None:
                 kwargs = {"descending":True, "limit":20}
@@ -106,14 +135,14 @@ class TestCaseManagerApplication(RestApplication):
                     for product in products
                 ])
                 return MakoResponse("testcases", latest=latest, products=products, locale=locale,
-                                    force_locale=force_locale)
+                                    force_locale=force_locale,)
             else:
                 if resource in products:
                     return MakoResponse("testcasesForProduct", product=resource,
                                         testcases=self.db.views.tcm.casesByProduct(key=resource).rows,
-                                        locale=locale, force_locale=force_locale)
+                                        locale=locale, force_locale=force_locale,)
                 return MakoResponse("testcase", testcase=self.db.get(resource), locale=locale,
-                                    force_locale=force_locale)
+                                    force_locale=force_locale, advanced=advanced)
     def POST(self, request, collection=None, force_locale=None):
         if force_locale is not None:
             locale = force_locale
