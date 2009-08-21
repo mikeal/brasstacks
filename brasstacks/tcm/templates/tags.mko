@@ -13,7 +13,7 @@
 	</ul>
   
   <script type="text/javascript">
-  $("#tagcloud").tagcloud({type:"list",sizemin:8}).find("li").tsort();;
+  $("#tagcloud").tagcloud({type:"list",sizemin:14,sizemax:70,height:"auto",}).find("li").tsort();
   </script>
   
 </%def>
