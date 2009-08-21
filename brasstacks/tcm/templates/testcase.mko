@@ -23,6 +23,11 @@ table {
   color:#222222;
   font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
 }
+.cell-tags {
+  font-size:20px;
+  color:#222222;
+  font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+}
 textarea.cell-description {
   font-size:18px;
   background-color:#FFFFFF;
@@ -133,6 +138,38 @@ saveDesc = function () {
   jQuery.ajax(options);
 }
 
+editTags = function () {
+  var d = document.getElementById('tags');
+  var e = document.getElementById('tags-edit');
+  e.style.width = d.offsetWidth;
+  e.style.height = d.offsetHeight;
+  $('#tags-row').hide();
+  $('#tags-edit-row').show();
+}
+saveTags = function () {
+  var t = document.getElementById('tags-edit');
+  options = {
+    url : '/tcm/api/editcase/${testcase._id}?rev='+_rev,
+    data : JSON.stringify({tags:t.value.split(',')}),
+    dataTyle : 'text',
+    error : function (xhttp, status, err) {
+      // TODO: populate the error screen
+    },
+    success: function (data, status) {
+      result = JSON.parse(data);
+      _rev = result._rev
+      document.getElementById('tags').innerHTML = result['tags'].join(', ')
+      document.getElementById('tags-edit').value = result['tags'].join(', ')
+      $('#tags-edit-row').hide();
+      $('#tags-row').show();
+    },
+    type: 'PUT',
+  },
+  jQuery.ajax(options);
+}
+
+
+
 newLocale = function () {
   l = document.getElementById('new-locale').value;
   // if (l.length == 0) {
@@ -182,9 +219,9 @@ $(document).ready( function () {
     </td>
     <td class="edit" valign="top"><a href="#" onclick="saveDesc()">save</a></td>
   </tr>
-  <tr class="tags-row">
+  <tr class="tags-row" id="tags-row">
     <td class="cell-name" class="tags"></td>
-    <td class="tags" class="cell-tags">
+    <td class="tags" id="tags" class="cell-tags">
 % if len(testcase.tags) is 0:
       No Tags
 % else:
@@ -193,13 +230,23 @@ $(document).ready( function () {
   % endfor
 % endif
     </td>
-    <td class="edit"><a href="" id="edit-tags">edit</a></td>
+    <td class="edit"><a href="#" id="edit-tags" onclick="editTags()">edit</a></td>
   </tr>
+  
+  <tr style="{display:none}" id="tags-edit-row">
+    <td class="cell-name"></td>
+    <td class="cell-tags">
+      <input type="text" class="cell-tags" id="tags-edit" value="${', '.join(testcase.tags)}"></input>
+    </td>
+    <td class="edit" valign="top"><a href="#" onclick="saveTags()">save</a></td>
+  </tr>
+  
+  
   <tr>
     <td>Localizations:</td>
     <td>
 % for key in testcase.title.keys():
-<a href="/tcm/testcase/${testcase._id}/${key}">${key}</a>
+      <a href="/tcm/testcase/${testcase._id}/${key}">${key}</a>
 % endfor
     </td>
     <td></td>

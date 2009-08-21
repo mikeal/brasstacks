@@ -65,6 +65,8 @@ class TestCaseManagerAPI(RestApplication):
                 doc = self.db.get(resource)
                 assert rev == doc._rev
                 changes = simplejson.loads(str(request.body))
+                if changes.has_key('tags'):
+                    changes['tags'] = [t.replace(' ', '') for t in changes['tags']]
                 if changes.has_key('description_raw'):
                     for locale, desc in changes['description_raw'].items():
                         doc['description_raw'][locale] = desc
