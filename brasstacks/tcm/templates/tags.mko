@@ -1,0 +1,87 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+<script type="text/javascript" src="/static/jquery-1.3.1.js" ></script>
+<script type="text/javascript" src="/static/tagcloud/scripts/jquery.tagcloud.js" ></script>
+<script type="text/javascript" src="/static/tagcloud/scripts/jquery.tinysort.min.js" ></script>
+
+
+<ul id="tagcloud">
+% for tag, count in tags:
+	<li value="${count}"><a href="/tcm/tags/${tag}">${tag}</a> </li>
+% endfor
+</ul>
+
+<script type="text/javascript">
+$("#tagcloud").tagcloud({type:"list",sizemin:14,sizemax:70,height:"auto",}).find("li").tsort();
+</script>
+
+<h4>Collections</h4>
+<table id="collections-table" cellspacing="1">
+  <thead> 
+    <tr> 
+        <th>Product</th>
+        <th>Name</th>
+        <th>Featured</th>
+    </tr>
+  </thead> 
+  <tbody>
+  % for collection in collections:
+    <tr>
+      <td>${collection.product}</td>
+      <td>${collection.name}</td>
+      <td>${collection.featured}</td>
+    </tr>
+  % endfor
+  </tbody>
+</table>
+
+<script type="text/javascript">
+var createCollection = function () {
+  var product = $("input[name='product']:checked").val();
+  var tags = $("input[name='tag']:checked").val();
+  var name = document.getElementById("name-field")
+  options = {
+    url : '/tcm/api/createcollection',
+    data : JSON.stringify({product:product, tags:tags, name:name}),
+    dataTyle : 'text',
+    error : function (xhttp, status, err) {
+      // TODO: populate the error screen
+    },
+    success: function (data, status) {
+      result = JSON.parse(data);
+      window.location.href = '/tcm/tags/collection/'+result["_id"];
+    },
+    type: 'POST',
+  },
+  jQuery.ajax(options);
+}
+</script>
+
+<h4> Create Collection </h4>
+<table>
+  <tr>
+    <td>Product</td>
+    <td>
+% for product in products:
+      <input type="radio" name="product" value="${product}" />${product}
+% endfor
+    </td>
+  </tr>
+  <tr>
+    <td>Tags</td>
+    <td>
+% for tag, count in tags:
+      <input type="checkbox" name="tag" value="${tag}" />${tag}
+% endfor
+    </td>
+  </tr>
+  <tr>
+    <td>Name</td>
+    <td><input type="text" id="name-field" /></td>
+  </tr>
+</table>
+<a href="#" onclick="createCollection()">create collection</a>
+
+
+</%def>

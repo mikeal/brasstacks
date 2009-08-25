@@ -2,6 +2,7 @@ import os, sys
 
 from webenv.rest import RestApplication
 from webenv.applications.file_server import FileServerApplication
+from webenv import Response404
 import webenv
 import couchquery
 
@@ -80,10 +81,7 @@ def cli():
     import tcm
     import brasstacks
     import logcompare
-    db.sync_design_doc("sitecompare", sitecompare.design_doc)
-    db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecResults", logcompare.design_doc)
-    db.sync_design_doc("tcm", tcm.design_doc)
+    sync(db)
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()
@@ -96,7 +94,9 @@ class Cache(dict):
     set = lambda *args, **kwargs: dict.__setitem__(*args, **kwargs)
     
 class Stub(RestApplication):
-    def GET(self, request):
+    def GET(self, request, favicon=None):
+        if favicon:
+            return Response404('not found')
         html = '<html><head><title>Current Applications on Brasstacks</title><head><body>'
         for application in self.rest_resources.keys():
             html += '<div><a href="/'+application+'">'+application+'</a></div>'
@@ -105,16 +105,18 @@ class Stub(RestApplication):
 
 application = Stub()
 
-def sync():
-    import sys
-    db = sys.argv[-1]
+def sync(db=None):
+    if db is None:
+        import sys
+        db = couchquery.Database(sys.argv[-1])
     import sitecompare
     import brasstacks
     import fennec
     import logcompare
     import tcm
-    db = couchquery.Database(db)
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
     db.sync_design_doc("fennecResults", logcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
+    db.sync_design_doc("tcmTags", tcm.tags_design_doc)
+

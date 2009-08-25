@@ -7,16 +7,17 @@ from mako.lookup import TemplateLookup
 from markdown2 import markdown
 from cgi import escape
 try:
-    import json as simplejson
+    import json
 except:
-    import simplejson
+    import simplejson as json
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 design_doc = os.path.join(this_directory, 'views')
+tags_design_doc = os.path.join(this_directory, 'tagViews')
 
 lookup = TemplateLookup(directories=[os.path.join(this_directory, 'templates')], encoding_errors='ignore', input_encoding='utf-8', output_encoding='utf-8')
 
-products = ["Firefox", "Thunderbird", "Fennec", "Sunbird"]
+products = ["Firefox", "Thunderbird", "Fennec", "Calendar", "AMO (addons.mozilla.org)", "Rock your Firefox (Facebook application)", "SeaMonkey", "SFx (spreadfirefox.com)", "SUMO (support.mozilla.com)", "Weave"]
 
 def render_description(body):
     return markdown(body, safe_mode="escape")
@@ -31,14 +32,14 @@ def get_locale(request):
 class MakoResponse(HtmlResponse):
     def __init__(self, name, **kwargs):
         template = lookup.get_template(name+'.mko')
-        kwargs['simplejson'] = simplejson
+        kwargs['json'] = json
         self.body = template.render_unicode(**kwargs).encode('utf-8', 'replace')
         self.headers = []
         
 class JSONResponse(Response):
     content_type = 'application/json'
     def __init__(self, obj):
-        self.body = simplejson.dumps(obj)
+        self.body = json.dumps(obj)
         self.headers = []
 
 class TestCaseManagerProducts(RestApplication):
@@ -64,7 +65,9 @@ class TestCaseManagerAPI(RestApplication):
                 rev = request.query['rev']
                 doc = self.db.get(resource)
                 assert rev == doc._rev
-                changes = simplejson.loads(str(request.body))
+                changes = json.loads(str(request.body))
+                if changes.has_key('tags'):
+                    changes['tags'] = [t.replace(' ', '') for t in changes['tags']]
                 if changes.has_key('description_raw'):
                     for locale, desc in changes['description_raw'].items():
                         doc['description_raw'][locale] = desc
@@ -78,6 +81,28 @@ class TestCaseManagerAPI(RestApplication):
                     doc[k] = v
                 info = self.db.save(doc)
                 return JSONResponse(self.db.get(info['id']))
+        def POST(self, request, collection, resource=None):
+            if collection == 'createcollection':
+                pass
+
+
+class TestCaseManagerTags(RestApplication):
+    def __init__(self, db):
+        super(TestCaseManagerTags, self).__init__()
+        self.db = db
+    def GET(self, request, tag=None, collection=None):
+        if tag is None:
+            rows = self.db.views.tcmTags.tagCount(group=True)
+            return MakoResponse('tags', tags=rows.items(), collections=[], products=products)
+        elif tag == "collection":
+            if collection is None:
+                pass
+                # collection index
+            else:
+                pass
+        else:
+            rows = self.db.views.tcmTags.casesByTag(startkey=[tag, None], endkey=[tag, {}])
+            return MakoResponse('testcases', testcases=rows, page_header="Tags :: "+tag)
 
 class TestCaseManagerApplication(RestApplication):
     def __init__(self, db):
@@ -85,16 +110,24 @@ class TestCaseManagerApplication(RestApplication):
         self.db = db
         self.add_resource('products', TestCaseManagerProducts(self.db))
         self.add_resource('api', TestCaseManagerAPI(self.db))
+        self.add_resource('tags', TestCaseManagerTags(self.db))
     def GET(self, request, collection=None, resource=None, force_locale=None):
-        if force_locale is not None:
+        if force_locale is not None and force_locale != 'advanced':
             locale = force_locale
         else: 
             locale = get_locale(request)
         
+        if force_locale == 'advanced':
+            advanced = True
+            force_locale = None
+        else:
+            advanced = False
+        
         if collection is None:
             return MakoResponse('index', locale=locale, force_locale=force_locale)
         if collection == 'write_test':
-            return MakoResponse('simple_editor', product=None, locale=locale, force_locale=force_locale)
+            return MakoResponse('simple_editor', product=None, locale=locale, force_locale=force_locale, 
+                                advanced=advanced)
         if collection == "testcase":
             if resource is None:
                 kwargs = {"descending":True, "limit":20}
@@ -103,15 +136,16 @@ class TestCaseManagerApplication(RestApplication):
                     startkey=[product,{}],endkey=[product,None],**kwargs),)
                     for product in products
                 ])
-                return MakoResponse("testcases", latest=latest, products=products, locale=locale,
-                                    force_locale=force_locale)
+                return MakoResponse("latestTestcases", latest=latest, products=products, locale=locale,
+                                    force_locale=force_locale,)
             else:
                 if resource in products:
-                    return MakoResponse("testcasesForProduct", product=resource,
-                                        testcases=self.db.views.tcm.casesByProduct(key=resource).rows,
-                                        locale=locale, force_locale=force_locale)
+                    page_header = "All "+resource+" Tests"
+                    return MakoResponse("testcases",
+                                        testcases=self.db.views.tcm.casesByProduct(key=resource),
+                                        locale=locale, force_locale=force_locale, page_header=page_header)
                 return MakoResponse("testcase", testcase=self.db.get(resource), locale=locale,
-                                    force_locale=force_locale)
+                                    force_locale=force_locale, advanced=advanced)
     def POST(self, request, collection=None, force_locale=None):
         if force_locale is not None:
             locale = force_locale

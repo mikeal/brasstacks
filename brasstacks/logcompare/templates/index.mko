@@ -8,30 +8,11 @@ $(document).ready(function()
 );
 </script>
 
-<div class="results">Test results by products: 
-% for prod in products:
-  <a href="/logcompare/product/${prod['key']}">${prod['key']}</a> (${prod['value']}), 
-% endfor
-</div>
-<div class="results">Test results by test types: 
-% for testtype in testtypes:
-  <a href="/logcompare/testtype/${testtype['key']}">${testtype['key']}</a> (${testtype['value']}), 
-% endfor
-</div>
-<div class="results">Test results by operating Systems: 
-% for os in oses:
-  <a href="/logcompare/platform/${os['key']}">${os['key']}</a> (${os['value']}), 
-% endfor
-</div>
-<div class="results">Test results for a specific product, OS, and test type : <br />
-% for build in builds:
-  <a href="/logcompare/builds/${build['key'][0]}+${build['key'][1]}+${build['key'][2]}">
-    ${build['key'][0]} ${build['key'][1]} ${build['key'][2]}
-  </a>(${build['value']})<br />
-% endfor
-</div>
+<h2><a href="/logcompare/failures/">All test failures from last build</a></h2>
 
-<div class="results">All:
+<h2>Most Recent Builds</h2>
+
+<div class="results">
 <table id="buildTable" class="results">
   <thead>
   <tr>
@@ -41,18 +22,56 @@ $(document).ready(function()
   </tr>
   </thead>
   <tbody>
-  % for row in summary:
+  % for (key, value) in summary:
+  <% 
+    timestamp = key[0]
+    buildid = key[1]
+  %>
   <tr>
-    <td><a href="/logcompare/build/${row['key'][1]}">See details</a> 
-    <a href="/logcompare/compare/${row['key'][1]}">Compare to last</a></td>
-    <td>${row['key'][0]}</td>
-    % if row['value'] == {}: 
-    <td></td>
+    <td>
+      <a href="/logcompare/build/${buildid}">See details</a> 
+      <a href="/logcompare/compare/${buildid}">Compare to last</a>
+    </td>
+    <td>${timestamp}</td>
+    % if value == {}: 
+    <td>
     % else: 
-    <td>fail  (${row['value']['fail']}), pass  (${row['value']['pass']}), todo  (${row['value']['todo']}) </td>
+    <td>fail  (${value['fail']}), pass  (${value['pass']}), todo  (${value['todo']}) </td>
     % endif
   </tr>
   % endfor
   </tbody>
 </table>
+</div>
+
+<h2>All Categories</h2>
+
+<div class="results">Test results by products: 
+% for (product, count) in products:
+  <a href="/logcompare/product/${product}">${product}</a> (${count}), 
+% endfor
+</div>
+
+<div class="results">Test results by test types: 
+% for (testtype, count) in testtypes:
+  <a href="/logcompare/testtype/${testtype}">${testtype}</a> (${count}), 
+% endfor
+</div>
+
+<div class="results">Test results by operating Systems: 
+% for (os, count) in oses:
+  <a href="/logcompare/platform/${os}">${os}</a> (${count}), 
+% endfor
+</div>
+
+<div class="results">Test results for a specific product, OS, and test type : <br />
+% for (build, count) in builds: 
+<%  
+  product = build[0] 
+  os = build[1] 
+  testtype = build[2] %>
+  <a href="/logcompare/builds/${product}+${os}+${testtype}">
+    ${product} ${os} ${testtype}
+  </a>(${count})<br />
+% endfor
 </div>

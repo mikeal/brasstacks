@@ -1,1 +1,1 @@
-function (doc) { emit([doc.testtype, doc.build], doc.tests);}
+function (doc) { emit([doc.timestamp, doc.build], doc.tests);}

@@ -9,23 +9,33 @@ $(document).ready(function()
 </script>
 
 <div class="results">
+
 <h2>This Build:</h2>
 ${build.buildid} (<a href="/logcompare/compare/${build.buildid}">Compare to last</a>)<br />
 ${build.testtype}<br />
 ${build.product}<br />
 ${build.os}<br />
 ${build.timestamp}<br />
+
 <h2>10 Builds Before:</h2>
-% for row in similardocs:
-${row['key'][3]} (<a href="/logcompare/compare/${build.buildid}&${row['value']}">Compare to this</a>)<br />
-% endfor
+% if len(similardocs) == 0:
+  No builds prior<br />
+% else:
+%   for (key, value) in similardocs:
+<% 
+  timestamp = key[3]
+  buildid = value
+%>
+${timestamp} (<a href="/logcompare/compare/${build.buildid}&${buildid}">Compare to this</a>)<br />
+%   endfor
+% endif
+
 
 <h2>Tests (test files: ${buildtests.numtestfiles}, 
 tests: ${buildtests.totaltests}, 
 passes: ${buildtests.totalpasses}, 
 fails: ${buildtests.totalfails}, 
-todos: ${buildtests.totaltodos}):
-</h2><br />
+todos: ${buildtests.totaltodos}) on this build:</h2><br />
 Click on header to sort <br />
 <table id="buildTable" class="tablesorter">
   <thead>
@@ -54,5 +64,3 @@ Click on header to sort <br />
   </tbody>
 </table>
 </div>
-
-

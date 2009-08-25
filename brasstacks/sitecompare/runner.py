@@ -110,7 +110,7 @@ class CompareSites(object):
         self.db = db
         
         if all_sites is None:
-            rows = self.db.views.sitecompare.pageByURI().rows
+            rows = self.db.views.sitecompare.pageByURI()
             self.all_sites = dict([(r._id, r.uri,) for r in rows if not hasattr(r, 'enabled') or r.enabled ])
         else:
             self.all_sites = all_sites
@@ -186,7 +186,7 @@ class CompareSites(object):
         appInfo = jsbridge.JSObject(bridge, appInfoJs)
         buildid = appInfo.appBuildID
         query = self.db.views.sitecompare.firefoxByBuildid(startkey=buildid, endkey=buildid+"0")
-        if len(query.rows) is 0:
+        if len(query) is 0:
             build = {}
             build['appInfo.id'] = str(appInfo.ID)
             build['type'] = 'productBuild'
@@ -198,7 +198,7 @@ class CompareSites(object):
                 build = self.db.get(self.db.create(build)['id'])
             return build
         else:
-            return query.rows[0]
+            return query[0]
         
     def save_nightly_listener(self, obj):
         self.saved_nightly_images.append(obj)

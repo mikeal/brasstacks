@@ -1,10 +1,10 @@
 <%inherit file="base.mko"/>
 
 <div class="results">
-${len(builds)}
-% for build in builds:
-  ${build['key']} 
-  (<a href="/logcompare/build/${build['value']}">See details</a>) 
-  (<a href="/logcompare/compare/${build['value']}">Compare to last</a>)<br />
+<h2>${len(builds)}</h2>
+% for (key, value) in builds:
+  ${key} 
+  (<a href="/logcompare/build/${value}">See details</a>) 
+  (<a href="/logcompare/compare/${value}">Compare to last</a>)<br />
 % endfor 
 </div>
