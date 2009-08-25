@@ -11,7 +11,7 @@
 <script type="text/javascript" src="/static/plotkit-0.9.1/Plotkit/SweetCanvas.js"></script>
 <script type="text/javascript" src="/static/plotkit-0.9.1/Plotkit/EasyPlot.js"></script>
 		
-<!-- ${simplejson.dumps(tests_info['rows'][0]['value'], sort_keys=True, indent=2)} -->
+<!-- ${json.dumps(tests_info['rows'][0]['value'], sort_keys=True, indent=2)} -->
 
 <div class="demo" id="canvasbar" width="600" height="200"></div>
 <div id="test"></div>
@@ -24,7 +24,7 @@ function demo() {
   "pieRadius": 0.4
   };
 
-	var results = ${simplejson.dumps(tests_info['rows'][0]['value'])}
+	var results = ${json.dumps(tests_info['rows'][0]['value'])}
 	
 	var data = [[],[],[]];
 	index = 0;
