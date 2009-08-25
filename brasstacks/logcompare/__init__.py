@@ -29,6 +29,7 @@ class LogCompareApplication(RestApplication):
     self.db = db
   
   def GET(self, request, collection=None, resource=None):
+    starttime = datetime.now()
     if collection is None:
       
       products = self.db.views.fennecResults.productCounts(reduce = True, group = True).items()
@@ -126,7 +127,43 @@ class LogCompareApplication(RestApplication):
           endkey=[resource, 0], 
           descending=True).items()
         return MakoResponse("test", results=results)
+    
+    if collection == "failures":
+      lastbuild = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True, descending=True, limit=1).items()
+      (key, value) = lastbuild[0]
+      buildid = key[1]
+      doc = self.db.views.fennecResults.entireBuildsById(key = buildid).items()
+      build = Build(doc)
+      buildtests = build.getTests()
+      tests = {}
       
+      for (testname, result) in buildtests.tests:
+        results = {}
+        
+        firstfail = self.db.views.fennecResults.allFailsByTimestamp(
+          startkey=[testname, {}], endkey=[testname, 0], descending=True, limit=1).items()
+        
+        lastpass = self.db.views.fennecResults.allPassesByTimestamp(
+          startkey=[testname, 0], endkey=[testname, {}], descending=False, limit=1).items()
+        
+        if len(firstfail) == 0:
+          results['firstfail'] = None
+        else:
+          (key, value) = firstfail[0]
+          buildid = value[1]
+          results['firstfail'] = buildid
+        
+        if len(lastpass) == 0:
+          results['lastpass'] = None
+        else:
+          (key, value) = lastpass[0]
+          buildid = value[1]
+          results['lastpass'] = buildid
+          
+        tests[testname] = results
+      
+      return MakoResponse("failures", tests=tests)
+  
   def POST(self, request, collection = None, resource = None):
     if collection == "compare":
       if request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":

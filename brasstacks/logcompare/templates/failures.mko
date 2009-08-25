@@ -17,11 +17,11 @@ $(document).ready(function()
   </tr>
 </thead>
 <tbody>
-  % for testname in buildtests:
+  % for testname in tests:
   <tr>
     <td>${testname}</td>
-    <td>${buildtests[testname]['firstfail']}</td>
-    <td>${buildtests[testname]['lastpass']}</td>
+    <td>${tests[testname]['firstfail']} <a href="logcompare/build/${tests[testname]['firstfail']}">See details</a></td>
+    <td>${tests[testname]['lastpass']} <a href="logcompare/build/${tests[testname]['lastpass']}">See details</a></td>
   </tr>
   % endfor  
 </tbody>

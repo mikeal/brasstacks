@@ -8,7 +8,7 @@ $(document).ready(function()
 );
 </script>
 
-<h2><a href="/logcompare/failures/">All failures from last build</a></h2>
+<h2><a href="/logcompare/failures/">All test failures from last build</a></h2>
 
 <h2>Most Recent Builds</h2>
 
