@@ -1,6 +1,6 @@
 <%inherit file="base.mko"/>
-
-<h2>${results[0]['key'][0]}</h2>
+<% (key, value) = results[0] %>
+<h2>${key[0]}</h2>
 <div class="results">
 % for (key, value) in results:
 <%

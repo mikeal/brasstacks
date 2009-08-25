@@ -37,7 +37,7 @@
 
 <%def name="footer()">
   this is the footer 
-% if latency is not None:
+% if latency is not NoneType:
   ${latency}
 % endif
 </%def>
