@@ -17,12 +17,14 @@ $(document).ready(function()
   <thead>
   <tr>
     <th>Actions</th>
+    <th>Metadata</th>
     <th>Result</th>
   </tr>
   </thead>
   <tbody>
   % for (key, value) in summary:
   <% 
+    timestamp = key[0]
     buildid = key[1]
   %>
   <tr>
@@ -30,8 +32,9 @@ $(document).ready(function()
       <a href="/logcompare/build/${buildid}">See details</a> 
       <a href="/logcompare/compare/${buildid}">Compare to last</a>
     </td>
+    <td>${timestamp}</td>
     % if value == {}: 
-    <td></td>
+    <td>
     % else: 
     <td>fail  (${value['fail']}), pass  (${value['pass']}), todo  (${value['todo']}) </td>
     % endif
@@ -72,7 +75,3 @@ $(document).ready(function()
   </a>(${count})<br />
 % endfor
 </div>
-
-
-<%doc>
-</%doc>

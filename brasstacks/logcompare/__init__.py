@@ -35,7 +35,7 @@ class LogCompareApplication(RestApplication):
       testtypes = self.db.views.fennecResults.testtypeCounts(reduce = True, group = True).items()
       oses = self.db.views.fennecResults.osCounts(reduce = True, group = True).items()
       builds = self.db.views.fennecResults.buildCounts(reduce = True, group = True).items()
-      summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True, limit=20).items()
+      summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True, descending=True, limit=20).items()
       
       return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
       
@@ -43,11 +43,11 @@ class LogCompareApplication(RestApplication):
       if resource is None:
         return MakoResponse("error", error="no build id input is given")
       else:
-        doc = self.db.views.fennecResults.entireBuildsById(key = resource)['rows']
-        if doc == []:
+        doc = self.db.views.fennecResults.entireBuildsById(key = resource).items()
+        if len(doc) == 0:
           return MakoResponse("error", error="build id cannot be found")
         else:
-          similardocs = self.find10Previous(doc)
+          similardocs = self.findTenPrevious(doc)
           build = Build(doc)
           buildtests = build.getTests()
           return MakoResponse("build", build = build, buildtests = buildtests, similardocs = similardocs)
@@ -56,38 +56,36 @@ class LogCompareApplication(RestApplication):
       if resource is None:
         return MakoResponse("error", error="no input is given")
       else:
+        
         inputs = resource.split('&')
         
         if len(inputs) == 1:
-          doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0])['rows']
-          if doc1 == []:
+          doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
+          if len(doc1) == 0:
             return MakoResponse("error", error="build id cannot be found")
           else:
             buildid2 = self.findPrevious(doc1)
             if buildid2 == None:
               return MakoResponse("error", error="this build has no prior builds")
             else:
-              doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2)['rows']
+              doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2).items()
         elif len(inputs) == 2:
-          doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0])['rows']
-          doc2 = self.db.views.fennecResults.entireBuildsById(key=inputs[1])['rows']
-          if doc1 == [] or doc2 == []:
+          doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
+          doc2 = self.db.views.fennecResults.entireBuildsById(key=inputs[1]).items()
+          if len(doc1) == 0 or len(doc2) == 0:
             return MakoResponse("error", error="build ids cannot be found")
         
         build1 = Build(doc1)
         build2 = Build(doc2)
         
         answer = build1.compare(build2)
-        return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
+        return MakoResponse("compare", answer = answer, build1 = build1, build2 = build2)
 
     if collection == "product":
       if resource is None:
         return MakoResponse("error", error="not implemented yet")
       else:
-        buildsbyproduct = self.db.views.fennecResults.metadataByProduct(
-          startkey=[resource, {}],
-          endkey=[resource, 0],
-          descending=True)['rows']
+        buildsbyproduct = self.db.views.fennecResults.metadataByProduct(startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
         return MakoResponse("product", buildsbyproduct=buildsbyproduct)
 
     if collection == "testtype":
@@ -95,9 +93,7 @@ class LogCompareApplication(RestApplication):
         return MakoResponse("error", error="not implemented yet")
       else:
         buildsbytesttype = self.db.views.fennecResults.metadataByTesttype(
-          startkey=[resource, {}],
-          endkey=[resource, 0],
-          descending=True)['rows']
+          startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
         return MakoResponse("testtype", buildsbytesttype=buildsbytesttype)
 
     if collection == "platform":
@@ -105,9 +101,7 @@ class LogCompareApplication(RestApplication):
         return MakoResponse("error", error="not implemented yet")
       else:
         buildsbyplatform = self.db.views.fennecResults.metadataByPlatform(
-          startkey=[resource, {}],
-          endkey=[resource, 0],
-          descending=True)['rows']
+          startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
         return MakoResponse("platform", buildsbyplatform=buildsbyplatform)
 
     if collection == "builds":
@@ -115,11 +109,14 @@ class LogCompareApplication(RestApplication):
         return MakoResponse("error", error="not implemented yet")
       else:
         input = resource.split('+')
-        builds = self.db.views.fennecResults.buildIdsByMetadata(
-          startkey=[input[0], input[1], input[2], {}], 
-          endkey=[input[0], input[1], input[2], 0], 
-          descending=True)['rows']
-        return MakoResponse("builds", builds=builds)
+        if len(input) < 3:
+          return MakoResponse("error", error="not enough build info")
+        else:
+          builds = self.db.views.fennecResults.buildIdsByMetadata(
+            startkey=[input[0], input[1], input[2], {}], 
+            endkey=[input[0], input[1], input[2], 0], 
+            descending=True).items()
+          return MakoResponse("builds", builds=builds)
     if collection == "test":
       if resource is None:
         return MakoResponse("error", error="not implemented yet")
@@ -127,7 +124,7 @@ class LogCompareApplication(RestApplication):
         results = self.db.views.fennecResults.tests(
           startkey=[resource, {}], 
           endkey=[resource, 0], 
-          descending=True)['rows']
+          descending=True).items()
         return MakoResponse("test", results=results)
       
   def POST(self, request, collection = None, resource = None):
@@ -139,37 +136,37 @@ class LogCompareApplication(RestApplication):
         # else: 
           # return MakoResponse("error", error="inputs cannot be blank")
         
-        doc1 = self.db.views.fennecResults.entireBuildsById(key = id1)['rows']
-        doc2 = self.db.views.fennecResults.entireBuildsById(key = id2)['rows']
+        doc1 = self.db.views.fennecResults.entireBuildsById(key = id1).items()
+        doc2 = self.db.views.fennecResults.entireBuildsById(key = id2).items()
         
-        build1 = Build(doc1)
-        build2 = Build(doc2)
-        
-        if (doc1 == []) or (doc2 == []):
+        if len(doc1) == 0 or len(doc2) == 0:
           return MakoResponse("error", error="input is not a valid build id")
-        else: 
-          answer = build1.compare(build2)        
-        return MakoResponse("compare", answer = answer, doc1 = build1, doc2 = build2)
+        else:
+          build1 = Build(doc1)
+          build2 = Build(doc2)
+          answer = build1.compare(build2)
+          return MakoResponse("compare", answer = answer, build1 = build1, build2 = build2)
   
-  def find10Previous(self, doc):
+  def findTenPrevious(self, doc):
     # max limit of the results
     length = 11
     # entry of self
     selfentry = 0
     
-    if doc == []:
+    if len(doc) == 0:
       return None
     else:
-      product = doc[0]['value']['product']
-      os = doc[0]['value']['os']
-      testtype = doc[0]['value']['testtype']
-      timestamp = doc[0]['value']['timestamp']
+      (key, value) = doc[0]
+      product = value['product']
+      os = value['os']
+      testtype = value['testtype']
+      timestamp = value['timestamp']
       
       similardocs = self.db.views.fennecResults.buildIdsByMetadata(
         startkey=[product, os, testtype, timestamp], 
         endkey=[product, os, testtype, 0], 
         descending=True, 
-        limit=length)['rows']
+        limit=length).items()
       
       if len(similardocs) > 0:
         del similardocs[selfentry]
@@ -182,7 +179,7 @@ class LogCompareApplication(RestApplication):
     # the index of the previous build is 0
     previous = 0
     
-    similardocs = self.find10Previous(doc)
+    similardocs = self.findTenPrevious(doc)
     
     if similardocs == None:
       return None
@@ -190,12 +187,14 @@ class LogCompareApplication(RestApplication):
       if len(similardocs) < minlength:
         return None
       else:
-        return similardocs[previous]['value']
+        (key, value) = similardocs[previous]
+        return value
 
 class Build():
   def __init__(self, doc):
    
-    self.doc = doc[0]['value']
+    (key, value) = doc[0]
+    self.doc = value
     self.docid = self.doc['_id']
     self.buildid = self.doc['build']
     self.product = self.doc['product']

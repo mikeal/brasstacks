@@ -1,18 +1,26 @@
 <%inherit file="base.mko"/>
-<h2>${buildsbytesttype[0]['key'][0]}: ${len(buildsbytesttype)}</h2>
+<% (key, value) = buildsbytesttype[0] %>
+<h2>${key[0]} (${len(buildsbytesttype)})</h2>
 <table class="results">
   <tr>
     <th>Build ID</th>
     <th>Metadata</th>
   </tr>
-% for row in buildsbytesttype:
+% for (key, value) in buildsbytesttype:
+<%
+  buildid = value[0]
+  product = value[1]
+  platform = value[2]
+  testtype = value[3]
+  timestamp = value[4]
+%>
   <tr>
     <td>
-      <a href="/logcompare/build/${row['value']['buildid']}">See details</a>
-      <a href="/logcompare/compare/${row['value']['buildid']}">(Compare to last)</a>
+      <a href="/logcompare/build/${buildid}">See details</a>
+      <a href="/logcompare/compare/${buildid}">(Compare to last)</a>
     </td>
     <td>
-      ${row['value']['testtype']}, ${row['value']['product']}, ${row['value']['os']}, ${row['value']['timestamp']} 
+      ${testtype}, ${product}, ${platform}, ${timestamp} 
     </td>
   </tr>
 % endfor

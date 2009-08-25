@@ -8,19 +8,20 @@ $(document).ready(function()
 );
 </script>
 
-<h2>Build 1 (${doc1.buildid}):</h2>
-<a href="/logcompare/build/${doc1.buildid}">See details</a><br />
-${doc1.testtype}<br />
-${doc1.product}<br />
-${doc1.os}<br />
-${doc1.timestamp}<br />
 
-<h2>Build 2 (${doc2.buildid}):</h2>
-<a href="/logcompare/build/${doc2.buildid}">See details</a><br />
-${doc2.testtype}<br />
-${doc2.product}<br />
-${doc2.os}<br />
-${doc2.timestamp}<br />
+<h2>Build 1 (${build1.buildid}):</h2>
+<a href="/logcompare/build/${build1.buildid}">See details</a><br />
+${build1.testtype}<br />
+${build1.product}<br />
+${build1.os}<br />
+${build1.timestamp}<br />
+
+<h2>Build 2 (${build2.buildid}):</h2>
+<a href="/logcompare/build/${build2.buildid}">See details</a><br />
+${build2.testtype}<br />
+${build2.product}<br />
+${build2.os}<br />
+${build2.timestamp}<br />
 
 <h2>Comparison:</h2>
 
