@@ -1,0 +1,38 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+<style type="text/css">
+h3 {
+  text-align:center;
+}
+/*div {
+  padding-top:10px;
+  text-align:center;
+  font-size:30px;
+}*/
+</style>
+
+<h3> Tests </h3>
+
+<table>
+<tr class="title-row">
+% for product in products:
+  <td class="title-column">${product}</td>
+% endfor
+</tr>
+
+% for i in range(10):
+<tr class="testcase-row">
+% for product in products:
+% if len(latest[product]) >= (i + 1):
+  <td class="testcase-column"><a href="/tcm/testcase/${latest[product][i]['_id']}">${latest[product][i]['title']}</a></td>
+% else:
+  <td class="testcase-column"></td>
+% endif
+% endfor
+</tr>
+% endfor
+</table>
+
+</%def>

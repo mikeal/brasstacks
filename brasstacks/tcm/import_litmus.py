@@ -64,7 +64,7 @@ def get_testcase(pk, db):
     
     check = db.views.tcm.casesByProductTitle(key=[testcase['product'],testcase['title']['en-us']])
     if len(check) is not 0:
-        doc = check.rows[0]
+        doc = check[0]
         doc.update(testcase)
         if pk not in doc.litmus_pks:
             doc.litmus_pks.append(pk)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     db = couchquery.Database(uri)
     db.sync_design_doc('tcm', tcm.design_doc)    
     
-    check = db.views.tcm.casesByLitmus(descending=True, limit=1).rows
+    check = db.views.tcm.casesByLitmus(descending=True, limit=1)
     if len(check) is not 0:
         print "Latest litmus test imported was "+str(check.keys()[0])
         startkey = check.keys()[0]
