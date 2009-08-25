@@ -33,11 +33,7 @@ class LogCompareResponse(HtmlResponse):
       kwargs['latency'] = datetime.now() - starttime
     self.body = lookup.get_template(name + '.mko').render_unicode(**kwargs).encode('utf-8', 'replace')
     self.headers = []
-<<<<<<< HEAD:brasstacks/logcompare/__init__.py
-    
-=======
 
->>>>>>> logcompare:brasstacks/logcompare/__init__.py
 class LogCompareApplication(RestApplication):
   def __init__(self, db):
     super(LogCompareApplication, self).__init__()
