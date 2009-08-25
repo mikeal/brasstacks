@@ -44,30 +44,30 @@ class SiteCompareApplication(RestApplication):
     def GET(self, request, collection=None, resource=None):
         if collection is None:
             latest_rvn = self.db.views.sitecompare.runByTime(startkey=["releaseVSnightly", {}],
-                                                             descending=True, limit=1).rows[0]
+                                                             descending=True, limit=1)[0]
             
-            latest_rvn.tests = self.db.views.sitecompare.testByRun(key=latest_rvn._id).rows
+            latest_rvn.tests = self.db.views.sitecompare.testByRun(key=latest_rvn._id)
             latest_h4v5 = self.db.views.sitecompare.runByTime(startkey=["html4VShtml5", {}],
-                                                              descending=True, limit=1).rows[0]
-            latest_h4v5.tests = self.db.views.sitecompare.testByRun(key=latest_h4v5._id).rows
+                                                              descending=True, limit=1)[0]
+            latest_h4v5.tests = self.db.views.sitecompare.testByRun(key=latest_h4v5._id)
             
             return MakoResponse('index', latest=(latest_rvn, latest_h4v5,))
         if collection == "pages":
             if resource is None:
                 view_result = self.db.views.sitecompare.byType(key="page")
-                return MakoResponse('pages', pages=view_result.rows)
+                return MakoResponse('pages', pages=view_result)
             else:
                 d = self.db.get(resource)
                 d.query = dict(request.query)
-                tests = self.db.views.sitecompare.testByPage(startkey=[d._id,0], endkey=[d._id,{}]).rows
+                tests = self.db.views.sitecompare.testByPage(startkey=[d._id,0], endkey=[d._id,{}])
                 return MakoResponse('page', tests=tests, **dict(d))
         if collection == 'runs':
             if resource is None:
-                runs = self.db.views.sitecompare.runByTime(descending=True).rows
+                runs = self.db.views.sitecompare.runByTime(descending=True)
                 return MakoResponse('runs', runs=runs)
             else:
                 run = self.db.get(resource)
-                run.tests = self.db.views.sitecompare.testByRun(key=run._id).rows
+                run.tests = self.db.views.sitecompare.testByRun(key=run._id)
                 return MakoResponse('run', run=run)
         if collection == 'tests':
             if resource is None:
@@ -81,7 +81,7 @@ class SiteCompareApplication(RestApplication):
                 pass
             else:
                 build = self.db.get(resource)
-                runs = self.db.views.sitecompare.runByBuild(startkey=build._id, endkey=build._id+'0').rows
+                runs = self.db.views.sitecompare.runByBuild(startkey=build._id, endkey=build._id+'0')
                 return MakoResponse('build', build=build, runs=runs)
             
     def POST(self, request, collection=None, resource=None):
@@ -95,7 +95,7 @@ class SiteCompareApplication(RestApplication):
                     k = request.body['uri']
                     r = self.db.views.sitecompare.pageByURI(key=k)
                     if len(r) is not 0:
-                        return webenv.Response303("/sitecompare/pages/"+str(r.rows[0]['_id'])+'?m=already')
+                        return webenv.Response303("/sitecompare/pages/"+str(r[0]['_id'])+'?m=already')
                     resp = self.pages_collection.add_resource(dict(request.body))
                 return webenv.Response303("/sitecompare/pages/"+str(resp['id']))
             else:

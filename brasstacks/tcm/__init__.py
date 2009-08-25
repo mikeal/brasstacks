@@ -17,7 +17,7 @@ tags_design_doc = os.path.join(this_directory, 'tagViews')
 
 lookup = TemplateLookup(directories=[os.path.join(this_directory, 'templates')], encoding_errors='ignore', input_encoding='utf-8', output_encoding='utf-8')
 
-products = ["Firefox", "Thunderbird", "Fennec", "Sunbird"]
+products = ["Firefox", "Thunderbird", "Fennec", "Calendar", "AMO (addons.mozilla.org)", "Rock your Firefox (Facebook application)", "SeaMonkey", "SFx (spreadfirefox.com)", "SUMO (support.mozilla.com)", "Weave"]
 
 def render_description(body):
     return markdown(body, safe_mode="escape")
@@ -81,26 +81,28 @@ class TestCaseManagerAPI(RestApplication):
                     doc[k] = v
                 info = self.db.save(doc)
                 return JSONResponse(self.db.get(info['id']))
+        def POST(self, request, collection, resource=None):
+            if collection == 'createcollection':
+                pass
 
 
 class TestCaseManagerTags(RestApplication):
     def __init__(self, db):
         super(TestCaseManagerTags, self).__init__()
         self.db = db
-    def GET(self, request, tags=None, collection=None):
-        if tags is None:
+    def GET(self, request, tag=None, collection=None):
+        if tag is None:
             rows = self.db.views.tcmTags.tagCount(group=True)
-            return MakoResponse('tags', tags=rows.items())
-        elif tags == "collection":
+            return MakoResponse('tags', tags=rows.items(), collections=[], products=products)
+        elif tag == "collection":
             if collection is None:
                 pass
                 # collection index
             else:
                 pass
-                # view for collection
         else:
-            pass
-            # view for tag
+            rows = self.db.views.tcmTags.casesByTag(startkey=[tag, None], endkey=[tag, {}])
+            return MakoResponse('testcases', testcases=rows, page_header="Tags :: "+tag)
 
 class TestCaseManagerApplication(RestApplication):
     def __init__(self, db):
@@ -134,13 +136,14 @@ class TestCaseManagerApplication(RestApplication):
                     startkey=[product,{}],endkey=[product,None],**kwargs),)
                     for product in products
                 ])
-                return MakoResponse("testcases", latest=latest, products=products, locale=locale,
+                return MakoResponse("latestTestcases", latest=latest, products=products, locale=locale,
                                     force_locale=force_locale,)
             else:
                 if resource in products:
-                    return MakoResponse("testcasesForProduct", product=resource,
-                                        testcases=self.db.views.tcm.casesByProduct(key=resource).rows,
-                                        locale=locale, force_locale=force_locale,)
+                    page_header = "All "+resource+" Tests"
+                    return MakoResponse("testcases",
+                                        testcases=self.db.views.tcm.casesByProduct(key=resource),
+                                        locale=locale, force_locale=force_locale, page_header=page_header)
                 return MakoResponse("testcase", testcase=self.db.get(resource), locale=locale,
                                     force_locale=force_locale, advanced=advanced)
     def POST(self, request, collection=None, force_locale=None):
