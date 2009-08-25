@@ -22,10 +22,9 @@
 <%def name="header()">
   <div>
     <a href="/logcompare">LogCompare</a>
-    - A tool to display test results initially stored in log files at 
+    - A tool to display test results in a more useful structure, initially stored in log files at 
     <a href="http://tinderbox.mozilla.org/showbuilds.cgi?tree=Mobile">Tinderbox</a> 
     (<a href="http://tinderbox.mozilla.org/showlog.cgi?log=Mobile/1250755161.1250764588.16311.gz&fulltext=1">example</a>) 
-    in a more useful structure
   <div>
   <form method="post" action="/logcompare/compare">
   <div class="compare-results-form">

@@ -31,13 +31,12 @@ class LogCompareApplication(RestApplication):
   def GET(self, request, collection=None, resource=None):
     if collection is None:
       
-      products = self.db.views.fennecResults.productCounts(reduce = True, group = True)['rows']
-      testtypes = self.db.views.fennecResults.testtypeCounts(reduce = True, group = True)['rows']
-      oses = self.db.views.fennecResults.osCounts(reduce = True, group = True)['rows']
-      builds = self.db.views.fennecResults.buildCounts(reduce = True, group = True)['rows']
+      products = self.db.views.fennecResults.productCounts(reduce = True, group = True).items()
+      testtypes = self.db.views.fennecResults.testtypeCounts(reduce = True, group = True).items()
+      oses = self.db.views.fennecResults.osCounts(reduce = True, group = True).items()
+      builds = self.db.views.fennecResults.buildCounts(reduce = True, group = True).items()
+      summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True, limit=20).items()
       
-      summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True)['rows']
-      # return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds)
       return MakoResponse("index", products = products, testtypes = testtypes, oses = oses, builds = builds, summary = summary)
       
     if collection == "build":

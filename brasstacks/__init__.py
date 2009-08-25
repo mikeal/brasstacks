@@ -80,16 +80,8 @@ def cli():
     import fennec
     import tcm
     import brasstacks
-<<<<<<< HEAD:brasstacks/__init__.py
     import logcompare
-    db.sync_design_doc("sitecompare", sitecompare.design_doc)
-    db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecResults", logcompare.design_doc)
-    db.sync_design_doc("tcm", tcm.design_doc)
-=======
-    import buildcompare
     sync(db)
->>>>>>> 3725bfe3b9be3b57cc6356295b889925c0cb1b59:brasstacks/__init__.py
     httpd = get_wsgi_server(db)
     print "Serving on http://localhost:8888/"
     httpd.serve_forever()
@@ -124,11 +116,7 @@ def sync(db=None):
     import tcm
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-<<<<<<< HEAD:brasstacks/__init__.py
     db.sync_design_doc("fennecResults", logcompare.design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
-=======
-    db.sync_design_doc("fennecResults", buildcompare.design_doc)
-    db.sync_design_doc("tcm", tcm.design_doc)
     db.sync_design_doc("tcmTags", tcm.tags_design_doc)
->>>>>>> 3725bfe3b9be3b57cc6356295b889925c0cb1b59:brasstacks/__init__.py
+
