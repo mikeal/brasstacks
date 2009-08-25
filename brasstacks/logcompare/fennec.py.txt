@@ -69,10 +69,10 @@ class FennecApplication(RestApplication):
     if collection == "product":
       return MakoResponse("error", error="not implemented yet")
       # if resource is None:
-        # products = set(self.db.views.metadata.products(reduce=False).rows.keys())
+        # products = set(self.db.views.metadata.products(reduce=False).keys())
         # return MakoResponse("products", products=products)
       # else:
-        # tests = self.db.views.fennecBrasstacks.testsByProduct(key=resource).rows
+        # tests = self.db.views.fennecBrasstacks.testsByProduct(key=resource)
         # return MakoResponse("product", tests=tests)
 
     if collection == "testtype":
