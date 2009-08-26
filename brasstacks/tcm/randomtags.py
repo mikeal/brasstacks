@@ -5,6 +5,8 @@ db = couchquery.Database(sys.argv[-1])
 
 all = db.views.all()
 
+all = [d for d in all if d.get('type', None) == 'tcm-testcase']
+
 for doc in all:
     doc.tags = []
 
