@@ -20,17 +20,17 @@ $("#tagcloud").tagcloud({type:"list",sizemin:14,sizemax:70,height:"auto",}).find
 <table id="collections-table" cellspacing="1">
   <thead> 
     <tr> 
-        <th>Product</th>
         <th>Name</th>
+        <th>Product</th>
         <th>Featured</th>
         <th>Tags</th>
     </tr>
-  </thead> 
+  </thead>
   <tbody>
   % for collection in collections:
     <tr>
+      <td><a href="/tcm/tags/collection/${collection._id}">${collection.name}</a></td>
       <td>${collection.product}</td>
-      <td>${collection.name}</td>
       <td>${collection.get("featured", False)}</td>
       <td>${', '.join(collection.tags)}</td>
     </tr>
