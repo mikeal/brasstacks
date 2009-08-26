@@ -89,7 +89,7 @@ class TestCaseManagerAPI(RestApplication):
             # TODO: Make these return proper errors
             assert collection.get('name')
             assert collection.get('product')
-            assert collection.gat('tags')
+            assert collection.get('tags')
             info = self.db.create(collection)
             return JSONResponse(self.db.get(info['id']))
 
