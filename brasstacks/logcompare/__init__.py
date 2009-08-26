@@ -43,13 +43,12 @@ class LogCompareApplication(RestApplication):
         starttime = datetime.now()
         if collection is None:
           
-            products = self.db.views.fennecResults.productCounts(reduce=True, group=True).items()
-            testtypes = self.db.views.fennecResults.testtypeCounts(reduce=True, group=True).items()
-            oses = self.db.views.fennecResults.osCounts(reduce=True, group=True).items()
-            builds = self.db.views.fennecResults.buildCounts(reduce=True, group=True).items()
-            summary = self.db.views.fennecResults.summaryBuildsByMetadata(reduce=True, group=True, descending=True, limit=20).items()
+            products = self.db.views.fennecResults.productCounts(group=True).items()
+            testtypes = self.db.views.fennecResults.testtypeCounts(group=True).items()
+            oses = self.db.views.fennecResults.osCounts(group=True).items()
+            builds = self.db.views.fennecResults.buildCounts(group=True).items()
+            summary = self.db.views.fennecResults.summaryBuildsByMetadata(group=True, descending=True, limit=20).items()
             
-            # return LogCompareResponse("index", starttime, request=request)
             return LogCompareResponse("index", starttime, products=products, testtypes=testtypes, oses=oses, builds=builds, summary=summary)
           
         if collection == "build":
@@ -57,7 +56,7 @@ class LogCompareApplication(RestApplication):
                 return MakoResponse("error", error="no build id input is given")
             else:
                 doc = self.db.views.fennecResults.entireBuildsById(key = resource).items()
-                if len(doc) == 0:
+                if len(doc) is 0:
                     return MakoResponse("error", error="build id cannot be found")
                 else:
                     similardocs = self.findTenPrevious(doc)
@@ -72,20 +71,20 @@ class LogCompareApplication(RestApplication):
               
                 inputs = resource.split('&')
                 
-                if len(inputs) == 1:
+                if len(inputs) is 1:
                     doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
-                    if len(doc1) == 0:
+                    if len(doc1) is 0:
                         return MakoResponse("error", error="build id cannot be found")
                     else:
                         buildid2 = self.findPrevious(doc1)
-                        if buildid2 == None:
+                        if buildid2 is None:
                             return MakoResponse("error", error="this build has no prior builds")
                         else:
                             doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2).items()
-                elif len(inputs) == 2:
+                elif len(inputs) is 2:
                     doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
                     doc2 = self.db.views.fennecResults.entireBuildsById(key=inputs[1]).items()
-                    if len(doc1) == 0 or len(doc2) == 0:
+                    if len(doc1) is 0 or len(doc2) is 0:
                         return MakoResponse("error", error="build ids cannot be found")
               
                 build1 = Build(doc1)
@@ -157,14 +156,14 @@ class LogCompareApplication(RestApplication):
                 lastpass = self.db.views.fennecResults.allPassesByTimestamp(
                     startkey=[testname, 0], endkey=[testname, {}], descending=False, limit=1).items()
                 
-                if len(firstfail) == 0:
+                if len(firstfail) is 0:
                     results['firstfail'] = None
                 else:
                     (key, value) = firstfail[0]
                     buildid = value[1]
                     results['firstfail'] = buildid
                 
-                if len(lastpass) == 0:
+                if len(lastpass) is 0:
                     results['lastpass'] = None
                 else:
                     (key, value) = lastpass[0]
@@ -187,7 +186,7 @@ class LogCompareApplication(RestApplication):
                 doc1 = self.db.views.fennecResults.entireBuildsById(key = id1).items()
                 doc2 = self.db.views.fennecResults.entireBuildsById(key = id2).items()
                 
-                if len(doc1) == 0 or len(doc2) == 0:
+                if len(doc1) is 0 or len(doc2) is 0:
                     return MakoResponse("error", error="input is not a valid build id")
                 else:
                     build1 = Build(doc1)
@@ -201,7 +200,7 @@ class LogCompareApplication(RestApplication):
         # entry of self
         selfentry = 0
         
-        if len(doc) == 0:
+        if len(doc) is 0:
             return None
         else:
             (key, value) = doc[0]
@@ -229,7 +228,7 @@ class LogCompareApplication(RestApplication):
         
         similardocs = self.findTenPrevious(doc)
         
-        if similardocs == None:
+        if similardocs is None:
             return None
         else:
             if len(similardocs) < minlength:
