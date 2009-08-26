@@ -55,14 +55,14 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="no build id input is given")
             else:
-                doc = self.db.views.fennecResults.entireBuildsById(key = resource).items()
+                doc = self.db.views.fennecResults.entireBuildsById(key=resource).items()
                 if len(doc) is 0:
                     return MakoResponse("error", error="build id cannot be found")
                 else:
                     similardocs = self.findTenPrevious(doc)
                     build = Build(doc)
                     buildtests = build.getTests()
-                    return MakoResponse("build", build = build, buildtests = buildtests, similardocs = similardocs)
+                    return MakoResponse("build", build=build, buildtests=buildtests, similardocs=similardocs)
 
         if collection == "compare":
             if resource is None:
@@ -82,8 +82,9 @@ class LogCompareApplication(RestApplication):
                         else:
                             doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2).items()
                 elif len(inputs) is 2:
-                    doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
-                    doc2 = self.db.views.fennecResults.entireBuildsById(key=inputs[1]).items()
+                    rows = self.db.views.fennecResults.entireBuildsById(key=[input[0], input[1]]).items()
+                    doc1 = rows[input[0]]
+                    doc2 = rows[input[1]]
                     if len(doc1) is 0 or len(doc2) is 0:
                         return MakoResponse("error", error="build ids cannot be found")
               
@@ -91,13 +92,14 @@ class LogCompareApplication(RestApplication):
                 build2 = Build(doc2)
               
                 answer = build1.compare(build2)
-                return MakoResponse("compare", answer = answer, build1 = build1, build2 = build2)
+                return MakoResponse("compare", answer=answer, build1=build1, build2=build2)
 
         if collection == "product":
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                buildsbyproduct = self.db.views.fennecResults.metadataByProduct(startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
+                buildsbyproduct = self.db.views.fennecResults.metadataByProduct(
+                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
                 return MakoResponse("product", buildsbyproduct=buildsbyproduct)
 
         if collection == "testtype":
@@ -139,10 +141,10 @@ class LogCompareApplication(RestApplication):
                 return MakoResponse("test", results=results)
       
         if collection == "failures":
-            lastbuild = self.db.views.fennecResults.summaryBuildsByMetadata(reduce = True, group = True, descending=True, limit=1).items()
+            lastbuild = self.db.views.fennecResults.summaryBuildsByMetadata(group=True, descending=True, limit=1).items()
             (key, value) = lastbuild[0]
             buildid = key[1]
-            doc = self.db.views.fennecResults.entireBuildsById(key = buildid).items()
+            doc = self.db.views.fennecResults.entireBuildsById(key=buildid).items()
             build = Build(doc)
             buildtests = build.getTests()
             tests = {}
@@ -177,22 +179,26 @@ class LogCompareApplication(RestApplication):
     def POST(self, request, collection = None, resource = None):
         if collection == "compare":
             if request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
-                # if ('buildid1' in request.body) and ('buildid2' in request.body): # TODO: correctly check for blank input
-                id1 = request.body['buildid1']
-                id2 = request.body['buildid2']
-                # else: 
-                  # return MakoResponse("error", error="inputs cannot be blank")
-                
-                doc1 = self.db.views.fennecResults.entireBuildsById(key = id1).items()
-                doc2 = self.db.views.fennecResults.entireBuildsById(key = id2).items()
-                
-                if len(doc1) is 0 or len(doc2) is 0:
-                    return MakoResponse("error", error="input is not a valid build id")
+                if not hasattr(request.body, 'form'):
+                    return MakoResponse("error", error="body has no form")
                 else:
-                    build1 = Build(doc1)
-                    build2 = Build(doc2)
-                    answer = build1.compare(build2)
-                    return MakoResponse("compare", answer = answer, build1 = build1, build2 = build2)
+                    if 'buildid1' not in request.body.form or 'buildid2' not in request.body.form:
+                        return MakoResponse("error", error="inputs cannot be blank")
+                    else:
+                        id1 = request.body['buildid1']
+                        id2 = request.body['buildid2']
+                        
+                        rows = self.db.views.fennecResults.entireBuildsById(key=[id1, id2]).items()
+                        doc1 = rows[id1]
+                        doc2 = rows[id2]
+                        
+                        if len(doc1) is 0 or len(doc2) is 0:
+                            return MakoResponse("error", error="input is not a valid build id")
+                        else:
+                            build1 = Build(doc1)
+                            build2 = Build(doc2)
+                            answer = build1.compare(build2)
+                            return MakoResponse("compare", answer=answer, build1=build1, build2=build2)
   
     def findTenPrevious(self, doc):
         # max limit of the results
@@ -237,7 +243,7 @@ class LogCompareApplication(RestApplication):
                 (key, value) = similardocs[previous]
                 return value
 
-class Build():
+class Build(object):
     def __init__(self, doc):
         (key, value) = doc[0]
         self.doc = value
@@ -354,7 +360,7 @@ class Build():
         # true if self's time is later than build's time
         return dt > dt2
 
-class TestsResult():
+class TestsResult(object):
     def __init__(self, tests):
         self.numtestfiles = len(tests)
         items = tests.iteritems()
