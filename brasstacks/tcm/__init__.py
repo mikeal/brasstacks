@@ -81,9 +81,17 @@ class TestCaseManagerAPI(RestApplication):
                     doc[k] = v
                 info = self.db.save(doc)
                 return JSONResponse(self.db.get(info['id']))
-        def POST(self, request, collection, resource=None):
-            if collection == 'createcollection':
-                pass
+    def POST(self, request, collection, resource=None):
+        if collection == 'createcollection':
+            collection = json.loads(str(request.body))
+            collection['type'] = 'tcm-collection'
+            # Validation
+            # TODO: Make these return proper errors
+            assert collection.get('name')
+            assert collection.get('product')
+            assert collection.gat('tags')
+            info = self.db.create(collection)
+            return JSONResponse(self.db.get(info['id']))
 
 
 class TestCaseManagerTags(RestApplication):
@@ -93,13 +101,20 @@ class TestCaseManagerTags(RestApplication):
     def GET(self, request, tag=None, collection=None):
         if tag is None:
             rows = self.db.views.tcmTags.tagCount(group=True)
-            return MakoResponse('tags', tags=rows.items(), collections=[], products=products)
+            collections = self.db.views.tcm.byType(key="tcm-collection")
+            return MakoResponse('tags', tags=rows.items(), collections=collections, 
+                                products=products)
         elif tag == "collection":
             if collection is None:
                 pass
                 # collection index
             else:
-                pass
+                coll = self.db.get(collection)
+                keys = [[t, coll.product] for t in coll.tags]
+                rows = self.db.views.tcmTags.casesByTag(keys=keys)
+                testcases = dict([(d._id, d,) for d in rows]).values()
+                return MakoResponse('testcases', testcases=testcases, 
+                                    page_header="Collection :: "+coll.name)
         else:
             rows = self.db.views.tcmTags.casesByTag(startkey=[tag, None], endkey=[tag, {}])
             return MakoResponse('testcases', testcases=rows, page_header="Tags :: "+tag)
