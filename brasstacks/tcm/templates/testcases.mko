@@ -25,6 +25,7 @@ $(document).ready(function()
 </script>
 
 <h3> ${page_header} </h3>
+<h4> Total :: ${len(testcases)} </h4>
 
 <table id="productTable" class="tablesorter" border="0" cellpadding="0" cellspacing="1">
 <thead> 
