@@ -28,4 +28,4 @@ for i in range(len(all)):
     if check1 == '3' or check1 == '5':
         all[i].tags.append('smoketest')
 
-all.save()
+db.save(all)
