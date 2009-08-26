@@ -23,7 +23,7 @@ $("#tagcloud").tagcloud({type:"list",sizemin:14,sizemax:70,height:"auto",}).find
         <th>Product</th>
         <th>Name</th>
         <th>Featured</th>
-        <td>Tags</th>
+        <th>Tags</th>
     </tr>
   </thead> 
   <tbody>
