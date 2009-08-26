@@ -1,7 +1,7 @@
 ## base.mko
 <html>
   <head>
-    <title>Fennec</title>
+    <title>Log Compare</title>
     <script type="text/javascript" src="/static/tablesorter/jquery-latest.js"></script>
     <script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css" />
