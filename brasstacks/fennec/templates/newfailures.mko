@@ -50,9 +50,6 @@ $(document).ready(function()
   </thead>
   <tbody>
 % for fail in failures[day]:
-<%
-print fail['run']
-%>
     <tr>
       <td>${fail['run']['testtype']}</td>
       <td>${fail['testname']}</td>
