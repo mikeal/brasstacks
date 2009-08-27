@@ -118,6 +118,7 @@ def sync(db=None):
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
     db.sync_design_doc("fennecResults", logcompare.design_doc)
     db.sync_design_doc("fennec", fennec.design_doc)
+    db.sync_design_doc("fennecFailures", fennec.failures_design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
     db.sync_design_doc("tcmTags", tcm.tags_design_doc)
 

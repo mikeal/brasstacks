@@ -1,0 +1,70 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+<style type="text/css">
+.testtype {
+  color:#0000FF;
+}
+.passed {
+  color:#00FF00;
+}
+.failed {
+  color:#FF0000;
+}
+.run-info {
+  text-align:center;
+}
+h2 {
+  text-align:center;
+}
+</style>
+
+<script type="text/javascript" src="/static/jquery-1.3.1.js" ></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.min.js" ></script>
+<link rel="stylesheet" href="/static/tablesorter/themes/blue/style.css" type="text/css" 
+  media="print, projection, screen" />
+
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("table.tablesorter").tablesorter(); 
+    } 
+);
+</script>
+
+<h2>New Failures</h2>
+
+% for day in reversed(sorted(failures.keys())):
+<div>${day}</div>
+<table class="tablesorter">
+  <thead>
+    <tr>
+      <th>testtype</th>
+      <th>name</th>
+      <th>time</th>
+      <th>build</th>
+      <th>last success</th>
+    <tr>
+  </thead>
+  <tbody>
+% for fail in failures[day]:  
+    <tr>
+      <td>${fail['run']['testtype']}</td>
+      <td>${fail['testname']}</td>
+      <td>${fail['run']['timestamp']}</td>
+      <td>${fail['run']['id']}</td>
+      <td>${fail['testinfo']['lastsuccess']}</td>
+    <tr>
+% endfor
+  </tbody>
+</table>
+% endfor
+</%def>
+
+
+<%def name="footer()">
+<div>
+  Latest <a href="?count=5">5</a>   <a href="?count=10">10</a>   <a href="?count=25">25</a>   <a href="?count=50">50</a>   <a href="?count=100">100</a>  
+</div>
+</%def>

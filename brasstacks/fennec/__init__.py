@@ -11,6 +11,7 @@ except:
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 design_doc = os.path.join(this_directory, 'views')
+failures_design_doc = os.path.join(this_directory, 'failureViews')
 
 lookup = TemplateLookup(directories=[os.path.join(this_directory, 'templates')], encoding_errors='ignore', input_encoding='utf-8', output_encoding='utf-8')
 
@@ -50,6 +51,26 @@ class FennecApplication(RestApplication):
                 startkey=startkey, endkey=k+[False, {}])[0]
                 
         return {"lastsuccess":lastsuccess, "firstfailed":firstfailed}
+    
+    def update_failure_documents(self):
+        latest = self.db.views.fennecFailures.failureInfoByTimestamp(descending=True, limit=1)
+        if len(latest) is 0:
+            endkey = None
+        else:
+            endkey = latest[0].run["timestamp"]
+        rows = self.db.views.fennec.runByTimestamp(descending=True, startkey={}, endkey=endkey)
+
+        for doc in rows:
+            tests = [k for k,v in doc.tests.items() if v.get('fail',0) is not 0]
+            fails = dict([(test, self.get_failure_info(test, doc.testtype, doc.os),) 
+                        for test in tests
+                        ])
+            failure_info = {'run':{'id':doc._id, 'os':doc.os, 'testtype':doc.testtype,
+                                   'timestamp':doc.timestamp, 'product':doc.product},
+                            'fails':fails, 'type':'fennec-failure-info',
+                            }
+            if len(self.db.views.fennecFailures.failureInfoByID(key=doc._id)) is 0:
+                self.db.create(failure_info)
         
     def GET(self, request, collection=None, resource=None):
         if collection is None:
@@ -57,33 +78,29 @@ class FennecApplication(RestApplication):
             runs = self.db.views.fennec.runByTimestamp(descending=True, limit=limit)
             return MakoResponse('runs', runs=runs, page_header="Latest "+str(limit)+" Runs")
         if collection == "detail":
+            self.update_failure_documents()
+            
             if resource is None:
                 limit = int(request.query.get('count', 5))
                 runs = self.db.views.fennec.runByTimestamp(descending=True, limit=limit)
+                fail_info = self.db.views.fennecFailures.failureInfoByID(keys=runs.ids())
+                for run in runs:
+                    run.failure_info = fail_info[run._id][0]
                 page_header = "Details for latest "+str(limit)+" Runs"
             else:
                 runs = [self.db.get(resource)]
+                runs[0].failure_info = self.db.views.fennecFailures.failureInfoByID(key=resource)[0]
                 page_header = "Details for Run "+resource
                 
-            def reduction(tests, run):
-                for testname, test in run.tests.items():
-                    if test.get('fail', 0) is not 0:
-                        tests.append([testname, run.testtype, run.os])
-                return tests
-            
-            def smart_set(l):
-                r = []
-                for i in l:
-                    if i not in r:
-                        r.append(i)
-                return r
-            failures = smart_set(reduce(reduction, runs, []))
-            failure_info = dict([
-                        ((test, testtype, os,), self.get_failure_info(test, testtype, os),) 
-                        for test, testtype, os in failures
-                        ])
-                
-            return MakoResponse('runsdetail', runs=runs, page_header=page_header, 
-                                failure_info=failure_info)
-                
+            return MakoResponse('runsdetail', runs=runs, page_header=page_header)
+        if collection == "newfailures":
+            #self.update_failure_documents()
+            limit = int(request.query.get('count', 50))
+            rows = self.db.views.fennecFailures.newFailures(descending=True, limit=limit)
+            failures = {}
+            for test in rows:
+                day, time = test['run']['timestamp'].split(' ')
+                test['time'] = time
+                failures.setdefault(day, []).append(test)
+            return MakoResponse('newfailures', failures=failures)
 
