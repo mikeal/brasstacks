@@ -38,6 +38,7 @@ class LogCompareApplication(RestApplication):
     def __init__(self, db):
         super(LogCompareApplication, self).__init__()
         self.db = db
+        self.vu = self.db.views.fennecResults
   
     def GET(self, request, collection=None, resource=None):
         starttime = datetime.now()
@@ -82,17 +83,19 @@ class LogCompareApplication(RestApplication):
                         else:
                             doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2).items()
                 elif len(inputs) is 2:
-                    rows = self.db.views.fennecResults.entireBuildsById(key=[input[0], input[1]]).items()
-                    doc1 = rows[input[0]]
-                    doc2 = rows[input[1]]
+                    doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
+                    doc2 = self.db.views.fennecResults.entireBuildsById(key=inputs[1]).items()
                     if len(doc1) is 0 or len(doc2) is 0:
                         return MakoResponse("error", error="build ids cannot be found")
-              
-                build1 = Build(doc1)
-                build2 = Build(doc2)
-              
-                answer = build1.compare(build2)
-                return MakoResponse("compare", answer=answer, build1=build1, build2=build2)
+                
+                if doc1 == doc2:
+                    return MakoResponse("error", error="cannot compare with itself")
+                else:
+                    build1 = Build(doc1)
+                    build2 = Build(doc2)
+                    
+                    answer = build1.compare(build2)
+                    return MakoResponse("compare", answer=answer, build1=build1, build2=build2)
 
         if collection == "product":
             if resource is None:
@@ -185,20 +188,19 @@ class LogCompareApplication(RestApplication):
                     if 'buildid1' not in request.body.form or 'buildid2' not in request.body.form:
                         return MakoResponse("error", error="inputs cannot be blank")
                     else:
-                        id1 = request.body['buildid1']
-                        id2 = request.body['buildid2']
-                        
-                        rows = self.db.views.fennecResults.entireBuildsById(key=[id1, id2]).items()
-                        doc1 = rows[id1]
-                        doc2 = rows[id2]
-                        
+                        doc1 = self.db.views.fennecResults.entireBuildsById(key=request.body['buildid1']).items()
+                        doc2 = self.db.views.fennecResults.entireBuildsById(key=request.body['buildid2']).items()
+        
                         if len(doc1) is 0 or len(doc2) is 0:
                             return MakoResponse("error", error="input is not a valid build id")
                         else:
-                            build1 = Build(doc1)
-                            build2 = Build(doc2)
-                            answer = build1.compare(build2)
-                            return MakoResponse("compare", answer=answer, build1=build1, build2=build2)
+                            if doc1 == doc2:
+                                return MakoResponse("error", error="cannot compare with itself")
+                            else:
+                                build1 = Build(doc1)
+                                build2 = Build(doc2)
+                                answer = build1.compare(build2)
+                                return MakoResponse("compare", answer = answer, build1 = build1, build2 = build2)
   
     def findTenPrevious(self, doc):
         # max limit of the results
@@ -296,7 +298,6 @@ class Build(object):
                         stabletests.append({'testfile': testfile, 'result': tests1[testfile]})
                     else:
                         if result1['fail'] > result2['fail']:
-                            # prevlynotfails.append({'testfile': testfile, 'delta': result1['fail'] - result2['fail'], 'failnotes': result1['note'].split(', ')})
                             prevlynotfails.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['fail'] - result2['fail']})
                         if result1['pass'] > result2['pass']:
                             prevlynotpasses.append({'testfile': testfile, 'result1': tests1[testfile], 'result2': tests2[testfile], 'delta': result1['pass'] - result2['pass']})
