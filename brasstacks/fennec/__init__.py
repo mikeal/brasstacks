@@ -65,10 +65,8 @@ class FennecApplication(RestApplication):
             fails = dict([(test, self.get_failure_info(test, doc.testtype, doc.os),) 
                         for test in tests
                         ])
-            failure_info = {'run':{'id':doc._id, 'os':doc.os, 'testtype':doc.testtype,
-                                   'timestamp':doc.timestamp, 'product':doc.product},
-                            'fails':fails, 'type':'fennec-failure-info',
-                            }
+            doc.pop('tests')
+            failure_info = {'run':doc, 'fails':fails, 'type':'fennec-failure-info',}
             if len(self.db.views.fennecFailures.failureInfoByID(key=doc._id)) is 0:
                 self.db.create(failure_info)
         
@@ -94,7 +92,7 @@ class FennecApplication(RestApplication):
                 
             return MakoResponse('runsdetail', runs=runs, page_header=page_header)
         if collection == "newfailures":
-            #self.update_failure_documents()
+            self.update_failure_documents()
             limit = int(request.query.get('count', 50))
             rows = self.db.views.fennecFailures.newFailures(descending=True, limit=limit)
             failures = {}
