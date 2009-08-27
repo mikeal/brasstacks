@@ -32,7 +32,7 @@ def main():
   testtypes = ['crashtests', 'mochitests'] #, 'xpcshell', 'reftests']
   build = timestamp = ''
   
-  db = couchquery.Database("http://pythonesque.org:5984/fennec_test", cache=Cache())
+  db = couchquery.Database("http://pythonesque.org:5984/logcompare", cache=Cache())
   
   # create documents
   doccount = random.randint(50, 60)
@@ -40,12 +40,12 @@ def main():
     
     # create metadata
     buildstructure = {}
-    build = timestamp = str(datetime.datetime.now())
-    buildstructure['build'] = build
+
+    buildstructure['build'] = random.randint(999900, 999999)
     buildstructure['product'] = random.choice(products)
     buildstructure['os'] = random.choice(platforms)
     buildstructure['testtype'] = random.choice(testtypes)
-    buildstructure['timestamp'] = build
+    buildstructure['timestamp'] = str(datetime.datetime.now())
     buildstructure['document'] = document
     
     # create tests
