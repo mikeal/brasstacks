@@ -1,0 +1,29 @@
+## -*- coding: utf-8 -*-
+<html>
+    <title>Fennec Test Results</title>
+    <body>
+        <style type="text/css">
+        body {
+          color:#222222;
+          font-family:"Sabon LT Std","Hoefler Text","Palatino Linotype","Book Antiqua",serif;
+          font-size:18px;
+        }
+        </style>
+
+        <div class="header">
+            ${self.header()}
+        </div>
+
+        ${self.body()}
+
+        <div class="footer">
+            ${self.footer()}
+        </div>
+    </body>
+</html>
+
+<%def name="footer()">
+</%def>
+<%def name="header()">
+</%def>
+
