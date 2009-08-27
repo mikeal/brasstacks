@@ -73,18 +73,21 @@ passed = total - failed
   <tbody>
 % for testname, test in [(k, v,) for k,v in run.tests.items() if v.get('fail', 0) is not 0]:
 <%
-if failure_info[(testname,run.testtype,run.os)]['lastsuccess']:
-    ts = failure_info[(testname,run.testtype,run.os)]['lastsuccess']
-    id = failure_info[(testname,run.testtype,run.os)]['_id']
+
+fail_info = run.failure_info['fails'][testname]
+
+if fail_info['lastsuccess']:
+    ts = fail_info['lastsuccess']
+    id = fail_info['_id']
     last_timestamp = '<a href="/fennec/detail/'+id+'">'+ts+'</a>'
 else:
     last_timestamp = 'Never'
 %>
   <tr>
-    <td>${failure_info[(testname,run.testtype,run.os)]['firstfailed']["_id"] == run["_id"]}</td>
+    <td>${fail_info['firstfailed']["_id"] == run["_id"]}</td>
     <td>${testname}</td>
     <td>${last_timestamp}</td>
-    <td><a href="/fennec/detail/${failure_info[(testname,run.testtype,run.os)]['firstfailed']['_id']}">${failure_info[(testname,run.testtype,run.os)]['firstfailed']["timestamp"]}</a></td>
+    <td><a href="/fennec/detail/${fail_info['firstfailed']['_id']}">${fail_info['firstfailed']["timestamp"]}</a></td>
   </tr>
 % endfor
   </tbody>
