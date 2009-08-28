@@ -28,8 +28,8 @@
   <div>
   <form method="post" action="/logcompare/compare">
   <div class="compare-results-form">
-    <input type="text" name="buildid1" style="width: 300px;" value="Build ID 1"/><br>
-    <input type="text" name="buildid2" style="width: 300px;" value="Build ID 2"/><br>
+    <input type="text" name="buildid1" style="width: 300px;" value="Build ID 1"/>
+    <input type="text" name="buildid2" style="width: 300px;" value="Build ID 2"/>
     <input type="submit" value="Compare them"/>
   </div>
   </form>

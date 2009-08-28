@@ -86,9 +86,10 @@ class LogCompareApplication(RestApplication):
                 if len(doc) is 0:
                     return MakoResponse("error", error="build id cannot be found")
                 else:
+                    status = request.query.get('tests', "all")
                     similardocs = self.find_previous(doc, 10)
                     build = Build(doc)
-                    buildtests = build.get_tests()
+                    buildtests = build.get_tests(status)
                     return MakoResponse("run", build=build, buildtests=buildtests, similardocs=similardocs)
 
         if collection == "compare":
@@ -323,7 +324,7 @@ class Build(object):
         self.timestamp = Then(self.doc['timestamp'])
         self.tests = self.doc['tests']
 
-    def get_tests(self, status="all"):
+    def get_tests(self, status):
         return TestsResult(self.tests, status)
     
     def compare(self, build):
@@ -428,22 +429,33 @@ class Build(object):
         return dt > dt2
 
 class TestsResult(object):
-    def __init__(self, tests, status="all"):
-        self.numtestfiles = len(tests)
-        self.tests = tests.iteritems()
+    def __init__(self, tests, status):
         
-        if status == "all":
-            self.totalfails = 0
-            self.totalpasses = 0
-            self.totaltodos = 0
-            
-            for (key, value) in self.tests:
-                self.totalfails = self.totalfails + value['fail']
-                self.totalpasses = self.totalpasses + value['pass']
-                self.totaltodos = self.totaltodos + value['todo']
-            
-            self.totaltests = self.totalfails + self.totalpasses + self.totaltodos
+        result = []
+        if status == "fail":
+            print status
+            for item in tests.items():
+                key, value = item
+                if value['fail'] > 0:
+                    result.append(item)
+        elif status == "all":
+            print status
+            for item in tests.items():
+                result.append(item)
         
+        self.totalfails = 0
+        self.totalpasses = 0
+        self.totaltodos = 0
+        
+        for key, value in result:
+            self.totalfails += value['fail']
+            self.totalpasses += value['pass']
+            self.totaltodos += value['todo']
+        
+        self.numtestfiles = len(result)
+        self.totaltests = self.totalfails + self.totalpasses + self.totaltodos
+        self.tests = result
+            
     # def smart_sum(x, y):
       # x['totalfails'] += y['fail']
       # x['totalpasses'] += y['pass']
@@ -453,3 +465,7 @@ class TestsResult(object):
     
     # for key, value in totals.items():
       # setattr(self, key, value)
+      
+      # 11:51:54 AM) mikeal: for (testname, result) in [(k, v,) for k, v in buildtests.tests.items() if v.fail is 0]
+# (11:52:08 AM) mikeal: for (testname, result) in [(k, v,) for k, v in doc.tests.items() if v.fail is 0]:
+# (11:52:43 AM) mikeal: for (testname, result) in [(k, v,) for k, v in doc.tests.items() if v.fail is not 0]
