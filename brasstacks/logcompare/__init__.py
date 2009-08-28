@@ -12,11 +12,11 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from webenv.rest import RestApplication
 
-from logcompare import Build
+from logcompare import Then
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(this_directory, 'templates')
-design_doc = os.path.join(this_directory, 'views')
+design_doc = os.path.join(this_directory, 'logcompareviews')
 testdesign_doc = os.path.join(this_directory, 'testviews')
 lookup = TemplateLookup(directories=[template_dir], encoding_errors='ignore', input_encoding='utf-8', output_encoding='utf-8')
 
@@ -38,32 +38,58 @@ class LogCompareApplication(RestApplication):
     def __init__(self, db):
         super(LogCompareApplication, self).__init__()
         self.db = db
-        self.vu = self.db.views.fennecResults
+        self.vu = self.db.views.logcompare
   
     def GET(self, request, collection=None, resource=None):
         starttime = datetime.now()
         if collection is None:
-          
-            products = self.db.views.fennecResults.productCounts(group=True).items()
-            testtypes = self.db.views.fennecResults.testtypeCounts(group=True).items()
-            oses = self.db.views.fennecResults.osCounts(group=True).items()
-            builds = self.db.views.fennecResults.buildCounts(group=True).items()
-            summary = self.db.views.fennecResults.summaryBuildsByMetadata(group=True, descending=True, limit=20).items()
             
-            return LogCompareResponse("index", starttime, products=products, testtypes=testtypes, oses=oses, builds=builds, summary=summary)
+            # products = self.vu.productCounts(group=True).items()
+            # testtypes = self.vu.testtypeCounts(group=True).items()
+            # oses = self.vu.osCounts(group=True).items()
+            # builds = self.vu.buildCounts(group=True).items()
+            
+            limit = int(request.query.get('count', 10))
+            page = request.query.get('page', 'newest')
+            group = int(request.query.get('group', 0))
+            
+            if page == 'newest':
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items()
+                group = 0
+            elif page == 'newer':
+                if group > 0:
+                    group -= 1
+                else:
+                    group = 0
+                skip = limit * group
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
+            elif page == 'older':
+                group += 1
+                skip = limit * group
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
+            
+            # elif page == 'oldest':
+              # summary = self.vu.runSummaryByTimestamp(group=True, descending=False, limit=limit).items()
+            
+            # (key, value) = summary[0]
+            # startkey = key[5]
+            # (key, value) = summary[len(summary)-1]
+            # lastkey = key[5]
+            
+            return LogCompareResponse("index", starttime, summary=summary, limit=limit, group=group)
           
-        if collection == "build":
+        if collection == "run":
             if resource is None:
                 return MakoResponse("error", error="no build id input is given")
             else:
-                doc = self.db.views.fennecResults.entireBuildsById(key=resource).items()
+                doc = self.vu.entireRunByDocId(key=resource).items()
                 if len(doc) is 0:
                     return MakoResponse("error", error="build id cannot be found")
                 else:
-                    similardocs = self.findTenPrevious(doc)
+                    similardocs = self.find_previous(doc, 10)
                     build = Build(doc)
-                    buildtests = build.getTests()
-                    return MakoResponse("build", build=build, buildtests=buildtests, similardocs=similardocs)
+                    buildtests = build.get_tests()
+                    return MakoResponse("run", build=build, buildtests=buildtests, similardocs=similardocs)
 
         if collection == "compare":
             if resource is None:
@@ -73,7 +99,7 @@ class LogCompareApplication(RestApplication):
                 inputs = resource.split('&')
                 
                 if len(inputs) is 1:
-                    doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
+                    doc1 = self.vu.entireBuildsById(key=inputs[0]).items()
                     if len(doc1) is 0:
                         return MakoResponse("error", error="build id cannot be found")
                     else:
@@ -81,10 +107,10 @@ class LogCompareApplication(RestApplication):
                         if buildid2 is None:
                             return MakoResponse("error", error="this build has no prior builds")
                         else:
-                            doc2 = self.db.views.fennecResults.entireBuildsById(key=buildid2).items()
+                            doc2 = self.vu.entireBuildsById(key=buildid2).items()
                 elif len(inputs) is 2:
-                    doc1 = self.db.views.fennecResults.entireBuildsById(key=inputs[0]).items()
-                    doc2 = self.db.views.fennecResults.entireBuildsById(key=inputs[1]).items()
+                    doc1 = self.vu.entireBuildsById(key=inputs[0]).items()
+                    doc2 = self.vu.entireBuildsById(key=inputs[1]).items()
                     if len(doc1) is 0 or len(doc2) is 0:
                         return MakoResponse("error", error="build ids cannot be found")
                 
@@ -101,7 +127,7 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                buildsbyproduct = self.db.views.fennecResults.metadataByProduct(
+                buildsbyproduct = self.vu.metadataByProduct(
                     startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
                 return MakoResponse("product", buildsbyproduct=buildsbyproduct)
 
@@ -109,7 +135,7 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                buildsbytesttype = self.db.views.fennecResults.metadataByTesttype(
+                buildsbytesttype = self.vu.metadataByTesttype(
                     startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
                 return MakoResponse("testtype", buildsbytesttype=buildsbytesttype)
 
@@ -117,7 +143,7 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                buildsbyplatform = self.db.views.fennecResults.metadataByPlatform(
+                buildsbyplatform = self.vu.metadataByPlatform(
                     startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
                 return MakoResponse("platform", buildsbyplatform=buildsbyplatform)
 
@@ -129,7 +155,7 @@ class LogCompareApplication(RestApplication):
                 if len(input) < 3:
                     return MakoResponse("error", error="not enough build info")
                 else:
-                    builds = self.db.views.fennecResults.buildIdsByMetadata(
+                    builds = self.vu.buildIdsByMetadata(
                         startkey=[input[0], input[1], input[2], {}], 
                         endkey=[input[0], input[1], input[2], 0], 
                         descending=True).items()
@@ -139,15 +165,15 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                results = self.db.views.fennecResults.tests(
+                results = self.vu.tests(
                     startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
                 return MakoResponse("test", results=results)
       
         if collection == "failures":
-            lastbuild = self.db.views.fennecResults.summaryBuildsByMetadata(group=True, descending=True, limit=1).items()
+            lastbuild = self.vu.summaryBuildsByMetadata(group=True, descending=True, limit=1).items()
             (key, value) = lastbuild[0]
             buildid = key[1]
-            doc = self.db.views.fennecResults.entireBuildsById(key=buildid).items()
+            doc = self.vu.entireBuildsById(key=buildid).items()
             build = Build(doc)
             buildtests = build.getTests()
             tests = {}
@@ -155,10 +181,10 @@ class LogCompareApplication(RestApplication):
             for (testname, result) in buildtests.tests:
                 results = {}
                 
-                firstfail = self.db.views.fennecResults.allFailsByTimestamp(
+                firstfail = self.vu.allFailsByTimestamp(
                     startkey=[testname, {}], endkey=[testname, 0], descending=True, limit=1).items()
                 
-                lastpass = self.db.views.fennecResults.allPassesByTimestamp(
+                lastpass = self.vu.allPassesByTimestamp(
                     startkey=[testname, 0], endkey=[testname, {}], descending=False, limit=1).items()
                 
                 if len(firstfail) is 0:
@@ -188,8 +214,8 @@ class LogCompareApplication(RestApplication):
                     if 'buildid1' not in request.body.form or 'buildid2' not in request.body.form:
                         return MakoResponse("error", error="inputs cannot be blank")
                     else:
-                        doc1 = self.db.views.fennecResults.entireBuildsById(key=request.body['buildid1']).items()
-                        doc2 = self.db.views.fennecResults.entireBuildsById(key=request.body['buildid2']).items()
+                        doc1 = self.vu.entireBuildsById(key=request.body['buildid1']).items()
+                        doc2 = self.vu.entireBuildsById(key=request.body['buildid2']).items()
         
                         if len(doc1) is 0 or len(doc2) is 0:
                             return MakoResponse("error", error="input is not a valid build id")
@@ -217,7 +243,7 @@ class LogCompareApplication(RestApplication):
             testtype = value['testtype']
             timestamp = value['timestamp']
             
-            similardocs = self.db.views.fennecResults.buildIdsByMetadata(
+            similardocs = self.vu.buildIdsByMetadata(
                 startkey=[product, os, testtype, timestamp], 
                 endkey=[product, os, testtype, 0], 
                 descending=True, 
@@ -245,6 +271,46 @@ class LogCompareApplication(RestApplication):
                 (key, value) = similardocs[previous]
                 return value
 
+    def find_previous(self, doc, limit=10):
+        # max limit of the results
+        length = limit + 1
+        # entry of self
+        selfentry = 0
+        similardocs = []
+        if len(doc) is 0:
+            return similardocs
+        else:
+            (key, value) = doc[0]
+            product = value['product']
+            os = value['os']
+            testtype = value['testtype']
+            timestamp = value['timestamp']
+            
+            similardocs = self.vu.docIdsByMetadata(
+                startkey=[product, os, testtype, timestamp], 
+                endkey=[product, os, testtype, 0], 
+                descending=True, 
+                limit=length).items()
+          
+            if len(similardocs) > 0:
+                del similardocs[selfentry]
+            return similardocs
+  
+    def find_last(self, doc):
+        # querying must return one result: its previous
+        minlength = 1
+        # when sorted in reverse-chronological order from the current build, 
+        # the index of the previous build is 0
+        previous = 0
+        
+        similardocs = self.find_previous(doc, minlength)
+        
+        if len(similardocs) < minlength:
+            return None
+        else:
+            (key, value) = similardocs[previous]
+            return value
+                
 class Build(object):
     def __init__(self, doc):
         (key, value) = doc[0]
@@ -254,11 +320,11 @@ class Build(object):
         self.product = self.doc['product']
         self.os = self.doc['os']
         self.testtype = self.doc['testtype']
-        self.timestamp = self.doc['timestamp']
+        self.timestamp = Then(self.doc['timestamp'])
         self.tests = self.doc['tests']
 
-    def getTests(self):
-        return TestsResult(self.tests)
+    def get_tests(self, status="all"):
+        return TestsResult(self.tests, status)
     
     def compare(self, build):
       
@@ -362,38 +428,28 @@ class Build(object):
         return dt > dt2
 
 class TestsResult(object):
-    def __init__(self, tests):
+    def __init__(self, tests, status="all"):
         self.numtestfiles = len(tests)
-        items = tests.iteritems()
-        
-        self.totalfails = 0
-        self.totalpasses = 0
-        self.totaltodos = 0
-        
-        for (key, value) in items:
-            self.totalfails = self.totalfails + value['fail']
-            self.totalpasses = self.totalpasses + value['pass']
-            self.totaltodos = self.totaltodos + value['todo']
-        
-        self.totaltests = self.totalfails + self.totalpasses + self.totaltodos
         self.tests = tests.iteritems()
-
-# class TestDelta():
-  # def __init__(self, name, notes, delta):
-    # self.name = ''
-    # self.failnotes = ''
-    # self.count = 0
-  # def parsefailnotes(self):
-    # return False
-
-# class Test():
-  # def __init__(self, testfile, result):
-    # self.testfile = testfile
-    # self.result = result
-    # self.totalfail = self.result['fail']
-    # self.totalpass = self.result['pass']
-    # self.totaltodo = self.result['todo']
-    # # self.notes = self.result['note'].split(',')
-    # self.notes = self.result['note']
-  # def totaltests():
-    # return self.totalfail + totalpass + totaltodo
+        
+        if status == "all":
+            self.totalfails = 0
+            self.totalpasses = 0
+            self.totaltodos = 0
+            
+            for (key, value) in self.tests:
+                self.totalfails = self.totalfails + value['fail']
+                self.totalpasses = self.totalpasses + value['pass']
+                self.totaltodos = self.totaltodos + value['todo']
+            
+            self.totaltests = self.totalfails + self.totalpasses + self.totaltodos
+        
+    # def smart_sum(x, y):
+      # x['totalfails'] += y['fail']
+      # x['totalpasses'] += y['pass']
+      # x['totaltodos'] += y['todo']
+    
+    # totals = reduce(smart_sum, tests.values(), {"totalfails":0, "totalpasses":0, "totaltodos":0})
+    
+    # for key, value in totals.items():
+      # setattr(self, key, value)
