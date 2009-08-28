@@ -116,7 +116,7 @@ def sync(db=None):
     import tcm
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
-    db.sync_design_doc("fennecResults", logcompare.design_doc)
+    db.sync_design_doc("logcompare", logcompare.design_doc)
     db.sync_design_doc("fennec", fennec.design_doc)
     db.sync_design_doc("fennecFailures", fennec.failures_design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
