@@ -12,14 +12,23 @@ $(document).ready(function()
 
 <div class="results">
 
-<h2>This Build:</h2>
-${build.buildid} (<a href="/logcompare/compare/${build.buildid}">Compare to last</a>)<br />
-${build.testtype}<br />
-${build.product}<br />
-${build.os}<br />
-${build.timestamp}<br />
+<h2>This Run:</h2>
+<table>
+  <tr>
+    <th>Build ID</th><th>Product</th><th>Platform</th><th>Test type</th><th>Time stamp</th>
+  </tr>
+  <tr>
+    <td><a href="/logcompare/build/${build.buildid}">${build.buildid}</a></td>
+    <td>${build.product}</td> 
+    <td>${build.os}</td>
+    <td>${build.testtype}</td>
+    <td>${build.timestamp.exactly} (${build.timestamp.string})</td>
+    <td><a href="/logcompare/compare/${build.buildid}">Compare to last</a><br /></td>
+  </tr>
+</table>  
 
-<h2>10 Builds Before:</h2>
+
+<h2>Similar Runs Before:</h2>
 % if len(similardocs) == 0:
   No builds prior<br />
 % else:
