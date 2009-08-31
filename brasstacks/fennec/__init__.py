@@ -33,10 +33,13 @@ class FennecApplication(RestApplication):
         super(FennecApplication, self).__init__()
         self.db = db
     
-    def get_failure_info(self, test, testtype, os):
+    def get_failure_info(self, test, testtype, os, stale=False):
         k = [test, testtype, os]
-        lastsuccess = self.db.views.fennec.testByTimestampResult(descending=True, limit=1, 
-            startkey=k+[True], endkey=k+[{}])
+        kwargs = {'descending':True, 'limit':1, 'startkey':k+[True], 'endkey':k+[{}]}
+        if stale:
+            kwargs['stale'] = 'ok'
+        lastsuccess = self.db.views.fennec.testByTimestampResult(**kwargs)
+            
         if len(lastsuccess) is not 0:
             lastsuccess = lastsuccess[0]
         else:
@@ -47,8 +50,10 @@ class FennecApplication(RestApplication):
         else:
             startkey = k + [False]
         
-        firstfailed = self.db.views.fennec.testByTimestampResult(limit=1, 
-                startkey=startkey, endkey=k+[False, {}])[0]
+        kwargs = {'limit':1, 'startkey':startkey, 'endkey':k+[False, {}]}
+        if stale:
+            kwargs['stale'] = 'ok'
+        firstfailed = self.db.views.fennec.testByTimestampResult(**kwargs)[0]
                 
         return {"lastsuccess":lastsuccess, "firstfailed":firstfailed}
     
@@ -57,18 +62,20 @@ class FennecApplication(RestApplication):
         if len(latest) is 0:
             endkey = None
         else:
-            endkey = latest[0].run["timestamp"]
+            endkey = latest[0].run["timestamp"][:-1]
         rows = self.db.views.fennec.runByTimestamp(descending=True, startkey={}, endkey=endkey)
 
         for doc in rows:
             tests = [k for k,v in doc.tests.items() if v.get('fail',0) is not 0]
-            fails = dict([(test, self.get_failure_info(test, doc.testtype, doc.os),) 
+            fails = dict([(test, self.get_failure_info(test, doc.testtype, doc.os, stale=True),) 
                         for test in tests
                         ])
             doc.pop('tests')
             failure_info = {'run':doc, 'fails':fails, 'type':'fennec-failure-info',}
+            
             if len(self.db.views.fennecFailures.failureInfoByID(key=doc._id)) is 0:
                 self.db.create(failure_info)
+            
         
     def GET(self, request, collection=None, resource=None):
         if collection is None:
