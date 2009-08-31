@@ -79,11 +79,11 @@ class LogCompareApplication(RestApplication):
                 if len(doc) is 0:
                     return MakoResponse("error", error="build id cannot be found")
                 else:
-                    status = request.query.get('tests', "all")
-                    similardocs = self.find_previous(doc, 10)
                     build = Build(doc)
+                    similardocs = self.find_previous(doc, 10)
+                    status = request.query.get('tests', "all")
                     buildtests = build.get_tests(status)
-                    return MakoResponse("run", build=build, buildtests=buildtests, similardocs=similardocs)
+                    return MakoResponse("run", build=build, buildtests=buildtests, similardocs=similardocs, status=status)
 
         if collection == "compare":
             if resource is None:
@@ -425,14 +425,40 @@ class TestsResult(object):
     def __init__(self, tests, status):
         
         result = []
-        if status == "fail":
-            print status
+        if status == "all":
+            for item in tests.items():
+                result.append(item)
+        elif status == "fail":
             for item in tests.items():
                 key, value = item
                 if value['fail'] > 0:
                     result.append(item)
-        elif status == "all":
-            print status
+        elif status == "pass":
+            for item in tests.items():
+                key, value = item
+                if value['pass'] > 0:
+                    result.append(item)
+        elif status == "todo":
+            for item in tests.items():
+                key, value = item
+                if value['todo'] > 0:
+                    result.append(item)
+        elif status == "zerofail":
+            for item in tests.items():
+                key, value = item
+                if value['fail'] == 0:
+                    result.append(item)
+        elif status == "zeropass":
+            for item in tests.items():
+                key, value = item
+                if value['pass'] == 0:
+                    result.append(item)
+        elif status == "zerotodo":
+            for item in tests.items():
+                key, value = item
+                if value['todo'] == 0:
+                    result.append(item)
+        else:
             for item in tests.items():
                 result.append(item)
         

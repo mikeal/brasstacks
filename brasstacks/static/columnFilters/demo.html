@@ -1,0 +1,232 @@
+<html>
+
+<head>
+<title>jQuery Column Filters Demo</title>
+
+<script language="JavaScript" src="jquery-1.2.3.js"></script>
+<script language="JavaScript" src="jquery.columnfilters.js"></script>
+
+<style type="text/css">
+
+table tr th {
+	background-color: #d3DADE;
+	padding: 3px;
+}
+table tr.rowb { background-color:#EAf2FD; }
+
+table tr.filterColumns td { padding:2px; }
+
+body { padding-bottom:150px; }
+
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Example 1</h1>
+<xmp>
+$(document).ready(function() {
+	$('table#filterTable1').columnFilters({alternateRowClassNames:['rowa','rowb']});
+});
+</xmp>
+
+<table id="filterTable1" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+	<th>First Name</th><th>Surname</th><th>Country</th><th>Number</th>
+</tr>
+</thead>
+<tfoot></tfoot>
+<tbody>
+
+<tr>
+	<td>Tom</td><td>Coote</td><td>United Kingdom</td><td>1234</td>
+</tr>
+<tr>
+	<td>Bob</td><td>Edwards</td><td>Australia</td><td>15876</td>
+</tr>
+<tr>
+	<td>Eddy</td><td>Hornblower</td><td>France</td><td>1234</td>
+</tr>
+<tr>
+	<td>Steve</td><td>Blode</td><td>USA</td><td>9835</td>
+</tr>
+<tr>
+	<td>Jeffrey</td><td>Gnome</td><td>Switzerland</td><td>0159</td>
+</tr>
+<tr>
+	<td>Terry</td><td>Winkleman</td><td>Canada</td><td>023</td>
+</tr>
+</tbody>
+</table>
+
+<h1>Example 2</h1>
+<xmp>
+$(document).ready(function() {
+	$('table#filterTable2').columnFilters({alternateRowClassNames:['rowa','rowb'], excludeColumns:[2,3]});
+});
+</xmp>
+
+<table id="filterTable2" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+	<th>First Name</th><th>Surname</th><th>Country</th><th>Number</th>
+</tr>
+</thead>
+<tfoot></tfoot>
+<tbody>
+<tr>
+	<td>Tom</td><td>Coote</td><td>United Kingdom</td><td>1234</td>
+</tr>
+<tr>
+	<td>Bob</td><td>Edwards</td><td>Australia</td><td>15876</td>
+</tr>
+<tr>
+	<td>Eddy</td><td>Hornblower</td><td>France</td><td>1234</td>
+</tr>
+<tr>
+	<td>Steve</td><td>Blode</td><td>USA</td><td>9835</td>
+</tr>
+<tr>
+	<td>Jeffrey</td><td>Gnome</td><td>Switzerland</td><td>0159</td>
+</tr>
+<tr>
+	<td>Terry</td><td>Winkleman</td><td>Canada</td><td>023</td>
+</tr>
+</tbody>
+</table>
+
+<h1>Example 3</h1>
+<xmp>
+$(document).ready(function() {
+	$('table#filterTable3').columnFilters(caseSensitive:true});
+});
+</xmp>
+
+<table id="filterTable3" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+	<th>First Name</th><th>Surname</th><th>Country</th><th>Number</th>
+</tr>
+</thead>
+<tfoot></tfoot>
+<tbody>
+<tr>
+	<td>Tom</td><td>Coote</td><td>United Kingdom</td><td>1234</td>
+</tr>
+<tr>
+	<td>Bob</td><td>Edwards</td><td>Australia</td><td>15876</td>
+</tr>
+<tr>
+	<td>Eddy</td><td>Hornblower</td><td>France</td><td>1234</td>
+</tr>
+<tr>
+	<td>Steve</td><td>Blode</td><td>USA</td><td>9835</td>
+</tr>
+<tr>
+	<td>Jeffrey</td><td>Gnome</td><td>Switzerland</td><td>0159</td>
+</tr>
+<tr>
+	<td>Terry</td><td>Winkleman</td><td>Canada</td><td>023</td>
+</tr>
+</tbody>
+</table>
+
+<h1>Example 4</h1>
+<xmp>
+$(document).ready(function() {
+	$('table#filterTable4').columnFilters(minSearchCharacters:3});
+});
+</xmp>
+
+<table id="filterTable4" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+	<th>First Name</th><th>Surname</th><th>Country</th><th>Number</th>
+</tr>
+</thead>
+<tfoot></tfoot>
+<tbody>
+<tr>
+	<td>Tom</td><td>Coote</td><td>United Kingdom</td><td>1234</td>
+</tr>
+<tr>
+	<td>Bob</td><td>Edwards</td><td>Australia</td><td>15876</td>
+</tr>
+<tr>
+	<td>Eddy</td><td>Hornblower</td><td>France</td><td>1234</td>
+</tr>
+<tr>
+	<td>Steve</td><td>Blode</td><td>USA</td><td>9835</td>
+</tr>
+<tr>
+	<td>Jeffrey</td><td>Gnome</td><td>Switzerland</td><td>0159</td>
+</tr>
+<tr>
+	<td>Terry</td><td>Winkleman</td><td>Canada</td><td>023</td>
+</tr>
+</tbody>
+</table>
+
+<h1>Example 5</h1>
+<xmp>
+$(document).ready(function() {
+	$('table#filterTable5').columnFilters({wildCard:'#',notCharacter:'?'});
+});
+</xmp>
+
+<table id="filterTable5" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+	<th>First Name</th><th>Surname</th><th>Country</th><th>Number</th>
+</tr>
+</thead>
+<tfoot></tfoot>
+<tbody>
+<tr>
+	<td>Tom</td><td>Coote</td><td>United Kingdom</td><td>1234</td>
+</tr>
+<tr>
+	<td>Bob</td><td>Edwards</td><td>Australia</td><td>15876</td>
+</tr>
+<tr>
+	<td>Eddy</td><td>Hornblower</td><td>France</td><td>1234</td>
+</tr>
+<tr>
+	<td>Steve</td><td>Blode</td><td>USA</td><td>9835</td>
+</tr>
+<tr>
+	<td>Jeffrey</td><td>Gnome</td><td>Switzerland</td><td>0159</td>
+</tr>
+<tr>
+	<td>Terry</td><td>Winkleman</td><td>Canada</td><td>023</td>
+</tr>
+</tbody>
+</table>
+
+<script>
+	$(document).ready(function() {
+		$('table#filterTable1').columnFilters({alternateRowClassNames:['rowa','rowb']});
+		$('table#filterTable2').columnFilters({alternateRowClassNames:['rowa','rowb'], excludeColumns:[2,3]});
+		$('table#filterTable3').columnFilters({caseSensitive:true});
+		$('table#filterTable4').columnFilters({minSearchCharacters:3});
+		$('table#filterTable5').columnFilters({wildCard:'#',notCharacter:'?'});
+	});
+</script>
+
+<br />
+<h1>Defaults</h1>
+<xmp>
+wildCard: "*",  
+notCharacter: "!", 
+caseSensitive: false, 
+minSearchCharacters: 1, 
+excludeColumns: [],
+alternateRowClassNames: []
+</xmp>
+
+</body>
+
+</html>
