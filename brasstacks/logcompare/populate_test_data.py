@@ -14,6 +14,7 @@ import couchquery
   # "testtype": testtype,
   # "timestamp": str(date),
   # "tests": [test1, test2, test3, ...]
+  # "tinderbox_id": tinderbox id
 # }
 
 # testStructure = {
@@ -35,18 +36,19 @@ def main():
   db = couchquery.Database("http://pythonesque.org:5984/logcompare", cache=Cache())
   
   # create documents
-  doccount = random.randint(50, 60)
+  doccount = random.randint(1, 3)
   for i in range(0, doccount):
     
     # create metadata
     buildstructure = {}
 
-    buildstructure['build'] = random.randint(999900, 999999)
+    buildstructure['build'] = random.randint(999000, 999999)
     buildstructure['product'] = random.choice(products)
     buildstructure['os'] = random.choice(platforms)
     buildstructure['testtype'] = random.choice(testtypes)
     buildstructure['timestamp'] = str(datetime.datetime.now())
     buildstructure['document'] = document
+    buildstructure['tinderbox_id'] = random.choice([-1, str(datetime.datetime.now())])
     
     # create tests
     tests = {}

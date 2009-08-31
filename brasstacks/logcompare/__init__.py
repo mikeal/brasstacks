@@ -41,20 +41,19 @@ class LogCompareApplication(RestApplication):
         self.vu = self.db.views.logcompare
   
     def GET(self, request, collection=None, resource=None):
+        
         starttime = datetime.now()
+        
         if collection is None:
             
-            # products = self.vu.productCounts(group=True).items()
-            # testtypes = self.vu.testtypeCounts(group=True).items()
-            # oses = self.vu.osCounts(group=True).items()
-            # builds = self.vu.buildCounts(group=True).items()
-            
+            # variables used to control 'states' in results paging
             limit = int(request.query.get('count', 10))
             page = request.query.get('page', 'newest')
             group = int(request.query.get('group', 0))
             
+            # TODO: further error checking
             if page == 'newest':
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items()
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items() 
                 group = 0
             elif page == 'newer':
                 if group > 0:
@@ -68,15 +67,9 @@ class LogCompareApplication(RestApplication):
                 skip = limit * group
                 summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
             
-            # elif page == 'oldest':
-              # summary = self.vu.runSummaryByTimestamp(group=True, descending=False, limit=limit).items()
+            runs = self.vu.runCounts(group=True).items()
             
-            # (key, value) = summary[0]
-            # startkey = key[5]
-            # (key, value) = summary[len(summary)-1]
-            # lastkey = key[5]
-            
-            return LogCompareResponse("index", starttime, summary=summary, limit=limit, group=group)
+            return LogCompareResponse("index", starttime, summary=summary, limit=limit, group=group, runs=runs)
           
         if collection == "run":
             if resource is None:
@@ -86,11 +79,11 @@ class LogCompareApplication(RestApplication):
                 if len(doc) is 0:
                     return MakoResponse("error", error="build id cannot be found")
                 else:
-                    status = request.query.get('tests', "all")
-                    similardocs = self.find_previous(doc, 10)
                     build = Build(doc)
+                    similardocs = self.find_previous(doc, 10)
+                    status = request.query.get('tests', "all")
                     buildtests = build.get_tests(status)
-                    return MakoResponse("run", build=build, buildtests=buildtests, similardocs=similardocs)
+                    return MakoResponse("run", build=build, buildtests=buildtests, similardocs=similardocs, status=status)
 
         if collection == "compare":
             if resource is None:
@@ -432,14 +425,40 @@ class TestsResult(object):
     def __init__(self, tests, status):
         
         result = []
-        if status == "fail":
-            print status
+        if status == "all":
+            for item in tests.items():
+                result.append(item)
+        elif status == "fail":
             for item in tests.items():
                 key, value = item
                 if value['fail'] > 0:
                     result.append(item)
-        elif status == "all":
-            print status
+        elif status == "pass":
+            for item in tests.items():
+                key, value = item
+                if value['pass'] > 0:
+                    result.append(item)
+        elif status == "todo":
+            for item in tests.items():
+                key, value = item
+                if value['todo'] > 0:
+                    result.append(item)
+        elif status == "zerofail":
+            for item in tests.items():
+                key, value = item
+                if value['fail'] == 0:
+                    result.append(item)
+        elif status == "zeropass":
+            for item in tests.items():
+                key, value = item
+                if value['pass'] == 0:
+                    result.append(item)
+        elif status == "zerotodo":
+            for item in tests.items():
+                key, value = item
+                if value['todo'] == 0:
+                    result.append(item)
+        else:
             for item in tests.items():
                 result.append(item)
         

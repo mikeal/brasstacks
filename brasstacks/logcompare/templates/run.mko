@@ -1,9 +1,12 @@
 <%inherit file="base.mko"/>
 
+<script type="text/javascript" src="/static/columnFilters/jquery.columnfilters.js"></script>
+
 <script type="text/javascript">
 $(document).ready(function() 
     { 
         $("#buildTable").tablesorter(); 
+        $("table#buildTable").columnFilters({alternateRowClassNames:["rowa", "rowb"], excludeColumns:[0, 5]});
     } 
 );
 </script>
@@ -43,13 +46,35 @@ ${timestamp}  <a href="/logcompare/compare/${build.docid}&${runid}">Compare to t
 % endif
 </div>
 
-<h2>Tests on this run:</h2>
+<div>
+<h2>
+% if status == "all":
+  All tests on this run:
+% elif status == "fail":
+  Tests with Fail counts on this run:
+% elif status == "pass":
+  Tests with Pass counts on this run:
+% elif status == "todo":
+  Tests with Todo counts on this run:
+% elif status == "zerofail":
+  Tests with no Fail count on this run:
+% elif status == "zeropass":
+  Tests with no Pass count on this run:
+% elif status == "zerotodo":
+  Tests with no Todo count on this run:
+% endif
+</h2>
+</div>
+
 <div>
 Filter Tests 
 <a href="?tests=all">All</a>, 
-<a href="?tests=fail">non-zero fail counts</a>,
-<a href="?tests=todo">non-zero todo counts</a>,
-<a href="?tests=zeropass">zero pass counts</a>
+<a href="?tests=fail">non-zero Fail counts</a>,
+<a href="?tests=todo">non-zero Todo counts</a>,
+<a href="?tests=zeropass">zero Pass counts</a>,
+<a href="?tests=zerofail">zero Fail count</a>,
+<a href="?tests=zerotodo">zero Todo count</a>,
+<a href="?tests=pass">non-zero Pass count</a>,
 </div>
 Click on header to sort <br />
 <table id="buildTable" class="tablesorter">
