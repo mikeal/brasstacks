@@ -1,0 +1,2 @@
+<%inherit file="base.mko"/>
+<div class="header">Error: ${error}</div>

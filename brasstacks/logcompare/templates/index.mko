@@ -1,0 +1,120 @@
+<%inherit file="base.mko"/>
+
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("#buildTable").tablesorter(); 
+    } 
+);
+</script>
+
+<%doc><h2><a href="/logcompare/failures/">All test failures from last build</a></h2></%doc>
+
+<div>
+<% limits = [5, 10, 25, 50, 100] %>
+  Latest 
+  % for x in limits: 
+    % if x is not limit:
+      <a href="?count=${x}">${x}</a>  
+    % else:
+      ${x}  
+    % endif
+  % endfor  
+</div>
+
+<div>
+  <a href="?count=${limit}&page=newest">Newest</a> 
+  <a href="?count=${limit}&page=newer&group=${group}">Newer</a> 
+  <a href="?count=${limit}&page=older&group=${group}">Older</a>
+</div>
+
+<div>
+% if len(summary) is 0:
+  <h2>Page is showing beyond end of results. Click newer.</h2>
+% else:
+  % if group is not 0:
+    <h2>${group * limit + 1} to ${group * limit + limit} Most Recent Runs</h2>
+  % else:
+    <h2>${limit} Most Recent Runs</h2>
+  % endif
+% endif
+</div>
+
+<div>Click on headers to sort</div>
+<div class="results">
+<table id="buildTable" class="results">
+  <thead>
+  <tr>
+    <th>Actions</th>
+    <th>Time</th>
+    <th>Build ID</th>
+    <th>Product</th>
+    <th>Platform</th>
+    <th>Test type</th>
+    <th>Fail count</th>
+    <th>Pass count</th>
+    <th>Todo count</th>
+  </tr>
+  </thead>
+  <tbody>
+  % for (key, value) in summary:
+  <% 
+    timestamp = key[0]
+    buildid = key[1]
+    product = key[2]
+    platform = key[3]
+    testtype = key[4]
+    runid = key[5]
+  %>
+  <tr>
+    <td>
+      <a href="/logcompare/run/${runid}">See details</a> 
+      <a href="/logcompare/compare/${runid}">Compare to last</a>
+    </td>
+    <td>${timestamp}</td>
+    <td><a href="/logcompare/build/${buildid}">${buildid}</a></td>
+    <td>${product}</td>
+    <td>${platform}</td>
+    <td>${testtype}</td>
+    <td><a href="/logcompare/run/${runid}?tests=fail">${value['fail']}</a></td>
+    <td><a href="/logcompare/run/${runid}?tests=pass">${value['pass']}</a></td>
+    <td><a href="/logcompare/run/${runid}?tests=todo">${value['todo']}</a></td>
+  </tr>
+  % endfor
+  </tbody>
+</table>
+</div>
+
+<%doc>
+<h2>All Categories</h2>
+
+<div class="results">Test results by products: 
+% for (product, count) in products:
+  <a href="/logcompare/product/${product}">${product}</a> (${count}), 
+% endfor
+</div>
+
+<div class="results">Test results by test types: 
+% for (testtype, count) in testtypes:
+  <a href="/logcompare/testtype/${testtype}">${testtype}</a> (${count}), 
+% endfor
+</div>
+
+<div class="results">Test results by operating Systems: 
+% for (os, count) in oses:
+  <a href="/logcompare/platform/${os}">${os}</a> (${count}), 
+% endfor
+</div>
+
+<div class="results">Test results for a specific product, OS, and test type : <br />
+% for (build, count) in builds: 
+<%  
+  product = build[0] 
+  os = build[1] 
+  testtype = build[2] %>
+  <a href="/logcompare/builds/${product}+${os}+${testtype}">
+    ${product} ${os} ${testtype}
+  </a>(${count})<br />
+% endfor
+</div>
+</%doc>

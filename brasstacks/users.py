@@ -8,7 +8,7 @@ class Users(object):
     def __init__(self, db):
         self.db = db
     def get_user_by_email(self, email):
-        rows = self.db.views.brasstacks.usersByEmail(key=email).rows
+        rows = self.db.views.brasstacks.usersByEmail(key=email)
         if len(rows) is 0:
             return self.create_anonymous_user(email)
         else:

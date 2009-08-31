@@ -1,0 +1,27 @@
+<%inherit file="base.mko"/>
+<% (key, value) = buildsbyplatform[0] %>
+<h2>${key[0]} (${len(buildsbyplatform)})</h2>
+<table class="results">
+  <tr>
+    <th>Actions</th>
+    <th>Metadata</th>
+  </tr>
+% for (key, value) in buildsbyplatform:
+<%
+  buildid = value[0]
+  product = value[1]
+  platform = value[2]
+  testtype = value[3]
+  timestamp = value[4]
+%>
+  <tr>
+    <td>
+      <a href="/logcompare/build/${buildid}">See details</a>
+      <a href="/logcompare/compare/${buildid}">(Compare to last)</a>
+    </td>
+    <td>
+      ${testtype}, ${product}, ${platform}, ${timestamp} 
+    </td>
+  </tr>
+% endfor
+</table>

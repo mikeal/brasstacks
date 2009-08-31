@@ -1,0 +1,28 @@
+<%inherit file="base.mko"/>
+
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("#failureTable").tablesorter(); 
+    } 
+);
+</script>
+
+<table id="failureTable">
+<thead>
+  <tr>
+    <th>Test</th>
+    <th>First Fail</th>
+    <th>Last Pass</th>
+  </tr>
+</thead>
+<tbody>
+  % for testname in tests:
+  <tr>
+    <td>${testname}</td>
+    <td>${tests[testname]['firstfail']} <a href="/logcompare/build/${tests[testname]['firstfail']}">See details</a></td>
+    <td>${tests[testname]['lastpass']} <a href="/logcompare/build/${tests[testname]['lastpass']}">See details</a></td>
+  </tr>
+  % endfor  
+</tbody>
+</table>

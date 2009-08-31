@@ -42,7 +42,7 @@ def send_email(to, subject, text):
 # 
 # class EmailNoficationVerificationApplication(RestApplication):
 #     def resolve(self, ticket):
-#         user = self.db.views.brasstacks.usersByEmail(key=ticket.email).rows[0]        
+#         user = self.db.views.brasstacks.usersByEmail(key=ticket.email)[0]        
 #         user.email_verified = True
 #         self.db.save(user)
 #         notifications = self.db.views.brasstacks.emailNotificationsByEmail(key=ticket.email)

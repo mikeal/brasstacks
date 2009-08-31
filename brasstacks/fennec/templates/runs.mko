@@ -1,0 +1,62 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+<script type="text/javascript" src="/static/jquery-1.3.1.js" ></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.min.js" ></script>
+<link rel="stylesheet" href="/static/tablesorter/themes/blue/style.css" type="text/css" 
+  media="print, projection, screen" />
+
+
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("#runs").tablesorter(); 
+    } 
+);
+</script>
+
+<h2>${page_header}</h2>
+
+<table id="runs" class="tablesorter" border="0" cellpadding="0" cellspacing="1">
+  <thead>
+    <tr> 
+      <th>Type</th>
+      <th>Build</th>
+      <th>Timestamp</th>
+      <th>OS</th>
+      <th>Passed</th>
+      <th>Failed</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+% for run in runs:
+    <tr>
+      <td>${run.testtype}</td>
+      <td><a href="/fennec/detail/${run._id}">${run.build}</a></td>
+      <td>${run.timestamp}</td>
+      <td>${run.os}</td>
+<%
+total = len(run.tests)
+failed = len([t for t in run.tests.values() if t.get("fail", 0) is not 0])
+passed = total - failed
+%>      
+      <td>${passed}</td>
+      <td>${failed}</td>
+      <td>${total}</td>
+    </tr>
+% endfor
+  </tbody>
+</table>
+
+</%def>
+
+
+<%def name="footer()">
+
+<div>
+  Latest <a href="?count=5">5</a>   <a href="?count=10">10</a>   <a href="?count=25">25</a>   <a href="?count=50">50</a>   <a href="?count=100">100</a>  
+</div>
+
+</%def>

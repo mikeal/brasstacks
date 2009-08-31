@@ -1,0 +1,43 @@
+## base.mko
+<html>
+  <head>
+    <title>Log Compare</title>
+    <script type="text/javascript" src="/static/tablesorter/jquery-latest.js"></script>
+    <script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <div class="header">
+      ${self.header()}
+    </div>
+
+    ${self.body()}
+
+    <div class="footer">
+      ${self.footer()}
+    </div>
+  </body>
+</html>
+
+<%def name="header()">
+  <div>
+    <a href="/logcompare">LogCompare</a>
+    - A tool to display test results in a more useful structure, initially stored in log files at 
+    <a href="http://tinderbox.mozilla.org/showbuilds.cgi?tree=Mobile">Tinderbox</a> 
+    (<a href="http://tinderbox.mozilla.org/showlog.cgi?log=Mobile/1250755161.1250764588.16311.gz&fulltext=1">example</a>) 
+  <div>
+  <form method="post" action="/logcompare/compare">
+  <div class="compare-results-form">
+    <input type="text" name="buildid1" style="width: 300px;" value="Build ID 1"/>
+    <input type="text" name="buildid2" style="width: 300px;" value="Build ID 2"/>
+    <input type="submit" value="Compare them"/>
+  </div>
+  </form>
+</%def>
+
+<%def name="footer()">
+  this is the footer 
+% if latency is not NoneType:
+  ${latency}
+% endif
+</%def>
