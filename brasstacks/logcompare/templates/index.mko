@@ -85,8 +85,20 @@ $(document).ready(function()
 </table>
 </div>
 
+<h2>Test Runs by Product, OS, and Test Type</h2>
+<div class="results">
+% for (run, count) in runs: 
+<%  
+  product = run[0] 
+  os = run[1] 
+  testtype = run[2] %>
+  <a href="/logcompare/runs/${product}+${os}+${testtype}">
+    ${product}, ${os}, ${testtype}
+  </a>(${count})<br />
+% endfor
+</div>
 <%doc>
-<h2>All Categories</h2>
+
 
 <div class="results">Test results by products: 
 % for (product, count) in products:
@@ -106,15 +118,5 @@ $(document).ready(function()
 % endfor
 </div>
 
-<div class="results">Test results for a specific product, OS, and test type : <br />
-% for (build, count) in builds: 
-<%  
-  product = build[0] 
-  os = build[1] 
-  testtype = build[2] %>
-  <a href="/logcompare/builds/${product}+${os}+${testtype}">
-    ${product} ${os} ${testtype}
-  </a>(${count})<br />
-% endfor
-</div>
+
 </%doc>

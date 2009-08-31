@@ -41,20 +41,19 @@ class LogCompareApplication(RestApplication):
         self.vu = self.db.views.logcompare
   
     def GET(self, request, collection=None, resource=None):
+        
         starttime = datetime.now()
+        
         if collection is None:
             
-            # products = self.vu.productCounts(group=True).items()
-            # testtypes = self.vu.testtypeCounts(group=True).items()
-            # oses = self.vu.osCounts(group=True).items()
-            # builds = self.vu.buildCounts(group=True).items()
-            
+            # variables used to control 'states' in results paging
             limit = int(request.query.get('count', 10))
             page = request.query.get('page', 'newest')
             group = int(request.query.get('group', 0))
             
+            # TODO: further error checking
             if page == 'newest':
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items()
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items() 
                 group = 0
             elif page == 'newer':
                 if group > 0:
@@ -68,15 +67,9 @@ class LogCompareApplication(RestApplication):
                 skip = limit * group
                 summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
             
-            # elif page == 'oldest':
-              # summary = self.vu.runSummaryByTimestamp(group=True, descending=False, limit=limit).items()
+            runs = self.vu.runCounts(group=True).items()
             
-            # (key, value) = summary[0]
-            # startkey = key[5]
-            # (key, value) = summary[len(summary)-1]
-            # lastkey = key[5]
-            
-            return LogCompareResponse("index", starttime, summary=summary, limit=limit, group=group)
+            return LogCompareResponse("index", starttime, summary=summary, limit=limit, group=group, runs=runs)
           
         if collection == "run":
             if resource is None:
