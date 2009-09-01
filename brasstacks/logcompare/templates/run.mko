@@ -5,8 +5,8 @@
 <script type="text/javascript">
 $(document).ready(function() 
     { 
-        $("#buildTable").tablesorter(); 
-        $("table#buildTable").columnFilters({alternateRowClassNames:["rowa", "rowb"], excludeColumns:[0, 5]});
+        $("#runTable").tablesorter(); 
+        $("table#runTable").columnFilters({alternateRowClassNames:["rowa", "rowb"], excludeColumns:[0, 5]});
     } 
 );
 </script>
@@ -21,12 +21,12 @@ $(document).ready(function()
     <th>Build ID</th><th>Product</th><th>Platform</th><th>Test type</th><th>Time stamp</th>
   </tr>
   <tr>
-    <td><a href="/logcompare/build/${build.buildid}">${build.buildid}</a></td>
-    <td>${build.product}</td> 
-    <td>${build.os}</td>
-    <td>${build.testtype}</td>
-    <td>${build.timestamp.exactly} (${build.timestamp.string})</td>
-    <td><a href="/logcompare/compare/${build.docid}">Compare to last</a><br /></td>
+    <td><a href="/logcompare/build/${run.buildid}">${run.buildid}</a></td>
+    <td>${run.product}</td> 
+    <td>${run.os}</td>
+    <td>${run.testtype}</td>
+    <td>${run.timestamp.exactly}</td>
+    <td><a href="/logcompare/compare/${run.docid}">Compare to last</a></td>
   </tr>
 </table>  
 
@@ -34,14 +34,14 @@ $(document).ready(function()
 <h2>Similar Runs Before:</h2>
 <div>
 % if len(similardocs) == 0:
-  No builds prior<br />
+  No runs prior<br />
 % else:
 %   for (key, value) in similardocs:
 <% 
   timestamp = key[3]
   runid = value
 %>
-${timestamp}  <a href="/logcompare/compare/${build.docid}&${runid}">Compare to this</a> <br />
+${timestamp}  <a href="/logcompare/compare/${run.docid}&${runid}">Compare to this</a> <br />
 %   endfor
 % endif
 </div>
@@ -77,23 +77,23 @@ Filter Tests
 <a href="?tests=pass">non-zero Pass count</a>,
 </div>
 Click on header to sort <br />
-<table id="buildTable" class="tablesorter">
+<table id="runTable" class="tablesorter">
   <thead>
   <tr>
     <th>Actions</th>
-    <th>Test (${buildtests.numtestfiles})</th>
-    <th>Fail (${buildtests.totalfails})</th>
-    <th>Pass (${buildtests.totalpasses})</th>
-    <th>Todo (${buildtests.totaltodos})</th>
+    <th>Test (${tests.numtestfiles})</th>
+    <th>Fail (${tests.totalfails})</th>
+    <th>Pass (${tests.totalpasses})</th>
+    <th>Todo (${tests.totaltodos})</th>
     <th>Results changed from</th>
   </tr>
   </thead>
   <tbody>
-% for (key, value) in buildtests.tests:
+% for (key, value) in tests.tests:
   <tr>
     <td>
       <a href="/logcompare/test/${key}?">Complete history</a> 
-      <a href="/logcompare/test/${key}?product=${build.product}&os=${build.os}&testtype=${build.testtype}">History on similar runs</a>
+      <a href="/logcompare/test/${key}?product=${run.product}&os=${run.os}&testtype=${run.testtype}">History on similar runs</a>
     </td>
     <td>${key}</td>
     <td>${value['fail']}</td>

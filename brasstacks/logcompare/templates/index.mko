@@ -3,12 +3,12 @@
 <script type="text/javascript">
 $(document).ready(function() 
     { 
-        $("#buildTable").tablesorter(); 
+        $("#runTable").tablesorter(); 
     } 
 );
 </script>
 
-<%doc><h2><a href="/logcompare/failures/">All test failures from last build</a></h2></%doc>
+<%doc><h2><a href="/logcompare/failures/">All test failures from last run</a></h2></%doc>
 
 <div>
 <% limits = [5, 10, 25, 50, 100] %>
@@ -42,7 +42,7 @@ $(document).ready(function()
 
 <div>Click on headers to sort</div>
 <div class="results">
-<table id="buildTable" class="results">
+<table id="runTable" class="results">
   <thead>
   <tr>
     <th>Actions</th>
@@ -97,9 +97,8 @@ $(document).ready(function()
   </a>(${count})<br />
 % endfor
 </div>
+
 <%doc>
-
-
 <div class="results">Test results by products: 
 % for (product, count) in products:
   <a href="/logcompare/product/${product}">${product}</a> (${count}), 
@@ -117,6 +116,4 @@ $(document).ready(function()
   <a href="/logcompare/platform/${os}">${os}</a> (${count}), 
 % endfor
 </div>
-
-
 </%doc>

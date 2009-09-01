@@ -82,21 +82,21 @@ class LogCompareApplication(RestApplication):
           
         if collection == "run":
             if resource is None:
-                return MakoResponse("error", error="no build id input is given")
+                return MakoResponse("error", error="No test run ID given as input")
             else:
                 doc = self.vu.entireRunByDocId(key=resource).items()
                 if len(doc) is 0:
-                    return MakoResponse("error", error="build id cannot be found")
+                    return MakoResponse("error", error="Test run ID cannot be found")
                 else:
-                    build = Build(doc)
+                    run = Run(doc)
                     similardocs = self.find_previous(doc, 10)
                     status = request.query.get('tests', "all")
-                    buildtests = build.get_tests(status)
-                    return MakoResponse("run", build=build, buildtests=buildtests, similardocs=similardocs, status=status)
+                    tests = run.get_tests(status)
+                    return MakoResponse("run", run=run, tests=tests, similardocs=similardocs, status=status)
 
         if collection == "compare":
             if resource is None:
-                return MakoResponse("error", error="no input is given")
+                return MakoResponse("error", error="No input is given")
             else:
                 inputs = resource.split('&')
                 if len(inputs) is 1:
@@ -118,10 +118,11 @@ class LogCompareApplication(RestApplication):
                 if doc1 == doc2:
                     return MakoResponse("error", error="Cannot compare with itself")
                 else:
-                    build1 = Build(doc1)
-                    build2 = Build(doc2)
-                    answer = build1.compare(build2)
-                    return MakoResponse("compare", answer=answer, build1=build1, build2=build2)
+                    # comparetype = int(request.query.get('comparetype', 'newfails'))
+                    run1 = Run(doc1)
+                    run2 = Run(doc2)
+                    answer = run1.compare(run2)
+                    return MakoResponse("compare", answer=answer, run1=run1, run2=run2)
 
         if collection == "product":
             if resource is None:
@@ -174,8 +175,8 @@ class LogCompareApplication(RestApplication):
             (key, value) = lastbuild[0]
             buildid = key[1]
             doc = self.vu.entireBuildsById(key=buildid).items()
-            build = Build(doc)
-            buildtests = build.getTests()
+            run = Run(doc)
+            buildtests = run.getTests()
             tests = {}
             
             for (testname, result) in buildtests.tests:
@@ -211,22 +212,22 @@ class LogCompareApplication(RestApplication):
                 if not hasattr(request.body, 'form'):
                     return MakoResponse("error", error="body has no form")
                 else:
-                    if 'buildid1' not in request.body.form or 'buildid2' not in request.body.form:
+                    if 'runid1' not in request.body.form or 'runid2' not in request.body.form:
                         return MakoResponse("error", error="inputs cannot be blank")
                     else:
-                        doc1 = self.vu.entireBuildsById(key=request.body['buildid1']).items()
-                        doc2 = self.vu.entireBuildsById(key=request.body['buildid2']).items()
+                        doc1 = self.vu.entireRunByDocId(key=request.body['runid1']).items()
+                        doc2 = self.vu.entireRunByDocId(key=request.body['runid2']).items()
         
                         if len(doc1) is 0 or len(doc2) is 0:
-                            return MakoResponse("error", error="input is not a valid build id")
+                            return MakoResponse("error", error="input is not a valid run id")
                         else:
                             if doc1 == doc2:
                                 return MakoResponse("error", error="cannot compare with itself")
                             else:
-                                build1 = Build(doc1)
-                                build2 = Build(doc2)
-                                answer = build1.compare(build2)
-                                return MakoResponse("compare", answer = answer, build1 = build1, build2 = build2)
+                                run1 = Run(doc1)
+                                run2 = Run(doc2)
+                                answer = run1.compare(run2)
+                                return MakoResponse("compare", answer=answer, run1=run1, run2=run2)
   
     # def findTenPrevious(self, doc):
         # # max limit of the results
@@ -311,7 +312,7 @@ class LogCompareApplication(RestApplication):
             (key, value) = similardocs[previous]
             return value
                 
-class Build(object):
+class Run(object):
     def __init__(self, doc):
         (key, value) = doc[0]
         self.doc = value
@@ -326,8 +327,8 @@ class Build(object):
     def get_tests(self, status):
         return TestsResult(self.tests, status)
     
-    def compare(self, build):
-      
+    def compare(self, run):
+        
         newtestfiles = []
         missingtestfiles = []
         
@@ -346,7 +347,7 @@ class Build(object):
         stabletests = []
         
         tests1 = self.tests
-        tests2 = build.tests
+        tests2 = run.tests
         
         for testfile in tests1:
           
@@ -410,9 +411,33 @@ class Build(object):
         result['newtodos'] = newtodos
         
         return result
-  
+
+    def compare(self, run, comparetype='newfails'):
+        
+        results = []
+        
+        tests1 = self.tests
+        tests2 = run.tests
+        
+        if comparetype == 'newfails':
+            for testfile in tests1:
+                if testfile in tests2:
+                    result1 = tests1[testfile]
+                    result2 = tests2[testfile]
+                    sum1 = result1['fail'] + result1['pass'] + result1['todo']
+                    sum2 = result2['fail'] + result2['pass'] + result2['todo']
+                    if sum1 > sum2:
+                        if result1['fail'] > result2['fail']:
+                            results.append({
+                                'testfile': testfile, 
+                                'result1': tests1[testfile], 
+                                'result2': tests2[testfile], 
+                                'delta': result1['fail'] - result2['fail']})
+        return results
+        
+        
     # note: %f directive not supported in python 2.5 so microsecond needs to be parsed manually
-    def newer(self, build):
+    def newer(self, run):
       
         directives = "%Y-%m-%d %H:%M:%S"
         
@@ -420,11 +445,11 @@ class Build(object):
         dt1 = datetime.strptime(parts[0], directives)
         dt1 = dt1.replace(microsecond = int(parts[1]))
         
-        parts = build.timestamp.split(".")
+        parts = run.timestamp.split(".")
         dt2 = datetime.strptime(parts[0], directives)
         dt2 = dt2.replace(microsecond = int(parts[1]))
         
-        # true if self's time is later than build's time
+        # true if self's time is later than run's time
         return dt > dt2
 
 class TestsResult(object):
