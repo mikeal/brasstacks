@@ -7,7 +7,7 @@ except ImportError:
     import simplejson
 
 from markdown import markdown
-from webenv import HtmlResponse
+from webenv import HtmlResponse, Response
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from webenv.rest import RestApplication
@@ -34,6 +34,13 @@ class LogCompareResponse(HtmlResponse):
         self.body = lookup.get_template(name + '.mko').render_unicode(**kwargs).encode('utf-8', 'replace')
         self.headers = []
 
+# TODO
+class RSSResponse(Response):
+    content_type = 'application/json'
+    def __init__(self, body):
+        self.body = simplejson.dumps(body)
+        self.headers = []
+
 class LogCompareApplication(RestApplication):
     def __init__(self, db):
         super(LogCompareApplication, self).__init__()
@@ -51,11 +58,7 @@ class LogCompareApplication(RestApplication):
             page = request.query.get('page', 'newest')
             group = int(request.query.get('group', 0))
             
-            # TODO: further error checking
-            if page == 'newest':
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items() 
-                group = 0
-            elif page == 'newer':
+            if page == 'newer':
                 if group > 0:
                     group -= 1
                 else:
@@ -63,9 +66,15 @@ class LogCompareApplication(RestApplication):
                 skip = limit * group
                 summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
             elif page == 'older':
-                group += 1
+                if group >= 0:
+                    group += 1
+                else:
+                    group = 0
                 skip = limit * group
                 summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
+            else:
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items() 
+                group = 0
             
             runs = self.vu.runCounts(group=True).items()
             
@@ -89,31 +98,28 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="no input is given")
             else:
-              
                 inputs = resource.split('&')
-                
                 if len(inputs) is 1:
-                    doc1 = self.vu.entireBuildsById(key=inputs[0]).items()
+                    doc1 = self.vu.entireRunByDocId(key=inputs[0]).items()
                     if len(doc1) is 0:
-                        return MakoResponse("error", error="build id cannot be found")
+                        return MakoResponse("error", error="Test run ID cannot be found")
                     else:
-                        buildid2 = self.findPrevious(doc1)
+                        buildid2 = self.find_last(doc1)
+                        print buildid2
                         if buildid2 is None:
-                            return MakoResponse("error", error="this build has no prior builds")
+                            return MakoResponse("error", error="This test run has no prior runs")
                         else:
-                            doc2 = self.vu.entireBuildsById(key=buildid2).items()
+                            doc2 = self.vu.entireRunByDocId(key=buildid2).items()
                 elif len(inputs) is 2:
-                    doc1 = self.vu.entireBuildsById(key=inputs[0]).items()
-                    doc2 = self.vu.entireBuildsById(key=inputs[1]).items()
+                    doc1 = self.vu.entireRunByDocId(key=inputs[0]).items()
+                    doc2 = self.vu.entireRunByDocId(key=inputs[1]).items()
                     if len(doc1) is 0 or len(doc2) is 0:
-                        return MakoResponse("error", error="build ids cannot be found")
-                
+                        return MakoResponse("error", error="Test run IDs cannot be found")
                 if doc1 == doc2:
-                    return MakoResponse("error", error="cannot compare with itself")
+                    return MakoResponse("error", error="Cannot compare with itself")
                 else:
                     build1 = Build(doc1)
                     build2 = Build(doc2)
-                    
                     answer = build1.compare(build2)
                     return MakoResponse("compare", answer=answer, build1=build1, build2=build2)
 
@@ -222,48 +228,48 @@ class LogCompareApplication(RestApplication):
                                 answer = build1.compare(build2)
                                 return MakoResponse("compare", answer = answer, build1 = build1, build2 = build2)
   
-    def findTenPrevious(self, doc):
-        # max limit of the results
-        length = 11
-        # entry of self
-        selfentry = 0
+    # def findTenPrevious(self, doc):
+        # # max limit of the results
+        # length = 11
+        # # entry of self
+        # selfentry = 0
         
-        if len(doc) is 0:
-            return None
-        else:
-            (key, value) = doc[0]
-            product = value['product']
-            os = value['os']
-            testtype = value['testtype']
-            timestamp = value['timestamp']
+        # if len(doc) is 0:
+            # return None
+        # else:
+            # (key, value) = doc[0]
+            # product = value['product']
+            # os = value['os']
+            # testtype = value['testtype']
+            # timestamp = value['timestamp']
             
-            similardocs = self.vu.buildIdsByMetadata(
-                startkey=[product, os, testtype, timestamp], 
-                endkey=[product, os, testtype, 0], 
-                descending=True, 
-                limit=length).items()
+            # similardocs = self.vu.buildIdsByMetadata(
+                # startkey=[product, os, testtype, timestamp], 
+                # endkey=[product, os, testtype, 0], 
+                # descending=True, 
+                # limit=length).items()
           
-            if len(similardocs) > 0:
-                del similardocs[selfentry]
-            return similardocs
+            # if len(similardocs) > 0:
+                # del similardocs[selfentry]
+            # return similardocs
   
-    def findPrevious(self, doc):
-        # querying must return one result: its previous
-        minlength = 1
-        # when sorted in reverse-chronological order from the current build, 
-        # the index of the previous build is 0
-        previous = 0
+    # def findPrevious(self, doc):
+        # # querying must return one result: its previous
+        # minlength = 1
+        # # when sorted in reverse-chronological order from the current build, 
+        # # the index of the previous build is 0
+        # previous = 0
         
-        similardocs = self.findTenPrevious(doc)
+        # similardocs = self.findTenPrevious(doc)
         
-        if similardocs is None:
-            return None
-        else:
-            if len(similardocs) < minlength:
-                return None
-            else:
-                (key, value) = similardocs[previous]
-                return value
+        # if similardocs is None:
+            # return None
+        # else:
+            # if len(similardocs) < minlength:
+                # return None
+            # else:
+                # (key, value) = similardocs[previous]
+                # return value
 
     def find_previous(self, doc, limit=10):
         # max limit of the results

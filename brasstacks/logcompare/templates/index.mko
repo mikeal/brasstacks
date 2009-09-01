@@ -23,7 +23,7 @@ $(document).ready(function()
 </div>
 
 <div>
-  <a href="?count=${limit}&page=newest">Newest</a> 
+  <a href="?count=${limit}">Newest</a> 
   <a href="?count=${limit}&page=newer&group=${group}">Newer</a> 
   <a href="?count=${limit}&page=older&group=${group}">Older</a>
 </div>
