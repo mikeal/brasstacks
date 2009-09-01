@@ -142,7 +142,6 @@ def parseLog(tbox_id):
     doc = {}
     contentAll = ''
     url = logroot + tbox_id + "&fulltext=1"
-        
     try:
         inFile = urllib.urlopen(url)
     except IOError:
@@ -201,7 +200,8 @@ def save(data):
 
 def getTinderboxIDfromDB():
     db = couchquery.Database("http://pythonesque.org:5984/fennec_test")
-    tbox_ids = db.views.fennecResults.byTinderboxID()
+    return db.views.fennecResults.byTinderboxID()
+   
 
 
 def getTinderboxData():
@@ -219,13 +219,15 @@ def getTinderboxData():
     return result
 
 def parseFile(tbox_id):
+    global tbox_ids
     if (tbox_ids == []):
-        getTinderboxIDfromDB()
+        tbox_ids = getTinderboxIDfromDB()
 
     if (tbox_id in tbox_ids):
         print "skipping " + tbox_id + ", it is already in the database"
         pass
     else:
+        print "going to parse "  +tbox_id
         result = parseLog(tbox_id)
         if (result != None):
             print "saving: " + tbox_id
@@ -234,6 +236,7 @@ def parseFile(tbox_id):
 
 def main():
     data = getTinderboxData()
+    testName = re.compile('((reftest)|(crashtests)|(xpcshell))')
 
     build_table = data['build_table']
     build = build_table[0]
@@ -242,7 +245,8 @@ def main():
         for b in build:
             if type(b) != types.IntType:
                 for k in b:
-                    if (k == "buildname"):
+                    if (k == "buildname" and testName.search(b[k])):
+                        print "checking out buildname: " + b[k]
                         parseFile(b['logfile'])
 
 
