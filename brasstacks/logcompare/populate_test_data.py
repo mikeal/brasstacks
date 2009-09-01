@@ -48,7 +48,7 @@ def main():
     buildstructure['testtype'] = random.choice(testtypes)
     buildstructure['timestamp'] = str(datetime.datetime.now())
     buildstructure['document'] = document
-    buildstructure['tinderbox_id'] = random.choice([-1, str(datetime.datetime.now())])
+    buildstructure['tinderboxID'] = random.choice([-1, str(datetime.datetime.now())])
     
     # create tests
     tests = {}
