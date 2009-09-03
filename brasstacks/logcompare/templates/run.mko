@@ -118,8 +118,5 @@ Click on header to sort <br />
 </table>
 </div>
 
-% for item in run.prevdocs:
-  ${item} <br />
-% endfor
 <%doc>
 </%doc>

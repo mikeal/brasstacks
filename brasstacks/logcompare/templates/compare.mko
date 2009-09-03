@@ -8,22 +8,32 @@ $(document).ready(function()
 );
 </script>
 
+<h2>Runs:</h2>
+<table>
+  <tr>
+    <th>Run</th><th>Build ID</th><th>Product</th><th>Platform</th><th>Test type</th><th>Time stamp</th>
+  </tr>
+  <tr>
+    <td>Run 1</td>
+    <td><a href="/logcompare/build/${run1.buildid}">${run1.buildid}</a></td>
+    <td>${run1.product}</td> 
+    <td>${run1.os}</td>
+    <td>${run1.testtype}</td>
+    <td>${run1.timestamp.exactly}</td>
+    <td><a href="/logcompare/run/${run1.docid}">See details</a><br /></td>
+  </tr>
+  <tr>
+    <td>Run 2</td>
+    <td><a href="/logcompare/build/${run2.buildid}">${run2.buildid}</a></td>
+    <td>${run2.product}</td> 
+    <td>${run2.os}</td>
+    <td>${run2.testtype}</td>
+    <td>${run2.timestamp.exactly}</td>
+    <td><a href="/logcompare/run/${run2.docid}">See details</a><br /></td>
+  </tr>
+</table>
 
-<h2>Build 1 (${build1.buildid}):</h2>
-<a href="/logcompare/build/${build1.buildid}">See details</a><br />
-${build1.testtype}<br />
-${build1.product}<br />
-${build1.os}<br />
-${build1.timestamp}<br />
-
-<h2>Build 2 (${build2.buildid}):</h2>
-<a href="/logcompare/build/${build2.buildid}">See details</a><br />
-${build2.testtype}<br />
-${build2.product}<br />
-${build2.os}<br />
-${build2.timestamp}<br />
-
-<h2>Comparison:</h2>
+<h2>Comparisons:</h2>
 
 newtestfiles: ${len(answer['newtestfiles'])} <br />
 missingtestfiles: ${len(answer['missingtestfiles'])} <br />
@@ -42,58 +52,290 @@ newpasses: ${len(answer['newpasses'])} <br />
 newtodos: ${len(answer['newtodos'])} <br />
 
 
-<h2>Comparison Detail:</h2>
-
-<h3>New failures (${len(answer['newfails'])}):</h3>
+<h2>New failures (${len(answer['newfails'])}):</h2>
 
 <table id="compareTable" class="tablesorter">
   <thead>
     <tr>
+      <th>Actions</th>
       <th>Test</th>
-      <th>Delta</th>
-      <th>build 1</th>
-      <th>build 2</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
     </tr>
   </thead>
   <tbody>
     % for row in answer['newfails']:
     <tr>
-      <td>${row['testfile']} <a href="/logcompare/test/${row['testfile']}">See history</a></td>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
       <td>${row['delta']}</td>
-      <td>${row['result1']['fail']} ${row['result1']['pass']} ${row['result1']['todo']}</td>
-      <td>${row['result2']['fail']} ${row['result2']['pass']} ${row['result2']['todo']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
     </tr>
     % endfor
   </tbody>
 </table>
 
-<h3>Missing passes (${ len(answer['missingpasses']) }):</h3>
+<h2>New passes (${len(answer['newpasses'])}):</h2>
 
-% for row in answer['missingpasses']:
-  ${row} <br />
-% endfor
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['newpasses']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
 
-<h3>Tests that did not pass in build 2 (${ len(answer['prevlynotpasses']) }):</h3>
+<h2>New todos (${len(answer['newtodos'])}):</h2>
 
-% for row in answer['prevlynotpasses']:
-  ${row} <br />
-% endfor
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['newpasses']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
 
+<h2>Missing fails (${len(answer['missingfails'])}):</h2>
 
-<h3>Tests that did not fail in build 2 (${ len(answer['prevlynotfails']) }):</h3>
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['missingfails']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
 
-% for row in answer['prevlynotfails']:
-  ${row} <br />
-% endfor
+<h2>Missing passes (${len(answer['missingpasses'])}):</h2>
 
-<h3>Missing test files: (${ len(answer['missingtestfiles']) }):</h3>
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['missingpasses']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
 
-% for row in answer['missingtestfiles']:
-  ${row} <br />
-% endfor
+<h2>New todos (${len(answer['missingtodos'])}):</h2>
 
-<h3>Tests that haven't changed: (${ len(answer['stabletests']) }):</h3>
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['missingtodos']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
 
-% for row in answer['stabletests']:
-  ${row} <br />
-% endfor
+<h2>Tests that did not pass in run 2 (${len(answer['prevlynotpasses'])}):</h2>
+
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['prevlynotpasses']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
+
+<h2>Tests that did not fail in run 2 (${len(answer['prevlynotfails'])}):</h2>
+
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['prevlynotfails']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
+
+<h2>Tests that were not marked as Todos in run 2 (${len(answer['prevlynottodos'])}):</h2>
+
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Diff</th>
+      <th>Run 1</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['prevlynottodos']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>${row['delta']}</td>
+      <td>Fail: ${row['result1']['fail']} Pass: ${row['result1']['pass']} Todo: ${row['result1']['todo']}</td>
+      <td>Fail: ${row['result2']['fail']} Pass: ${row['result2']['pass']} Todo: ${row['result2']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
+
+<h2>Test files missing in run 1 (${ len(answer['missingtestfiles']) }):</h2>
+
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Run 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['missingtestfiles']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>Fail: ${row['result']['fail']} Pass: ${row['result']['pass']} Todo: ${row['result']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
+
+<h2>Test files Missing in run 2 (${ len(answer['newtestfiles']) }):</h2>
+
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Run 1</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['newtestfiles']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>Fail: ${row['result']['fail']} Pass: ${row['result']['pass']} Todo: ${row['result']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
+
+<h2>Tests that haven't changed: (${ len(answer['stabletests']) }):</h2>
+
+<table id="compareTable" class="tablesorter">
+  <thead>
+    <tr>
+      <th>Actions</th>
+      <th>Test</th>
+      <th>Run 1</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for row in answer['stabletests']:
+    <tr>
+      <td><a href="/logcompare/test/${row['testfile']}">See complete history</a></td>
+      <td>${row['testfile']}</td>
+      <td>Fail: ${row['result']['fail']} Pass: ${row['result']['pass']} Todo: ${row['result']['todo']}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
