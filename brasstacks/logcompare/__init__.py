@@ -90,8 +90,8 @@ class LogCompareApplication(RestApplication):
                 else:
                     run = Run(doc)
                     similardocs = self.find_previous(doc, 10)
-                    status = request.query.get('tests', "all")
-                    tests = run.get_tests(status)
+                    status = request.query.get('tests', "fail")
+                    tests = run.get_tests(self.db, status)
                     return MakoResponse("run", run=run, tests=tests, similardocs=similardocs, status=status)
 
         if collection == "compare":
@@ -124,51 +124,61 @@ class LogCompareApplication(RestApplication):
                     answer = run1.compare(run2)
                     return MakoResponse("compare", answer=answer, run1=run1, run2=run2)
 
-        if collection == "product":
+        if collection == "runs":
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                buildsbyproduct = self.vu.metadataByProduct(
-                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
-                return MakoResponse("product", buildsbyproduct=buildsbyproduct)
-
-        if collection == "testtype":
-            if resource is None:
-                return MakoResponse("error", error="not implemented yet")
-            else:
-                buildsbytesttype = self.vu.metadataByTesttype(
-                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
-                return MakoResponse("testtype", buildsbytesttype=buildsbytesttype)
-
-        if collection == "platform":
-            if resource is None:
-                return MakoResponse("error", error="not implemented yet")
-            else:
-                buildsbyplatform = self.vu.metadataByPlatform(
-                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
-                return MakoResponse("platform", buildsbyplatform=buildsbyplatform)
-
-        if collection == "builds":
-            if resource is None:
-                return MakoResponse("error", error="not implemented yet")
-            else:
-                input = resource.split('+')
-                if len(input) < 3:
-                    return MakoResponse("error", error="not enough build info")
+                product = request.query.get('product')
+                os = request.query.get('os')
+                testtype = request.query.get('testtype')
+                
+                if product is None and os is None and testtype is None:
+                    return MakoResponse("error", error="Inputs given are not complete")
                 else:
-                    builds = self.vu.buildIdsByMetadata(
-                        startkey=[input[0], input[1], input[2], {}], 
-                        endkey=[input[0], input[1], input[2], 0], 
-                        descending=True).items()
-                    return MakoResponse("builds", builds=builds)
+                    summary = self.vu.runSummaryByTimestamp(
+                            startkey=[{}, product, os, testtype, {}], 
+                            endkey=[0, product, os, testtype, 0], 
+                            descending=True, group=True).items()
+                            
+                    runs = self.vu.runCounts(group=True).items()
+                    
+                    return MakoResponse("runs", runs=runs, summary=summary)
+                        
       
         if collection == "test":
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                results = self.vu.tests(
-                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
-                return MakoResponse("test", results=results)
+                product = request.query.get('product')
+                os = request.query.get('os')
+                testtype = request.query.get('testtype')
+                
+                if product is None or os is None or testtype is None:
+                    pass
+                else:
+                    similarruns = self.vu.testsByMetadata(
+                        startkey=[product, os, testtype, {}], 
+                        endkey=[product, os, testtype, 0],
+                        descending=True, limit=100).items()
+                        
+                    for key, value in similarruns:
+                        if resource in value:
+                            value = value[resource]
+                        else:
+                            value = None
+                        
+                    # results = self.vu.testresultByTestnameMetadata(
+                        # startkey=[resource, product, os, testtype, {}], 
+                        # endkey=[resource, product, os, testtype, 0], 
+                        # descending=True).items()
+                        
+                    # similarruns = self.vu.docIdsByMetadata(
+                        # startkey=[product, os, testtype, {}], 
+                        # endkey=[product, os, testtype, 0],
+                        # descending=True, limit=100).items()
+                    
+                    
+                return MakoResponse("test", results=similarruns)
       
         if collection == "failures":
             lastbuild = self.vu.summaryBuildsByMetadata(group=True, descending=True, limit=1).items()
@@ -205,7 +215,15 @@ class LogCompareApplication(RestApplication):
                 tests[testname] = results
             
             return MakoResponse("failures", tests=tests)
-  
+        
+        if collection == "build":
+            if resource is None:
+                return MakoResponse("error", error="not implemented yet")
+            else:
+                runs = self.vu.tests(
+                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
+                return MakoResponse("test", results=results)
+    
     def POST(self, request, collection = None, resource = None):
         if collection == "compare":
             if request['CONTENT_TYPE'] == "application/x-www-form-urlencoded":
@@ -321,12 +339,10 @@ class Run(object):
         self.product = self.doc['product']
         self.os = self.doc['os']
         self.testtype = self.doc['testtype']
-        self.timestamp = Then(self.doc['timestamp'])
+        self.timestamp = self.doc['timestamp']
+        # self.timestamp = Then(self.doc['timestamp'])
         self.tests = self.doc['tests']
 
-    def get_tests(self, status):
-        return TestsResult(self.tests, status)
-    
     def compare(self, run):
         
         newtestfiles = []
@@ -452,47 +468,48 @@ class Run(object):
         # true if self's time is later than run's time
         return dt > dt2
 
-class TestsResult(object):
-    def __init__(self, tests, status):
+    def get_tests(self, db, status="all"):
         
+        # get the tests based on user option
         result = []
         if status == "all":
-            for item in tests.items():
+            for item in self.tests.items():
                 result.append(item)
         elif status == "fail":
-            for item in tests.items():
+            for item in self.tests.items():
                 key, value = item
                 if value['fail'] > 0:
                     result.append(item)
         elif status == "pass":
-            for item in tests.items():
+            for item in self.tests.items():
                 key, value = item
                 if value['pass'] > 0:
                     result.append(item)
         elif status == "todo":
-            for item in tests.items():
+            for item in self.tests.items():
                 key, value = item
                 if value['todo'] > 0:
                     result.append(item)
         elif status == "zerofail":
-            for item in tests.items():
+            for item in self.tests.items():
                 key, value = item
                 if value['fail'] == 0:
                     result.append(item)
         elif status == "zeropass":
-            for item in tests.items():
+            for item in self.tests.items():
                 key, value = item
                 if value['pass'] == 0:
                     result.append(item)
         elif status == "zerotodo":
-            for item in tests.items():
+            for item in self.tests.items():
                 key, value = item
                 if value['todo'] == 0:
                     result.append(item)
         else:
-            for item in tests.items():
+            for item in self.tests.items():
                 result.append(item)
         
+        # aggregate the counts
         self.totalfails = 0
         self.totalpasses = 0
         self.totaltodos = 0
@@ -504,18 +521,32 @@ class TestsResult(object):
         
         self.numtestfiles = len(result)
         self.totaltests = self.totalfails + self.totalpasses + self.totaltodos
-        self.tests = result
-            
-    # def smart_sum(x, y):
-      # x['totalfails'] += y['fail']
-      # x['totalpasses'] += y['pass']
-      # x['totaltodos'] += y['todo']
-    
-    # totals = reduce(smart_sum, tests.values(), {"totalfails":0, "totalpasses":0, "totaltodos":0})
-    
-    # for key, value in totals.items():
-      # setattr(self, key, value)
-      
-      # 11:51:54 AM) mikeal: for (testname, result) in [(k, v,) for k, v in buildtests.tests.items() if v.fail is 0]
+        self.filteredtests = result
+        
+        # for each test, find it's last change
+        for key, value in self.filteredtests:
+            if value['fail'] > 0 or value['todo'] > 0:
+                self.prevdocs = db.views.logcompare.testresultByTestnameMetadata(
+                    startkey=[key, self.product, self.os, self.testtype, self.timestamp], 
+                    endkey=[key, self.product, self.os, self.testtype, 0], 
+                    descending=True, 
+                    limit=100).items()
+                ago = 0
+                value['lastchange'] = None
+                for k, v in self.prevdocs:
+                    res = v[0]
+                    docid = v[1]
+                    if res['fail'] != value['fail'] or res['pass'] != value['pass'] or res['todo'] != value['todo']:
+                        ago += 1
+                        value['lastchange'] = {'run': docid, 'ago': ago}
+                        break
+                    else:
+                        for msg in value['note']:
+                            if msg not in res['note']:
+                                ago += 1
+                                value['lastchange'] = {'run': docid, 'ago': ago}
+                                break
+
+# 11:51:54 AM) mikeal: for (testname, result) in [(k, v,) for k, v in buildtests.tests.items() if v.fail is 0]
 # (11:52:08 AM) mikeal: for (testname, result) in [(k, v,) for k, v in doc.tests.items() if v.fail is 0]:
 # (11:52:43 AM) mikeal: for (testname, result) in [(k, v,) for k, v in doc.tests.items() if v.fail is not 0]

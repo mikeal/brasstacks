@@ -25,7 +25,7 @@ $(document).ready(function()
     <td>${run.product}</td> 
     <td>${run.os}</td>
     <td>${run.testtype}</td>
-    <td>${run.timestamp.exactly}</td>
+    <td>${run.timestamp}</td>
     <td><a href="/logcompare/compare/${run.docid}">Compare to last</a></td>
   </tr>
 </table>  
@@ -45,6 +45,7 @@ ${timestamp}  <a href="/logcompare/compare/${run.docid}&${runid}">Compare to thi
 %   endfor
 % endif
 </div>
+
 
 <div>
 <h2>
@@ -81,24 +82,31 @@ Click on header to sort <br />
   <thead>
   <tr>
     <th>Actions</th>
-    <th>Test (${tests.numtestfiles})</th>
-    <th>Fail (${tests.totalfails})</th>
-    <th>Pass (${tests.totalpasses})</th>
-    <th>Todo (${tests.totaltodos})</th>
+    <th>Test (${run.numtestfiles})</th>
+    <th>Fail (${run.totalfails})</th>
+    <th>Pass (${run.totalpasses})</th>
+    <th>Todo (${run.totaltodos})</th>
     <th>Results changed from</th>
   </tr>
   </thead>
   <tbody>
-% for (key, value) in tests.tests:
+% for (key, value) in run.filteredtests:
   <tr>
     <td>
-      <a href="/logcompare/test/${key}?">Complete history</a> 
+      <a href="/logcompare/test/${key}">Complete history</a> 
       <a href="/logcompare/test/${key}?product=${run.product}&os=${run.os}&testtype=${run.testtype}">History on similar runs</a>
     </td>
     <td>${key}</td>
     <td>${value['fail']}</td>
     <td>${value['pass']}</td>
     <td>${value['todo']}</td>
+    <td>
+    % if value['lastchange'] is not None:
+    <a href="/logcompare/run/${value['lastchange']['run']}">${value['lastchange']['ago']}</a> run(s) before
+    % else:
+    hasn't changed lately
+    % endif
+    </td>
     <%doc><td>
     % for note in value['note']:
     ${note}<br />
@@ -109,6 +117,9 @@ Click on header to sort <br />
   </tbody>
 </table>
 </div>
-<%doc>
 
+% for item in run.prevdocs:
+  ${item} <br />
+% endfor
+<%doc>
 </%doc>
