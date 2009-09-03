@@ -154,32 +154,25 @@ class LogCompareApplication(RestApplication):
                 testtype = request.query.get('testtype')
                 
                 if product is None or os is None or testtype is None:
-                    pass
+                    return MakoResponse("error", error="not implemented yet")
                 else:
                     similarruns = self.vu.testsByMetadata(
                         startkey=[product, os, testtype, {}], 
                         endkey=[product, os, testtype, 0],
                         descending=True, limit=100).items()
-                        
+                    
                     for key, value in similarruns:
-                        if resource in value:
-                            value = value[resource]
+                        tests = value[0]
+                        docid = value[1]
+                        if resource in tests:                            
+                            result = tests[resource]
+                            tests.clear()
+                            tests[resource] = result
                         else:
-                            value = None
-                        
-                    # results = self.vu.testresultByTestnameMetadata(
-                        # startkey=[resource, product, os, testtype, {}], 
-                        # endkey=[resource, product, os, testtype, 0], 
-                        # descending=True).items()
-                        
-                    # similarruns = self.vu.docIdsByMetadata(
-                        # startkey=[product, os, testtype, {}], 
-                        # endkey=[product, os, testtype, 0],
-                        # descending=True, limit=100).items()
+                            tests.clear()
                     
-                    
-                return MakoResponse("test", results=similarruns)
-      
+                    return MakoResponse("test", results=similarruns, testname=resource, product=product, os=os, testtype=testtype)
+        
         if collection == "failures":
             lastbuild = self.vu.summaryBuildsByMetadata(group=True, descending=True, limit=1).items()
             (key, value) = lastbuild[0]
