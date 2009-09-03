@@ -31,9 +31,27 @@ $(document).ready(function()
   <tr>
     <td><a href="/logcompare/run/${value[1]}">See details</a></td>
     <td>${key[3]}</td>
-    <td>${value[0][testname]['fail']}</td>
-    <td>${value[0][testname]['pass']}</td>
-    <td>${value[0][testname]['todo']}</td>
+    <td>
+    % if len(value[0]) is 0:
+      No result
+    % else:
+      ${value[0][testname]['fail']}
+    % endif
+    </td>
+    <td>
+    % if len(value[0]) is 0:
+      No result
+    % else:
+      ${value[0][testname]['pass']}
+    % endif
+    </td>
+    <td>
+    % if len(value[0]) is 0:
+      No result
+    % else:
+      ${value[0][testname]['todo']}
+    % endif
+    </td>
   </tr>
   % endfor
   </tbody>
