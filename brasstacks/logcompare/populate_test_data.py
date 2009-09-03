@@ -33,10 +33,10 @@ def main():
   testtypes = ['crashtests', 'mochitests'] #, 'xpcshell', 'reftests']
   build = timestamp = ''
   
-  db = couchquery.Database("http://pythonesque.org:5984/logcompare", cache=Cache())
-  
+  # db = couchquery.Database("http://pythonesque.org:5984/logcompare", cache=Cache())
+  db = couchquery.Database("http://happyhans:happyhanshappyhans@happyhans.couch.io/logcompare", cache=Cache())
   # create documents
-  doccount = random.randint(1, 3)
+  doccount = random.randint(40, 70)
   for i in range(0, doccount):
     
     # create metadata
@@ -59,7 +59,8 @@ def main():
       todocount = random.randint(0, 3)
       notes = []
       for y in range(0, (failcount + todocount)):
-        notes.append("This test should have returned TRUE but returned FALSE")
+        # notes.append("This test should have returned TRUE but returned FALSE")
+        notes.append("Message!")
       tests['test_' + str(offset + x) + '.js'] = {
         'pass': random.randint(0, 5),
         'fail': failcount,
