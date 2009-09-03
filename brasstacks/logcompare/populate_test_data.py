@@ -14,6 +14,7 @@ import couchquery
   # "testtype": testtype,
   # "timestamp": str(date),
   # "tests": [test1, test2, test3, ...]
+  # "tinderbox_id": tinderbox id
 # }
 
 # testStructure = {
@@ -32,21 +33,22 @@ def main():
   testtypes = ['crashtests', 'mochitests'] #, 'xpcshell', 'reftests']
   build = timestamp = ''
   
-  db = couchquery.Database("http://pythonesque.org:5984/logcompare", cache=Cache())
-  
+  # db = couchquery.Database("http://pythonesque.org:5984/logcompare", cache=Cache())
+  db = couchquery.Database("http://happyhans:happyhanshappyhans@happyhans.couch.io/logcompare", cache=Cache())
   # create documents
-  doccount = random.randint(50, 60)
+  doccount = random.randint(40, 70)
   for i in range(0, doccount):
     
     # create metadata
     buildstructure = {}
 
-    buildstructure['build'] = random.randint(999900, 999999)
+    buildstructure['build'] = random.randint(999000, 999999)
     buildstructure['product'] = random.choice(products)
     buildstructure['os'] = random.choice(platforms)
     buildstructure['testtype'] = random.choice(testtypes)
     buildstructure['timestamp'] = str(datetime.datetime.now())
     buildstructure['document'] = document
+    buildstructure['tinderboxID'] = random.choice([-1, str(datetime.datetime.now())])
     
     # create tests
     tests = {}
@@ -57,7 +59,8 @@ def main():
       todocount = random.randint(0, 3)
       notes = []
       for y in range(0, (failcount + todocount)):
-        notes.append("This test should have returned TRUE but returned FALSE")
+        # notes.append("This test should have returned TRUE but returned FALSE")
+        notes.append("Message!")
       tests['test_' + str(offset + x) + '.js'] = {
         'pass': random.randint(0, 5),
         'fail': failcount,

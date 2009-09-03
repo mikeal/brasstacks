@@ -32,44 +32,50 @@ class Then():
     self.precisely = t
     self.now = datetime.now()
     self.delta = self.now - self.precisely
-    self.years = self.now.year - self.precisely.year
-    self.months = self.now.month - self.precisely.month
-    self.weeks = self.delta.days / 7
-    self.days = self.delta.days
-    self.hours = self.delta.seconds / 3600
-    self.minutes = self.delta.seconds / 60
     self.seconds = self.delta.seconds
-    self.string = self._string()
+    self.minutes = self.seconds / 60
+    self.hours = self.minutes / 60
+    self.days = self.delta.days
+    self.weeks = self.days / 7
+    self.months = self.weeks / 4
+    self.years = self.months / 12
+    self.approximately = self.words()
     
-  def _string(self):
+  def words(self):
+    if self.minutes <= 5 and (self.hours + self.days + self.weeks + self.months + self.years) is 0:
+      return "just now"
+    
+    if self.minutes > 5 and (self.hours + self.days + self.weeks + self.months + self.years) is 0:
+      return str(self.minutes) + " minutes ago"
+    
+    if self.hours is 1 and (self.days + self.weeks + self.months + self.years) is 0:
+      return str(self.minutes) + " minutes ago"
+    
+    if self.hours > 1 and (self.days + self.weeks + self.months + self.years) is 0:
+      return str(self.hours) + " hours ago"
+      
+    if self.days is 1 and (self.weeks + self.months + self.years) is 0:
+      return str(self.hours + self.days * 24) + " hours ago"
+      
+    if self.days > 1 and (self.weeks + self.months + self.years) is 0:
+      return str(self.days) + " days ago"
+      
+    if self.weeks is 1 and (self.months + self.years) is 0:
+      return str(self.days) + " days ago"
+    
+    if self.weeks > 1 and (self.months + self.years) is 0:
+      return str(self.weeks) + " weeks ago"
+      
+    if self.months is 1 and self.years is 0:
+      return str(self.weeks) + " weeks ago"
+    
+    if self.months > 1 and self.years is 0:
+      return str(self.months) + " months ago"
+      
+    if self.years is 1:
+      return str(self.months) + " months ago"
+    
     if self.years > 1:
-      return "over " + str(self.years) + " years ago"
-    elif self.years == 1:
-      return str(self.years) + " year ago"
-    else:
-      if self.months > 1:
-        return str(self.months) + " months ago"
-      elif self.months == 1:
-        return str(self.months) + " month ago"
-      else:
-        if self.weeks > 1:
-          return str(self.weeks) + " weeks ago"
-        elif self.weeks > 1:
-          return str(self.weeks) + " week ago"
-        else:
-          if self.days > 1:
-            return str(self.days) + " days ago"
-          elif self.days == 1:
-            return "yesterday" # str(self.days) + " day ago"
-          else: 
-            if self.hours > 1:
-              return str(self.hours) + " hours ago"
-            elif self.hours == 1:
-              return str(self.hours) + " hour ago"
-            else:
-              if self.minutes > 1:
-                return str(self.minutes) + " minutes ago"
-              else:
-                return "just now"
+      return str(self.years) + " years ago"
         
         

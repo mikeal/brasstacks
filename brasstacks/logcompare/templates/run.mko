@@ -1,9 +1,12 @@
 <%inherit file="base.mko"/>
 
+<script type="text/javascript" src="/static/columnFilters/jquery.columnfilters.js"></script>
+
 <script type="text/javascript">
 $(document).ready(function() 
     { 
-        $("#buildTable").tablesorter(); 
+        $("#runTable").tablesorter(); 
+        $("table#runTable").columnFilters({alternateRowClassNames:["rowa", "rowb"], excludeColumns:[0, 5]});
     } 
 );
 </script>
@@ -18,12 +21,12 @@ $(document).ready(function()
     <th>Build ID</th><th>Product</th><th>Platform</th><th>Test type</th><th>Time stamp</th>
   </tr>
   <tr>
-    <td><a href="/logcompare/build/${build.buildid}">${build.buildid}</a></td>
-    <td>${build.product}</td> 
-    <td>${build.os}</td>
-    <td>${build.testtype}</td>
-    <td>${build.timestamp.exactly} (${build.timestamp.string})</td>
-    <td><a href="/logcompare/compare/${build.docid}">Compare to last</a><br /></td>
+    <td><a href="/logcompare/build/${run.buildid}">${run.buildid}</a></td>
+    <td>${run.product}</td> 
+    <td>${run.os}</td>
+    <td>${run.testtype}</td>
+    <td>${run.timestamp}</td>
+    <td><a href="/logcompare/compare/${run.docid}">Compare to last</a></td>
   </tr>
 </table>  
 
@@ -31,49 +34,79 @@ $(document).ready(function()
 <h2>Similar Runs Before:</h2>
 <div>
 % if len(similardocs) == 0:
-  No builds prior<br />
+  No runs prior<br />
 % else:
 %   for (key, value) in similardocs:
 <% 
   timestamp = key[3]
   runid = value
 %>
-${timestamp}  <a href="/logcompare/compare/${build.docid}&${runid}">Compare to this</a> <br />
+${timestamp}  <a href="/logcompare/compare/${run.docid}&${runid}">Compare to this</a> <br />
 %   endfor
 % endif
 </div>
 
-<h2>Tests on this run:</h2>
+
+<div>
+<h2>
+% if status == "all":
+  All tests on this run:
+% elif status == "fail":
+  Tests with Fail counts on this run:
+% elif status == "pass":
+  Tests with Pass counts on this run:
+% elif status == "todo":
+  Tests with Todo counts on this run:
+% elif status == "zerofail":
+  Tests with no Fail count on this run:
+% elif status == "zeropass":
+  Tests with no Pass count on this run:
+% elif status == "zerotodo":
+  Tests with no Todo count on this run:
+% endif
+</h2>
+</div>
+
 <div>
 Filter Tests 
 <a href="?tests=all">All</a>, 
-<a href="?tests=fail">non-zero fail counts</a>,
-<a href="?tests=todo">non-zero todo counts</a>,
-<a href="?tests=zeropass">zero pass counts</a>
+<a href="?tests=fail">non-zero Fail counts</a>,
+<a href="?tests=todo">non-zero Todo counts</a>,
+<a href="?tests=zeropass">zero Pass counts</a>,
+<a href="?tests=zerofail">zero Fail count</a>,
+<a href="?tests=zerotodo">zero Todo count</a>,
+<a href="?tests=pass">non-zero Pass count</a>,
 </div>
 Click on header to sort <br />
-<table id="buildTable" class="tablesorter">
+<table id="runTable" class="tablesorter">
   <thead>
   <tr>
     <th>Actions</th>
-    <th>Test (${buildtests.numtestfiles})</th>
-    <th>Fail (${buildtests.totalfails})</th>
-    <th>Pass (${buildtests.totalpasses})</th>
-    <th>Todo (${buildtests.totaltodos})</th>
+    <th>Test (${run.numtestfiles})</th>
+    <th>Fail (${run.totalfails})</th>
+    <th>Pass (${run.totalpasses})</th>
+    <th>Todo (${run.totaltodos})</th>
     <th>Results changed from</th>
   </tr>
   </thead>
   <tbody>
-% for (key, value) in buildtests.tests:
+% for (key, value) in run.filteredtests:
   <tr>
     <td>
-      <a href="/logcompare/test/${key}?">Complete history</a> 
-      <a href="/logcompare/test/${key}?product=${build.product}&os=${build.os}&testtype=${build.testtype}">History on similar runs</a>
+      <a href="/logcompare/test/${key}">Complete history</a> 
+      <a href="/logcompare/test/${key}?product=${run.product}&os=${run.os}&testtype=${run.testtype}">History on similar runs</a>
     </td>
     <td>${key}</td>
     <td>${value['fail']}</td>
     <td>${value['pass']}</td>
     <td>${value['todo']}</td>
+    <td>
+    % if value['lastchange'] is not None:
+    <a href="/logcompare/run/${value['lastchange']['run']}">${value['lastchange']['ago']}</a> run(s) before
+    % else:
+    hasn't changed lately
+    % endif
+    </td>
     <%doc><td>
     % for note in value['note']:
     ${note}<br />
@@ -84,6 +117,6 @@ Click on header to sort <br />
   </tbody>
 </table>
 </div>
-<%doc>
 
+<%doc>
 </%doc>

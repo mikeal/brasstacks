@@ -1,15 +1,58 @@
 <%inherit file="base.mko"/>
-<% (key, value) = results[0] %>
-<h2>${key[0]}</h2>
-<div class="results">
-% for (key, value) in results:
-<%
-  product = value[0]
-  platform = value[1]
-  testtype = value[2]
-  timestamp = value[3]
-  result = value[4]
-%>
- ${product} ${platform} ${testtype} ${timestamp} ${result['fail']} ${result['pass']} ${result['todo']} <br />
-% endfor
-</div>
+
+
+
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("#testTable").tablesorter(); 
+    } 
+);
+</script>
+
+
+
+<h2>Last 100 results for "${testname}" in ${testtype} for ${product} on ${os}</h2>
+
+
+
+<table id="testTable" class="results">
+  <thead>
+  <tr>
+    <th>Run</th>
+    <th>Time</th>
+    <th>Fail count</th>
+    <th>Pass count</th>
+    <th>Todo count</th>
+  </tr>
+  </thead>
+  <tbody>
+  % for key, value in results:
+  <tr>
+    <td><a href="/logcompare/run/${value[1]}">See details</a></td>
+    <td>${key[3]}</td>
+    <td>
+    % if len(value[0]) is 0:
+      No result
+    % else:
+      ${value[0][testname]['fail']}
+    % endif
+    </td>
+    <td>
+    % if len(value[0]) is 0:
+      No result
+    % else:
+      ${value[0][testname]['pass']}
+    % endif
+    </td>
+    <td>
+    % if len(value[0]) is 0:
+      No result
+    % else:
+      ${value[0][testname]['todo']}
+    % endif
+    </td>
+  </tr>
+  % endfor
+  </tbody>
+</table>

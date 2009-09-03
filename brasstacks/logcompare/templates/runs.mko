@@ -1,5 +1,7 @@
 <%inherit file="base.mko"/>
 
+
+
 <script type="text/javascript">
 $(document).ready(function() 
     { 
@@ -8,37 +10,7 @@ $(document).ready(function()
 );
 </script>
 
-<%doc><h2><a href="/logcompare/failures/">All test failures from last run</a></h2></%doc>
 
-<div>
-<% limits = [5, 10, 25, 50, 100] %>
-  Latest 
-  % for x in limits: 
-    % if x is not limit:
-      <a href="?count=${x}">${x}</a>  
-    % else:
-      ${x}  
-    % endif
-  % endfor  
-</div>
-
-<div>
-  <a href="?count=${limit}">Newest</a> 
-  <a href="?count=${limit}&page=newer&group=${group}">Newer</a> 
-  <a href="?count=${limit}&page=older&group=${group}">Older</a>
-</div>
-
-<div>
-% if len(summary) is 0:
-  <h2>Page is showing beyond end of results. Click newer.</h2>
-% else:
-  % if group is not 0:
-    <h2>${group * limit + 1} to ${group * limit + limit} Most Recent Runs</h2>
-  % else:
-    <h2>${limit} Most Recent Runs</h2>
-  % endif
-% endif
-</div>
 
 <div>Click on headers to sort</div>
 <div class="results">
@@ -85,6 +57,8 @@ $(document).ready(function()
 </table>
 </div>
 
+
+
 <h2>Test Runs by Product, OS, and Test Type</h2>
 <div class="results">
 % for (run, count) in runs: 
@@ -97,23 +71,3 @@ $(document).ready(function()
   </a>(${count})<br />
 % endfor
 </div>
-
-<%doc>
-<div class="results">Test results by products: 
-% for (product, count) in products:
-  <a href="/logcompare/product/${product}">${product}</a> (${count}), 
-% endfor
-</div>
-
-<div class="results">Test results by test types: 
-% for (testtype, count) in testtypes:
-  <a href="/logcompare/testtype/${testtype}">${testtype}</a> (${count}), 
-% endfor
-</div>
-
-<div class="results">Test results by operating Systems: 
-% for (os, count) in oses:
-  <a href="/logcompare/platform/${os}">${os}</a> (${count}), 
-% endfor
-</div>
-</%doc>
