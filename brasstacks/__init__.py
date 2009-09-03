@@ -114,6 +114,7 @@ def sync(db=None):
     import fennec
     import logcompare
     import tcm
+    import crashtest
     db.sync_design_doc("sitecompare", sitecompare.design_doc)
     db.sync_design_doc("brasstacks", brasstacks.design_doc)
     db.sync_design_doc("logcompare", logcompare.design_doc)
@@ -121,4 +122,5 @@ def sync(db=None):
     db.sync_design_doc("fennecFailures", fennec.failures_design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
     db.sync_design_doc("tcmTags", tcm.tags_design_doc)
+    db.sync_design_doc("crashtest", crashtest.design_doc)
 
