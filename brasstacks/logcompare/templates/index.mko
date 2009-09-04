@@ -9,7 +9,7 @@ $(document).ready(function()
 </script>
 
 <%doc><h2><a href="/logcompare/failures/">All test failures from last run</a></h2></%doc>
-
+<%doc>
 <div>
 <% limits = [5, 10, 25, 50, 100] %>
   Latest 
@@ -21,13 +21,14 @@ $(document).ready(function()
     % endif
   % endfor  
 </div>
+</%doc>
 
 <div>
-  <a href="?count=${limit}">Newest</a> 
-  <a href="?count=${limit}&page=newer&group=${group}">Newer</a> 
-  <a href="?count=${limit}&page=older&group=${group}">Older</a>
+  <a href='?count=${limit}&page=prev&link=${prev_startkey}'>Newer</a>
+  <a href='?count=${limit}&page=next&link=${next_startkey}'>Older</a>
 </div>
 
+<%doc>
 <div>
 % if len(summary) is 0:
   <h2>Page is showing beyond end of results. Click newer.</h2>
@@ -39,7 +40,7 @@ $(document).ready(function()
   % endif
 % endif
 </div>
-
+</%doc>
 <div>Click on headers to sort</div>
 <div class="results">
 <table id="runTable" class="results">

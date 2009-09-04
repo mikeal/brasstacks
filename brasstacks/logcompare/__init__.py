@@ -2,9 +2,9 @@ import os
 from datetime import datetime
 
 try:
-    import json as simplejson
-except ImportError:
-    import simplejson
+    import json
+except:
+    import simplejson as json
 
 from markdown import markdown
 from webenv import HtmlResponse, Response
@@ -38,7 +38,7 @@ class LogCompareResponse(HtmlResponse):
 class RSSResponse(Response):
     content_type = 'application/json'
     def __init__(self, body):
-        self.body = simplejson.dumps(body)
+        self.body = json.dumps(body)
         self.headers = []
 
 class LogCompareApplication(RestApplication):
@@ -53,32 +53,27 @@ class LogCompareApplication(RestApplication):
         
         if collection is None:
             
-            # variables used to control 'states' in results paging
             limit = int(request.query.get('count', 10))
-            page = request.query.get('page', 'newest')
-            group = int(request.query.get('group', 0))
+            page = request.query.get('page', None)
+            link = request.query.get('link', None)
             
-            if page == 'newer':
-                if group > 0:
-                    group -= 1
-                else:
-                    group = 0
-                skip = limit * group
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
-            elif page == 'older':
-                if group >= 0:
-                    group += 1
-                else:
-                    group = 0
-                skip = limit * group
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
+            if page == 'prev' and link is not None:
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1, endkey=json.loads(link)).items()
+            elif page == 'next' and link is not None:
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1, startkey=json.loads(link)).items()
             else:
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items() 
-                group = 0
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1).items()
+            
+            prev_startkey, value = summary[0] 
+            next_startkey, value = summary[len(summary) - 1]
+            summary = summary[0:len(summary) - 1]
             
             runs = self.vu.runCounts(group=True).items()
             
-            return LogCompareResponse("index", starttime, summary=summary, limit=limit, group=group, runs=runs)
+            return LogCompareResponse(
+                "index", starttime, summary=summary, limit=limit, prev_startkey=json.dumps(prev_startkey), 
+                next_startkey=json.dumps(next_startkey), runs=runs)
+                
           
         if collection == "run":
             if resource is None:
