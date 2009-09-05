@@ -5,6 +5,7 @@ from webenv.applications.file_server import FileServerApplication
 from webenv import Response404
 import webenv
 import couchquery
+from wsgiref.simple_server import make_server
 
 import cronjob
 
@@ -66,7 +67,6 @@ def get_wsgi_server(db):
     a.add_resource('users', users_application)
     a.add_resource('logcompare', logcompare_application)
     a.add_resource('mozmill', mozmill_application)
-    from wsgiref.simple_server import make_server
     httpd = make_server('', 8888, a)
     return httpd    
 
@@ -122,5 +122,17 @@ def sync(db=None):
     db.sync_design_doc("fennecFailures", fennec.failures_design_doc)
     db.sync_design_doc("tcm", tcm.design_doc)
     db.sync_design_doc("tcmTags", tcm.tags_design_doc)
-    db.sync_design_doc("crashtest", crashtest.design_doc)
 
+def crashtest():
+    import crashtest
+    crashdb = couchquery.Database('http://localhost:5984/crashtest')
+    resultdb = couchquery.Database('http://localhost:5984/crashtest_results')
+    crashdb.sync_design_doc("crashes", crashtest.crashes_design_doc)
+    resultdb.sync_design_doc("jobs", crashtest.jobs_design_doc)
+    resultdb.sync_design_doc("results", crashtest.results_design_doc)
+    a = Stub()
+    a.add_resource('crashtest', crashtest.CrashTestApplication(crashdb, resultdb))
+    httpd = make_server('', 8888, a)
+    print "Serving on http://localhost:8888/"
+    httpd.serve_forever()
+    
