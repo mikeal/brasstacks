@@ -93,7 +93,7 @@ $(document).ready(function()
   product = run[0] 
   os = run[1] 
   testtype = run[2] %>
-  <a href="/logcompare/runs/?prod=${product}&os=${os}&test=${testtype}">
+  <a href="/logcompare/runs/?product=${product}&os=${os}&testtype=${testtype}">
     ${product}, ${os}, ${testtype}
   </a>(${count})<br />
 % endfor

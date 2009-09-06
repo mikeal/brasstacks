@@ -58,14 +58,15 @@ class LogCompareApplication(RestApplication):
             link = request.query.get('link', None)
             
             if page == 'prev' and link is not None:
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1, endkey=json.loads(link)).items()
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=False, limit=limit + 1, startkey=json.loads(link)).items()
+                summary.reverse()
             elif page == 'next' and link is not None:
                 summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1, startkey=json.loads(link)).items()
             else:
                 summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1).items()
-            
-            prev_startkey, value = summary[0] 
-            next_startkey, value = summary[len(summary) - 1]
+                
+            prev_startkey = summary[0][0]
+            next_startkey = summary[len(summary) - 1][0]
             summary = summary[0:len(summary) - 1]
             
             runs = self.vu.runCounts(group=True).items()
@@ -120,20 +121,21 @@ class LogCompareApplication(RestApplication):
                     return MakoResponse("compare", answer=answer, run1=run1, run2=run2)
 
         if collection == "runs":
-            if resource is None:
-                return MakoResponse("error", error="not implemented yet")
-            else:
                 product = request.query.get('product')
                 os = request.query.get('os')
                 testtype = request.query.get('testtype')
                 
+                # print product
+                # print os
+                # print testtype
+                
                 if product is None and os is None and testtype is None:
                     return MakoResponse("error", error="Inputs given are not complete")
                 else:
-                    summary = self.vu.runSummaryByTimestamp(
-                            startkey=[{}, product, os, testtype, {}], 
-                            endkey=[0, product, os, testtype, 0], 
-                            descending=True, group=True).items()
+                    summary = self.vu.runSummaryByMetadata(
+                        startkey=[product, os, testtype, {}, {}, {}], 
+                        endkey=[product, os, testtype, 0, 0, 0], 
+                        descending=True, group=True).items()
                             
                     runs = self.vu.runCounts(group=True).items()
                     
