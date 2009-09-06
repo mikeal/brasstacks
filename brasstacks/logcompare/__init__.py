@@ -210,9 +210,13 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                runs = self.vu.tests(
-                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
-                return MakoResponse("test", results=results)
+                print resource
+                summary = self.vu.runSummaryByBuildId(
+                    startkey=[int(resource), {}, {}, {}, {}, {}], 
+                    endkey=[int(resource), 0, 0, 0, 0, 0], 
+                    descending=True, group=True).items()
+                print summary
+                return MakoResponse("build", summary=summary, buildid=resource)
     
     def POST(self, request, collection = None, resource = None):
         if collection == "compare":
@@ -418,7 +422,7 @@ class Run(object):
         
         return result
 
-    def compare(self, run, comparetype='newfails'):
+    def compare1(self, run, comparetype='newfails'):
         
         results = []
         
