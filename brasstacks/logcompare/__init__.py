@@ -240,49 +240,6 @@ class LogCompareApplication(RestApplication):
                                 run2 = Run(doc2)
                                 answer = run1.compare(run2)
                                 return MakoResponse("compare", answer=answer, run1=run1, run2=run2)
-  
-    # def findTenPrevious(self, doc):
-        # # max limit of the results
-        # length = 11
-        # # entry of self
-        # selfentry = 0
-        
-        # if len(doc) is 0:
-            # return None
-        # else:
-            # (key, value) = doc[0]
-            # product = value['product']
-            # os = value['os']
-            # testtype = value['testtype']
-            # timestamp = value['timestamp']
-            
-            # similardocs = self.vu.buildIdsByMetadata(
-                # startkey=[product, os, testtype, timestamp], 
-                # endkey=[product, os, testtype, 0], 
-                # descending=True, 
-                # limit=length).items()
-          
-            # if len(similardocs) > 0:
-                # del similardocs[selfentry]
-            # return similardocs
-  
-    # def findPrevious(self, doc):
-        # # querying must return one result: its previous
-        # minlength = 1
-        # # when sorted in reverse-chronological order from the current build, 
-        # # the index of the previous build is 0
-        # previous = 0
-        
-        # similardocs = self.findTenPrevious(doc)
-        
-        # if similardocs is None:
-            # return None
-        # else:
-            # if len(similardocs) < minlength:
-                # return None
-            # else:
-                # (key, value) = similardocs[previous]
-                # return value
 
     def find_previous(self, doc, limit=10):
         # max limit of the results
