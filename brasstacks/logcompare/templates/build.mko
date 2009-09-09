@@ -3,69 +3,53 @@
 <script type="text/javascript">
 $(document).ready(function() 
     { 
-        $("#buildTable").tablesorter(); 
+        $("#runTable").tablesorter(); 
     } 
 );
 </script>
 
-
+<h2>Test Runs with Build ID ${buildid} :</h2>
 
 <div class="results">
-
-<h2>This Build:</h2>
-${build.buildid} (<a href="/logcompare/compare/${build.buildid}">Compare to last</a>)<br />
-${build.testtype}<br />
-${build.product}<br />
-${build.os}<br />
-${build.timestamp}<br />
-
-<h2>10 Builds Before:</h2>
-% if len(similardocs) == 0:
-  No builds prior<br />
-% else:
-%   for (key, value) in similardocs:
-<% 
-  timestamp = key[3]
-  buildid = value
-%>
-${timestamp} (<a href="/logcompare/compare/${build.buildid}&${buildid}">Compare to this</a>)<br />
-%   endfor
-% endif
-
-
-<h2>Tests (test files: ${buildtests.numtestfiles}, 
-tests: ${buildtests.totaltests}, 
-passes: ${buildtests.totalpasses}, 
-fails: ${buildtests.totalfails}, 
-todos: ${buildtests.totaltodos}) on this build:</h2><br />
-Click on header to sort <br />
-<table id="buildTable" class="tablesorter">
+<table id="runTable" class="results">
   <thead>
   <tr>
-    <th>Test</th>
-    <th>Fail</th>
-    <th>Pass</th>
-    <th>Todo</th>
-    <th>Messages</th>
+    <th>Actions</th>
+    <th>Time</th>
+    <th>Product</th>
+    <th>Platform</th>
+    <th>Test type</th>
+    <th>Fail count</th>
+    <th>Pass count</th>
+    <th>Todo count</th>
   </tr>
   </thead>
   <tbody>
-% for (key, value) in buildtests.tests:
+  % for (key, value) in summary:
+  <% 
+    timestamp = key[1]
+    product = key[2]
+    platform = key[3]
+    testtype = key[4]
+    runid = key[5]
+  %>
   <tr>
-    <td>${key} <a href="/logcompare/test/${key}">See history</a></td>
-    <td>${value['fail']}</td>
-    <td>${value['pass']}</td>
-    <td>${value['todo']}</td>
     <td>
-    % for note in value['note']:
-    ${note}<br />
-    % endfor
+      <a href="/logcompare/run/${runid}">See details</a> 
+      <a href="/logcompare/compare/${runid}">Compare to last</a>
     </td>
+    <td>${timestamp}</td>
+    <td>${product}</td>
+    <td>${platform}</td>
+    <td>${testtype}</td>
+    <td><a href="/logcompare/run/${runid}?tests=fail">${value['fail']}</a></td>
+    <td><a href="/logcompare/run/${runid}?tests=pass">${value['pass']}</a></td>
+    <td><a href="/logcompare/run/${runid}?tests=todo">${value['todo']}</a></td>
   </tr>
-% endfor
+  % endfor
   </tbody>
 </table>
 </div>
-<%doc>
 
+<%doc>
 </%doc>

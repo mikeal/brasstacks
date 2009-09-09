@@ -19,7 +19,7 @@ $(document).ready(function()
     <td>${run1.product}</td> 
     <td>${run1.os}</td>
     <td>${run1.testtype}</td>
-    <td>${run1.timestamp.exactly}</td>
+    <td>${run1.timestamp}</td>
     <td><a href="/logcompare/run/${run1.docid}">See details</a><br /></td>
   </tr>
   <tr>
@@ -28,7 +28,7 @@ $(document).ready(function()
     <td>${run2.product}</td> 
     <td>${run2.os}</td>
     <td>${run2.testtype}</td>
-    <td>${run2.timestamp.exactly}</td>
+    <td>${run2.timestamp}</td>
     <td><a href="/logcompare/run/${run2.docid}">See details</a><br /></td>
   </tr>
 </table>
@@ -339,3 +339,5 @@ newtodos: ${len(answer['newtodos'])} <br />
     % endfor
   </tbody>
 </table>
+<%doc>
+</%doc>

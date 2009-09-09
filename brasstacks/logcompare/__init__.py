@@ -2,9 +2,9 @@ import os
 from datetime import datetime
 
 try:
-    import json as simplejson
-except ImportError:
-    import simplejson
+    import json
+except:
+    import simplejson as json
 
 from markdown import markdown
 from webenv import HtmlResponse, Response
@@ -38,7 +38,7 @@ class LogCompareResponse(HtmlResponse):
 class RSSResponse(Response):
     content_type = 'application/json'
     def __init__(self, body):
-        self.body = simplejson.dumps(body)
+        self.body = json.dumps(body)
         self.headers = []
 
 class LogCompareApplication(RestApplication):
@@ -53,32 +53,28 @@ class LogCompareApplication(RestApplication):
         
         if collection is None:
             
-            # variables used to control 'states' in results paging
             limit = int(request.query.get('count', 10))
-            page = request.query.get('page', 'newest')
-            group = int(request.query.get('group', 0))
+            page = request.query.get('page', None)
+            link = request.query.get('link', None)
             
-            if page == 'newer':
-                if group > 0:
-                    group -= 1
-                else:
-                    group = 0
-                skip = limit * group
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
-            elif page == 'older':
-                if group >= 0:
-                    group += 1
-                else:
-                    group = 0
-                skip = limit * group
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit, skip=skip).items()
+            if page == 'prev' and link is not None:
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=False, limit=limit + 1, startkey=json.loads(link)).items()
+                summary.reverse()
+            elif page == 'next' and link is not None:
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1, startkey=json.loads(link)).items()
             else:
-                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit).items() 
-                group = 0
+                summary = self.vu.runSummaryByTimestamp(group=True, descending=True, limit=limit + 1).items()
+                
+            prev_startkey = summary[0][0]
+            next_startkey = summary[len(summary) - 1][0]
+            summary = summary[0:len(summary) - 1]
             
             runs = self.vu.runCounts(group=True).items()
             
-            return LogCompareResponse("index", starttime, summary=summary, limit=limit, group=group, runs=runs)
+            return LogCompareResponse(
+                "index", starttime, summary=summary, limit=limit, prev_startkey=json.dumps(prev_startkey), 
+                next_startkey=json.dumps(next_startkey), runs=runs)
+                
           
         if collection == "run":
             if resource is None:
@@ -125,20 +121,21 @@ class LogCompareApplication(RestApplication):
                     return MakoResponse("compare", answer=answer, run1=run1, run2=run2)
 
         if collection == "runs":
-            if resource is None:
-                return MakoResponse("error", error="not implemented yet")
-            else:
                 product = request.query.get('product')
                 os = request.query.get('os')
                 testtype = request.query.get('testtype')
                 
+                # print product
+                # print os
+                # print testtype
+                
                 if product is None and os is None and testtype is None:
                     return MakoResponse("error", error="Inputs given are not complete")
                 else:
-                    summary = self.vu.runSummaryByTimestamp(
-                            startkey=[{}, product, os, testtype, {}], 
-                            endkey=[0, product, os, testtype, 0], 
-                            descending=True, group=True).items()
+                    summary = self.vu.runSummaryByMetadata(
+                        startkey=[product, os, testtype, {}, {}, {}], 
+                        endkey=[product, os, testtype, 0, 0, 0], 
+                        descending=True, group=True).items()
                             
                     runs = self.vu.runCounts(group=True).items()
                     
@@ -213,9 +210,13 @@ class LogCompareApplication(RestApplication):
             if resource is None:
                 return MakoResponse("error", error="not implemented yet")
             else:
-                runs = self.vu.tests(
-                    startkey=[resource, {}], endkey=[resource, 0], descending=True).items()
-                return MakoResponse("test", results=results)
+                print resource
+                summary = self.vu.runSummaryByBuildId(
+                    startkey=[int(resource), {}, {}, {}, {}, {}], 
+                    endkey=[int(resource), 0, 0, 0, 0, 0], 
+                    descending=True, group=True).items()
+                print summary
+                return MakoResponse("build", summary=summary, buildid=resource)
     
     def POST(self, request, collection = None, resource = None):
         if collection == "compare":
@@ -239,49 +240,6 @@ class LogCompareApplication(RestApplication):
                                 run2 = Run(doc2)
                                 answer = run1.compare(run2)
                                 return MakoResponse("compare", answer=answer, run1=run1, run2=run2)
-  
-    # def findTenPrevious(self, doc):
-        # # max limit of the results
-        # length = 11
-        # # entry of self
-        # selfentry = 0
-        
-        # if len(doc) is 0:
-            # return None
-        # else:
-            # (key, value) = doc[0]
-            # product = value['product']
-            # os = value['os']
-            # testtype = value['testtype']
-            # timestamp = value['timestamp']
-            
-            # similardocs = self.vu.buildIdsByMetadata(
-                # startkey=[product, os, testtype, timestamp], 
-                # endkey=[product, os, testtype, 0], 
-                # descending=True, 
-                # limit=length).items()
-          
-            # if len(similardocs) > 0:
-                # del similardocs[selfentry]
-            # return similardocs
-  
-    # def findPrevious(self, doc):
-        # # querying must return one result: its previous
-        # minlength = 1
-        # # when sorted in reverse-chronological order from the current build, 
-        # # the index of the previous build is 0
-        # previous = 0
-        
-        # similardocs = self.findTenPrevious(doc)
-        
-        # if similardocs is None:
-            # return None
-        # else:
-            # if len(similardocs) < minlength:
-                # return None
-            # else:
-                # (key, value) = similardocs[previous]
-                # return value
 
     def find_previous(self, doc, limit=10):
         # max limit of the results
@@ -421,7 +379,7 @@ class Run(object):
         
         return result
 
-    def compare(self, run, comparetype='newfails'):
+    def compare1(self, run, comparetype='newfails'):
         
         results = []
         
