@@ -32,6 +32,7 @@ class FennecApplication(RestApplication):
     def __init__(self, db):
         super(FennecApplication, self).__init__()
         self.db = db
+        self.add_resource('api', FennecAPIApplication(db))
     
     def get_failure_info(self, test, testtype, os, stale=False):
         k = [test, testtype, os]
@@ -53,9 +54,30 @@ class FennecApplication(RestApplication):
         kwargs = {'limit':1, 'startkey':startkey, 'endkey':k+[False, {}]}
         if stale:
             kwargs['stale'] = 'ok'
+        
         firstfailed = self.db.views.fennec.testByTimestampResult(**kwargs)[0]
                 
         return {"lastsuccess":lastsuccess, "firstfailed":firstfailed}
+    
+    def create_failure_document(self, doc, stale=False):
+        """Create failure_info Document for testrun document"""
+        # tests = [k for k,v in doc.tests.items() if v.get('fail',0) is not 0]
+        tests = doc.failed_test_names
+        fails = dict([(test, self.get_failure_info(test, doc.testtype, doc.os, stale=stale),) 
+                    for test in tests
+                    ])
+        doc.pop('tests')
+        doc.pop('passed_test_names')
+        doc.pop('failed_test_names')
+        # new_failures = []
+        # for name, test in fails:
+        #     if test['firstfailed']['_id'] == doc._id:
+        #         new_failures
+        
+        failure_info = {'run':doc, 'fails':fails, 'type':'fennec-failure-info',}
+        
+        if len(self.db.views.fennecFailures.failureInfoByID(key=doc._id)) is 0:
+            return self.db.create(failure_info)
     
     def update_failure_documents(self):
         latest = self.db.views.fennecFailures.failureInfoByTimestamp(descending=True, limit=1)
@@ -66,16 +88,7 @@ class FennecApplication(RestApplication):
         rows = self.db.views.fennec.runByTimestamp(descending=True, startkey={}, endkey=endkey)
 
         for doc in rows:
-            tests = [k for k,v in doc.tests.items() if v.get('fail',0) is not 0]
-            fails = dict([(test, self.get_failure_info(test, doc.testtype, doc.os, stale=True),) 
-                        for test in tests
-                        ])
-            doc.pop('tests')
-            failure_info = {'run':doc, 'fails':fails, 'type':'fennec-failure-info',}
-            
-            if len(self.db.views.fennecFailures.failureInfoByID(key=doc._id)) is 0:
-                self.db.create(failure_info)
-            
+            self.create_failure_document(doc, stale=True)
         
     def GET(self, request, collection=None, resource=None):
         if collection is None:
@@ -108,4 +121,21 @@ class FennecApplication(RestApplication):
                 test['time'] = time
                 failures.setdefault(day, []).append(test)
             return MakoResponse('newfailures', failures=failures)
+
+class FennecAPIApplication(FennecApplication):
+    def __init__(self, db):
+        RestApplication.__init__(self)
+        self.db = db
+    def POST(self, request, collection):
+        if collection == 'testrun':
+            obj = json.loads(str(request.body))
+            obj['failed_test_names'] = [k for k, t in obj['tests'].items() if t.get('fail') is not 0]
+            obj['passed_test_names'] = [k for k, t in obj['tests'].items() if t.get('fail') is 0]
+            obj['pass_count'] = sum([t.get('pass', 0) for t in obj['tests'].values()], 0)
+            obj['fail_count'] = sum([t.get('fail', 0) for t in obj['tests'].values()], 0)
+            obj['type'] = 'fennec-test-run'
+            info = self.db.create(obj)
+            
+            f_info = self.create_failure_document(self.db.get(info['id']), stale=False)
+            return JSONResponse({'testrun':info,'failure_info':f_info})
 
