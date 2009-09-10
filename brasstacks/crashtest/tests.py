@@ -9,30 +9,30 @@ from brasstacks import Stub
 http = httplib2.Http()
 
 def setup_module(module):
-    from brasstacks import crashtest
+#     from brasstacks import crashtest
     crashdb = couchquery.Database('http://localhost:5984/crashtest')
     resultdb = couchquery.Database('http://localhost:5984/crashtest_results')
-    crashdb.sync_design_doc("crashes", crashtest.crashes_design_doc)
-    resultdb.sync_design_doc("jobs", crashtest.jobs_design_doc)
-    resultdb.sync_design_doc("results", crashtest.results_design_doc)
-    a = Stub()
-    a.add_resource('crashtest', crashtest.CrashTestApplication(crashdb, resultdb))
-    httpd = make_server('', 8888, a)
-    thread = Thread(target=httpd.serve_forever)
-    thread.start()
-    
-    # Global these boys
-    module.thread = thread
-    module.httpd = httpd
+#     crashdb.sync_design_doc("crashes", crashtest.crashes_design_doc)
+#     resultdb.sync_design_doc("jobs", crashtest.jobs_design_doc)
+#     resultdb.sync_design_doc("results", crashtest.results_design_doc)
+#     a = Stub()
+#     a.add_resource('crashtest', crashtest.CrashTestApplication(crashdb, resultdb))
+#     httpd = make_server('', 8888, a)
+#     thread = Thread(target=httpd.serve_forever)
+#     thread.start()
+#     
+#     # Global these boys
+#     module.thread = thread
+#     module.httpd = httpd
     module.crashdb = crashdb
     module.resultdb = resultdb
-    sleep(1)
+#     sleep(1)
 
 jobstore = []
 
 def test_getJob():
     body = json.dumps({"os":"Linux", "machine_name":"testmachine"})
-    resp, content = http.request('http://localhost:8888/crashtest/api/getJob', method="POST", body=body)
+    resp, content = http.request('http://10.2.76.100:8080/crashtest/api/getJob', method="POST", body=body)
     assert resp.status == 200
     job = json.loads(content)
     assert job
@@ -46,7 +46,7 @@ def test_result():
     job['results'] = [{"url":url, "reproduced":True} for url in job['urls']]
     job['status'] = 'done'
     body = json.dumps(job)
-    resp, content = http.request('http://localhost:8888/crashtest/api/result', method="POST", body=body)
+    resp, content = http.request('http://10.2.76.100:8080/crashtest/api/result', method="POST", body=body)
     assert resp.status == 200
     
     info = json.loads(content)
@@ -56,8 +56,8 @@ def test_result():
 def teardown_module(module):
     job = jobstore[0]
     resultdb.delete(job)
-    while thread.isAlive():
-        httpd.shutdown()
+#     while thread.isAlive():
+#         httpd.shutdown()
     
     
     

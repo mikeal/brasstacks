@@ -96,7 +96,7 @@ class FennecApplication(RestApplication):
             runs = self.db.views.fennec.runByTimestamp(descending=True, limit=limit)
             return MakoResponse('runs', runs=runs, page_header="Latest "+str(limit)+" Runs")
         if collection == "detail":
-            self.update_failure_documents()
+            # self.update_failure_documents()
             
             if resource is None:
                 limit = int(request.query.get('count', 5))
