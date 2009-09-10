@@ -1,5 +1,5 @@
 function (doc) {
-  if (doc.testtype && doc.product == "Fennec") {
+  if (doc.type == 'fennec-test-run') {
     emit(doc.timestamp, doc);
   }
 }

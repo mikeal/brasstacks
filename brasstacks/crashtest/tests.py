@@ -31,7 +31,6 @@ def setup_module(module):
 jobstore = []
 
 def test_getJob():
-    
     body = json.dumps({"os":"Linux", "machine_name":"testmachine"})
     resp, content = http.request('http://localhost:8888/crashtest/api/getJob', method="POST", body=body)
     assert resp.status == 200

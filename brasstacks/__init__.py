@@ -123,7 +123,7 @@ def sync(db=None):
     db.sync_design_doc("tcm", tcm.design_doc)
     db.sync_design_doc("tcmTags", tcm.tags_design_doc)
 
-def crashtest():
+def crashtest_cli():
     import crashtest
     crashdb = couchquery.Database('http://localhost:5984/crashtest')
     resultdb = couchquery.Database('http://localhost:5984/crashtest_results')

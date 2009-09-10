@@ -61,7 +61,7 @@ setup(name=PACKAGE_NAME,
           sitecompare = brasstacks.sitecompare.runner:cli
           sitecompare-html4v5 = brasstacks.sitecompare.runner:html4v5
           brasstacks-sync = brasstacks:sync
-          brasstacks-crashtest = brasstacks:crashtest
+          brasstacks-crashtest = brasstacks:crashtest_cli
         """,
       platforms =['Any'],
       install_requires = ['webenv',],
