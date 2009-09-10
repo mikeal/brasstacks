@@ -114,6 +114,7 @@ def getTestDetail(text):
     p = f = t = 0
 
     #TODO: make this either 'REFTEST TEST-PASS' or 'TEST-PASS'
+#    if outcome == 'REFTEST TEST-PASS':
     if outcome == 'REFTEST TEST-PASS':
         p = 1
         if name not in tests:
@@ -185,7 +186,9 @@ def parseLog(tbox_id):
     return doc
   
 def save(data):
-    db = couchquery.Database("http://pythonesque.org:5984/fennec_test", cache=Cache())
+#TODO: make the db a global variable or parameter to function
+#    db = couchquery.Database("http://pythonesque.org:5984/fennec_test", cache=Cache())
+    db = couchquery.Database("http://10.2.76.100:5984/fennec_alpha", cache=Cache())
     saved = False
     try:
         starttime = datetime.datetime.now()
@@ -199,9 +202,10 @@ def save(data):
         return saved
 
 def getTinderboxIDfromDB():
-    db = couchquery.Database("http://pythonesque.org:5984/fennec_test")
+#TODO: make the db a global variable or parameter to function
+#    db = couchquery.Database("http://pythonesque.org:5984/fennec_test")
+    db = couchquery.Database("http://10.2.76.100:5984/fennec_alpha")
     return db.views.fennecResults.byTinderboxID()
-   
 
 
 def getTinderboxData():
@@ -221,7 +225,9 @@ def getTinderboxData():
 def parseFile(tbox_id):
     global tbox_ids
     if (tbox_ids == []):
-        tbox_ids = getTinderboxIDfromDB()
+#HACK
+#        tbox_ids = getTinderboxIDfromDB()
+        tbox_ids = []
 
     if (tbox_id in tbox_ids):
         print "skipping " + tbox_id + ", it is already in the database"
@@ -236,7 +242,9 @@ def parseFile(tbox_id):
 
 def main():
     data = getTinderboxData()
-    testName = re.compile('((reftest)|(crashtests)|(xpcshell))')
+#HACK: Temporarily removing xpcshell until tinderbox has this fixed
+#    testName = re.compile('((reftest)|(crashtests)|(xpcshell))')
+    testName = re.compile('((reftest)|(crashtests))')
 
     build_table = data['build_table']
     build = build_table[0]
