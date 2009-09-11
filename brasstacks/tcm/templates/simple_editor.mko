@@ -52,16 +52,11 @@ input.simple-editor-tags {
 </style>
 <form class="simple-editor-form" method="post" action="/tcm/write_test">
   <table>
-    <tr><td class="form-pad-left">Product:</td><td class="form-cell-products">
+    <tr><td class="form-pad-left"></td><td class="form-cell-products">
     <div class="form-cell-products">
-% for p in ["Firefox", "Thunderbird", "Fennec", "Sunbird"]:
-% if p == product:
-    <input type="radio" name="product" value="${p}" enabled>${p}</input>
-% else:
-    <input type="radio" name="product" value="${p}" >${p}</input>
-% endif      
+    ${product} Test Case
+    <input type="hidden" name="product" value="{product}" />
         
-% endfor
     </div></td><td class="form-pad-right"></td>
     <tr><td class="form-pad-left">Title:</td><td class="form-cell">
       <input type="text" name="title" class="simple-editor-title"/>
