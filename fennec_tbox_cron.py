@@ -7,8 +7,10 @@ import types
 import re
 import datetime
 import fnmatch
-import couchquery
-from couchquery import CouchDBException
+from couchquery import Database
+import httplib2
+
+http = httplib2.Http()
 
 # data format
 # dataStructure = {
@@ -185,28 +187,16 @@ def parseLog(tbox_id):
     print "Done parsing " + url
     return doc
   
-def save(data):
-#TODO: make the db a global variable or parameter to function
-#    db = couchquery.Database("http://pythonesque.org:5984/fennec_test", cache=Cache())
-    db = couchquery.Database("http://10.2.76.100:5984/fennec_alpha", cache=Cache())
+def save(data):    
     saved = False
-    try:
-        starttime = datetime.datetime.now()
-        print db.create(data)
-        finishtime = datetime.datetime.now()
-        print finishtime - starttime
-        saved = True
-    except CouchDBException, e:
-        print "Error occurred while sending data :" + str(e)
-    finally:
-        return saved
-
-def getTinderboxIDfromDB():
-#TODO: make the db a global variable or parameter to function
-#    db = couchquery.Database("http://pythonesque.org:5984/fennec_test")
-    db = couchquery.Database("http://10.2.76.100:5984/fennec_alpha")
-    return db.views.fennecResults.byTinderboxID()
-
+    starttime = datetime.datetime.now()
+    resp, content = http.request('http://localhost/fennec/api/testrun', method='POST',
+                                 body=json.dumps(data), headers={'content-type':'application/json'})
+    print content
+    finishtime = datetime.datetime.now()
+    print finishtime - starttime
+    saved = True
+    return saved
 
 def getTinderboxData():
     jsonurl = urllib.urlopen(tbox_url)
@@ -223,24 +213,15 @@ def getTinderboxData():
     return result
 
 def parseFile(tbox_id):
-    global tbox_ids
-    if (tbox_ids == []):
-#HACK
-#        tbox_ids = getTinderboxIDfromDB()
-        tbox_ids = []
-
-    if (tbox_id in tbox_ids):
-        print "skipping " + tbox_id + ", it is already in the database"
-        pass
-    else:
-        print "going to parse "  +tbox_id
-        result = parseLog(tbox_id)
-        if (result != None):
-            print "saving: " + tbox_id
-            save(result)
+    result = parseLog(tbox_id)
+    if (result != None):
+        print "saving: " + tbox_id
+        save(result)
 
 
 def main():
+    db = Database('http://localhost:5984/fennec_results')
+    
     data = getTinderboxData()
 #HACK: Temporarily removing xpcshell until tinderbox has this fixed
 #    testName = re.compile('((reftest)|(crashtests)|(xpcshell))')
@@ -250,13 +231,15 @@ def main():
     build = build_table[0]
 
     for build in build_table:
-        for b in build:
-            if type(b) != types.IntType:
-                for k in b:
-                    if (k == "buildname" and testName.search(b[k])):
-                        print "checking out buildname: " + b[k]
-                        parseFile(b['logfile'])
-
+        for b in [b for b in build if type(b) is not int]:
+            for k in b:
+                if (k == "buildname" and testName.search(b[k])):
+                    print "checking out buildname: " + b[k]
+                    tbox_id = b['logfile']
+                    if len(db.views.fennec.byTinderboxID(key=tbox_id)) is 0:
+                        parseFile(tbox_id)
+                    else:
+                        print 'skipping '+tbox_id
 
 class Cache(dict):
     def __init__(self, *args, **kwargs):

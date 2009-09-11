@@ -20,18 +20,24 @@ div.product {
   padding-bottom:30px;
   text-align:center;
 }
+div.views {
+  position:absolute;
+  text-align:center;
+  top:90%;
+  width:99.3%;
+}
 </style>
 
 <h3> Mozilla TestCase Manager </h3>
 
-<h4> Pick a Product </h4>
-
-% for product in products:
 <div class="product">
-  <div class="product-do"><a href="/tcm/${product}">${product}</a></div>
+  <div class="product-do">${product}</div>
   <div class="index-do"><a href="/tcm/${product}/run">Run a Test!</a></div>
   <div class="index-do"><a href="/tcm/${product}/write_test">Write a Test!</a></div>
 </div>
-% endfor
+
+<div class="views">
+  <div style="text-align:center"><a href="/tcm/${product}/testcases">View all testcases for ${product}</a></div>
+</div>
 
 </%def>

@@ -16,7 +16,7 @@ from brasstacks.mozmill import MozmillApplication
 db = Database("http://localhost:5984/brasstacks")
 users_application = UsersApplication(db)
 sitecompare_application = SiteCompareApplication(Database("http://localhost:5984/sitecompare"))
-fennec_application = FennecApplication(Database("http://pythonesque.org:5984/fennec_test"))
+fennec_application = FennecApplication(Database("http://localhost:5984/fennec_results"))
 tcm_application = TestCaseManagerApplication(Database("http://localhost:5984/tcm"))
 logcompare_application = LogCompareApplication(Database("http://happyhans:happyhanshappyhans@happyhans.couch.io/logcompare"))
 mozmill_application = MozmillApplication(Database("http://localhost:5984/mozmill"))
