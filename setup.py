@@ -63,7 +63,7 @@ setup(name=PACKAGE_NAME,
           brasstacks-sync = brasstacks:sync_cli
         """,
       platforms =['Any'],
-      install_requires = ['webenv',],
+      install_requires = ['webenv','couchquery','mako'],
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',
                    'Intended Audience :: Developers',
