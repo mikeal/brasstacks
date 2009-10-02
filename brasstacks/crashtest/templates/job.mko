@@ -1,0 +1,7 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+${job}
+
+</%def>

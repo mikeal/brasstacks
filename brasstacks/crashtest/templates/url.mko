@@ -1,0 +1,62 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+<h2>${url}</h2>
+
+<h2>Crashes</h2>
+
+<script type="text/javascript" src="/static/jquery-1.3.1.js" ></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.min.js" ></script>
+<link rel="stylesheet" href="/static/tablesorter/css/jq.css" type="text/css" media="print, projection, screen" />
+<link rel="stylesheet" href="/static/tablesorter/themes/blue/style.css" type="text/css" media="print, projection, screen" />
+
+
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("#crashes").tablesorter(); 
+        
+    } 
+);
+</script>
+
+<table class="tablesorter" id="jobs">
+  <thead>
+    <tr>
+      <th>crash date</th>
+      <th>product</th>
+      <th>os</th>
+      <th>os version</th>
+      <th>stats url</th>
+      <th>date processed</th>
+      <th>cpu</th>
+      <th>address</th>
+      <th>comments</th>
+      <th>bug list</th>
+      <th>signature</th>
+      <th>last crash</th>
+    <tr>
+  </thead>
+  <tbody>
+  
+% for crash in crashes:
+  <tr>
+    <td><a href="/crashtest/crash/${crash._id}">${crash.client_crash_date}</a></td>
+    <td>${crash.product}</td>
+    <td>${crash.os_name}</td>
+    <td>${crash.os_version}</td>
+    <td><a href="${crash.uuid_url}">${crash.uuid_url}</a></td>
+    <td>${crash.date_processed}</td>
+    <td>${crash.cpu_name}</td>
+    <td>${crash.address}</td>
+    <td>${crash.user_comments}</td>
+    <td>${crash.bug_list}</td>
+    <td>${crash.signature}</td>
+    <td>${crash.last_crash}</td>
+  </tr>
+% endfor
+</tbody>
+</table>
+
+</%def>

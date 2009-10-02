@@ -35,6 +35,7 @@ class CrashTestAPIApplication(RestApplication):
         super(CrashTestAPIApplication, self).__init__()
         self.crashdb = crashdb
         self.resultdb = resultdb
+        
     def POST(self, request, method):
         if method == "getJob":
             info = json.loads(str(request.body))
@@ -45,7 +46,7 @@ class CrashTestAPIApplication(RestApplication):
                 startkey = latest.urls[-1]
             else:
                 startkey = None
-            rows = self.crashdb.views.crashes.url(limit=4000, startkey=startkey, group=True)
+            rows = self.crashdb.views.crashes.url(limit=4000, startkey=startkey, group=True, stale="ok")
             info['urls'] = rows.keys()
             info['startkey'] = startkey
             info['buildinfo'] = {"branch":"1.9.1", "debug":True}
@@ -74,12 +75,26 @@ class CrashTestApplication(RestApplication):
         
     def GET(self, request, collection=None, resource=None):
         if collection is None:
-            limit = request.query.get('limit', 1000)
-            crashes = self.crashdb.views.crashtest.url(limit=limit, group=True)
-            return MakoResponse('index', crashes=crashes, urlencode=urlencode)
+            limit = request.query.get('limit', 100)
+            crashes = self.crashdb.views.crashes.url(limit=limit, group=True, stale="ok")
+            jobs = self.resultdb.views.jobs.byStarttime(limit=10, stale="ok")
+            return MakoResponse('index', crashes=crashes, jobs=jobs, urlencode=urlencode)
         if collection == 'url':
             if resource is not None:
                 if resource == 'nourl':
                     resource = ''
-                crashes = self.crashdb.views.crashtest.url(key=resource, reduce=False)
-                return JSONResponse(crashes.values())
+                crashes = self.crashdb.views.crashes.crashByUrl(key=resource, stale="ok")
+                return MakoResponse('url', url=resource, crashes=crashes.values())
+        if collection == 'crash':
+            if resource is None:
+                # crashes index
+                pass
+            else:
+                return MakoResponse('crash', crash=self.crashdb.get(resource))
+        if collection == 'job':
+            if resource is None:
+                # jobs index
+                pass
+            else:
+                return MakoResponse('job', job=self.resultdb.get(resource))
+            
