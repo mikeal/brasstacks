@@ -26,12 +26,37 @@ table {
 $(document).ready(function() 
     { 
         $("#crashurls").tablesorter(); 
+        $("#jobs").tablesorter();
     } 
 );
 </script>
 
 
 <h3> Crashes by URL </h3>
+
+<table class="tablesorter" id="jobs">
+  <thead>
+    <tr>
+      <th>starttime</th>
+      <th>status</th>
+      <th>os</th>
+      <th>machine name</th>
+      <th>endtime</th>
+    <tr>
+  </thead>
+  <tbody>
+  
+% for doc in jobs:
+    <tr>
+      <td><a href="/crashtest/job/${doc['_id']}">${doc['starttime']}</a></td>
+      <td>${doc['status']}</td>
+      <td>${doc['os']}</td>
+      <td>${doc['machine_name']}</a>
+      <td>${doc.get('endtime', 'not finished')}</td>
+    </tr>
+% endfor    
+  </tbody>
+</table>
 
 <table class="tablesorter" id="crashurls">
   <thead>
@@ -41,6 +66,7 @@ $(document).ready(function()
     <tr>
   </thead>
   <tbody>
+  
 % for key in crashes.keys():
     <tr>
 % if len(key) is not 0:    
@@ -55,4 +81,5 @@ $(document).ready(function()
 % endfor
   </tbody>
 </table>
+
 </%def>
