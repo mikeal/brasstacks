@@ -77,7 +77,7 @@ class CrashTestApplication(RestApplication):
         if collection is None:
             limit = request.query.get('limit', 100)
             crashes = self.crashdb.views.crashes.url(limit=limit, group=True, stale="ok")
-            jobs = self.resultdb.views.jobs.byStarttime(limit=10, stale="ok")
+            jobs = self.resultdb.views.jobs.byStarttime(limit=10, descending=True, stale="ok")
             return MakoResponse('index', crashes=crashes, jobs=jobs, urlencode=urlencode)
         if collection == 'url':
             if resource is not None:

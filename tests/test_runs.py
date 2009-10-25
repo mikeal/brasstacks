@@ -2,7 +2,7 @@ import os
 
 try:
     import json
-else:
+except:
     import simplejson as json
 
 import httplib2
