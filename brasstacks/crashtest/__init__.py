@@ -39,8 +39,8 @@ class CrashTestAPIApplication(RestApplication):
     def POST(self, request, method):
         if method == "getJob":
             info = json.loads(str(request.body))
-            rows = self.resultdb.views.jobs.byStarttime(startkey=[info['os'],{}], 
-                                                      endkey=[info['os'], None], limit=1)
+            rows = self.resultdb.views.jobs.byOsStarttime(startkey=[info['os'],{}], descending=True,
+                                                          endkey=[info['os'], None], limit=1)
             if len(rows) is not 0:
                 latest = rows[0]
                 startkey = latest.urls[-1]
