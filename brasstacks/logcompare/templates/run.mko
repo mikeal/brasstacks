@@ -101,7 +101,7 @@ Click on header to sort <br />
     <td>${value['pass']}</td>
     <td>${value['todo']}</td>
     <td>
-    % if value['lastchange'] is not None:
+    % if value.get('lastchange', None) is not None:
     <a href="/logcompare/run/${value['lastchange']['run']}">${value['lastchange']['ago']}</a> run(s) before
     % else:
     hasn't changed lately
