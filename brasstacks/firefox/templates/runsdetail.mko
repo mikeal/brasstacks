@@ -1,0 +1,108 @@
+<%inherit file="base.mko"/>
+
+<%def name="body()">
+
+<style type="text/css">
+.testtype {
+  color:#0000FF;
+}
+.passed {
+  color:#00FF00;
+}
+.failed {
+  color:#FF0000;
+}
+.run-info {
+  text-align:center;
+}
+h2 {
+  text-align:center;
+}
+</style>
+
+<script type="text/javascript" src="/static/jquery-1.3.1.js" ></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.min.js" ></script>
+<link rel="stylesheet" href="/static/tablesorter/themes/blue/style.css" type="text/css" 
+  media="print, projection, screen" />
+
+<script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("table.tablesorter").tablesorter(); 
+    } 
+);
+</script>
+
+<h2>${page_header}</h2>
+
+% if len(runs) > 1:
+
+<div class="run-info">
+% for run in runs:
+  <div><a href="#${run['_id']}">${run['testtype']+'-'+run['build']}</a></div>
+% endfor
+</div>
+<br><br><br>
+
+% endif
+
+% for run in runs:
+
+<div class="run-info" id=${run['_id']}>
+  <div class="build"><a href="/firefox/detail/${run['_id']}">${run.build}</a></div>
+  <div class="testtype">${run.testtype}</div>
+<%
+total = len(run.tests)
+failed = len([t for t in run.tests.values() if t.get("fail", 0) is not 0])
+passed = total - failed
+%>
+  <div class="passed">${passed}</div>
+  <div class="failed">${failed}</div>
+</div>
+
+<h4>Failure Detail</h4>
+<table class="tablesorter" name="failuretable">
+  <thead>
+    <tr>
+      <th>New Failure</th>
+      <th>Name</th>
+      <th>Last Success</th>
+      <th>First Failed</th>
+    </tr>
+  </thead>
+  <tbody>
+% for testname, test in [(k, v,) for k,v in run.tests.items() if v.get('fail', 0) is not 0]:
+<%
+
+fail_info = run.failure_info['fails'][testname]
+
+if fail_info['lastsuccess']:
+    ts = fail_info['lastsuccess']
+    id = fail_info['_id']
+    last_timestamp = '<a href="/firefox/detail/'+id+'">'+ts+'</a>'
+else:
+    last_timestamp = 'Never'
+%>
+  <tr>
+    <td>${fail_info['firstfailed']["_id"] == run["_id"]}</td>
+    <td>${testname}</td>
+    <td>${last_timestamp}</td>
+    <td><a href="/firefox/detail/${fail_info['firstfailed']['_id']}">${fail_info['firstfailed']["timestamp"]}</a></td>
+  </tr>
+% endfor
+  </tbody>
+</table>
+% endfor
+</%def>
+
+
+% if len(runs) > 1:
+<%def name="footer()">
+
+<div>
+  Latest <a href="?count=5">5</a>   <a href="?count=10">10</a>   <a href="?count=25">25</a>   <a href="?count=50">50</a>   <a href="?count=100">100</a>  
+</div>
+
+</%def>
+
+% endif

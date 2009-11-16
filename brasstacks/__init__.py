@@ -36,6 +36,10 @@ def sync(db, names):
         from brasstacks import fennec
         db.sync_design_doc("fennec", fennec.design_doc)
         db.sync_design_doc("fennecFailures", fennec.failures_design_doc)
+    if 'firefox' in names:
+        from brasstacks import firefox
+        db.sync_design_doc("results", firefox.results_design_doc, "python")
+        db.sync_design_doc("failures", firefox.failures_design_doc, "python") 
     if 'users' in names or 'brasstacks' in names:
         import brasstacks
         db.sync_design_doc("brasstacks", brasstacks.design_doc)
@@ -80,6 +84,11 @@ def get_application(db, names):
     if 'crashtest' in names:
         resultdb = couchquery.Database(db.uri[:-1]+'_results')
         a.add_resource('crashtest', crashtest.CrashTestApplication(db, resultdb))
+    if 'firefox' in names:
+        from brasstacks.firefox import FirefoxApplication
+        firefox_application = FirefoxApplication(db)
+        a.add_resource('firefox', firefox_application)
+    
     return a
 
 def cli():
