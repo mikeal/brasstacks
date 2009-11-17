@@ -66,7 +66,7 @@ table_row = u"""
   <td>{{timestamp}}</td>
   <td>{{result}}</td>
   <td>{{os}}</td>
-  <td><a href="/firefox/detail/{{run_id}}">{{build}}</a></td>
+  <td><a href="/firefox/testrunInfo/{{run_id}}">{{build}}</a></td>
 <tr>
 """
 

@@ -69,7 +69,7 @@ table_row = u"""
   <td><a href="/firefox/testInfo/{{testhash}}">{{testname}}</a></td>
   <td>{{os}}</td>
   <td>{{timestamp}}</td>
-  <td><a href="/firefox/detail/{{run_id}}">{{build}}</a></td>
+  <td><a href="/firefox/testrunInfo/{{run_id}}">{{build}}</a></td>
   <td>{{lastsuccess}}</td>
 <tr>
 """
