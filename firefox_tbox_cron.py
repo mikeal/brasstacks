@@ -190,7 +190,7 @@ def parseLog(tbox_id):
 def save(data):    
     saved = False
     starttime = datetime.datetime.now()
-    resp, content = http.request('http://localhost:8888/firefox/api/testrun', method='POST',
+    resp, content = http.request('http://localhost/firefox/api/testrun', method='POST',
                                  body=json.dumps(data), headers={'content-type':'application/json'})
     print content
     finishtime = datetime.datetime.now()

@@ -54,6 +54,7 @@ day_head = """
     <tr>
       <th>testtype</th>
       <th>name</th>
+      <th>product</th>
       <th>os</th>
       <th>time</th>
       <th>build</th>
@@ -67,6 +68,7 @@ table_row = u"""
 <tr>
   <td>{{testtype}}</td>
   <td><a href="/firefox/testInfo/{{testhash}}">{{testname}}</a></td>
+  <td>{{product}}</td>
   <td>{{os}}</td>
   <td>{{timestamp}}</td>
   <td><a href="/firefox/testrunInfo/{{run_id}}">{{build}}</a></td>
@@ -75,7 +77,7 @@ table_row = u"""
 """
 
 footer = """
-<div>Latest <a href="?limit=50">50</a>   <a href="?limit=100">100</a>   <a href="?limit=250">250</a>   <a href="?limit=500">500</a>   <a href="?limit=1000">1000</a></div>
+<div>Latest <a href="?descending=true&limit=50">50</a>   <a href="?descending=true&limit=100">100</a>   <a href="?descending=true&limit=250">250</a>   <a href="?descending=true&limit=500">500</a>   <a href="?descending=true&limit=1000">1000</a></div>
 """
 
 
@@ -101,7 +103,8 @@ class NewFailures(ListView):
               'timestamp':  test['run']['timestamp'].split('.')[0],
               'run_id':     test['run']['_id'],
               'build':      test['run']['build'],
-              'lastsuccess': str(test['testinfo']['lastsuccess']),
+              'lastsuccess': test['testinfo']['lastsuccess'] or 'never',
+              'product':    test['run']['product'],
              }
         
         s = pystache.render(table_row,r)
