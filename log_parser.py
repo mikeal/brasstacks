@@ -1,18 +1,9 @@
-try:
-    import json
-except:
-    import simplejson as json
 import urllib
-import types
 import re
 import datetime
-import fnmatch
-import httplib2
 import sys
 
-
 class LogParser():
-    http = httplib2.Http()
 
     # data format
     # dataStructure = {
@@ -41,11 +32,7 @@ class LogParser():
     reParsing = re.compile(r'python maemkit-chunked.py')
     reStatus = ''
 
-    tbox_url = 'http://tinderbox.mozilla.org/showbuilds.cgi?tree=Mobile&json=1&noignore=1'
     logroot = "http://tinderbox.mozilla.org/showlog.cgi?log=Mobile/"
-    tbox_ids = []
-
-    # global variables
     tests = dict()
 
     def _getBuild(self, text):
@@ -200,8 +187,7 @@ def main():
         print "\nexample: " + sys.argv[0] + " 1258685405.1258695209.5922.gz"
         return
 
-    lp = LogParser()
-    result = lp.parseLog(sys.argv[1])
+    result = LogParser().parseLog(sys.argv[1])
     print result
 
 if __name__ == "__main__":
