@@ -67,6 +67,7 @@ class LogParser():
         return (re.split(' +', self._getBuild(text)))[0]
 
     def getTestType(self, text):
+        print self._getBuild(text)
         splitted = re.split(' +', self._getBuild(text))
         return splitted[len(splitted)-1]
 
