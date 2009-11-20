@@ -1,6 +1,9 @@
 import httplib2
 import couchquery
-import json
+try:
+    import json
+except:
+    import simplejson as json
 from threading import Thread
 from wsgiref.simple_server import make_server
 from time import sleep
@@ -8,10 +11,16 @@ from brasstacks import Stub
 
 http = httplib2.Http()
 
+# crashtestapi = 'http://10.2.76.100:8080/crashtest/api'
+crashtestapi = 'http://localhost:8888/crashtest/api'
+
+# crashtestcouch = 'http://10.2.76.100:5984/crashtest'
+crashtestcouch = 'http://localhost:5984/crashtest'
+
 def setup_module(module):
 #     from brasstacks import crashtest
-    crashdb = couchquery.Database('http://localhost:5984/crashtest')
-    resultdb = couchquery.Database('http://localhost:5984/crashtest_results')
+    crashdb = couchquery.Database(crashtestcouch + '/crashtest')
+    resultdb = couchquery.Database(crashtestcouch + '/crashtest_results')
 #     crashdb.sync_design_doc("crashes", crashtest.crashes_design_doc)
 #     resultdb.sync_design_doc("jobs", crashtest.jobs_design_doc)
 #     resultdb.sync_design_doc("results", crashtest.results_design_doc)
@@ -32,7 +41,7 @@ jobstore = []
 
 def test_getJob():
     body = json.dumps({"os":"Linux", "machine_name":"testmachine"})
-    resp, content = http.request('http://10.2.76.100:8080/crashtest/api/getJob', method="POST", body=body)
+    resp, content = http.request(crashtestapi + '/getJob', method="POST", body=body)
     assert resp.status == 200
     job = json.loads(content)
     assert job
@@ -46,7 +55,7 @@ def test_result():
     job['results'] = [{"url":url, "reproduced":True} for url in job['urls']]
     job['status'] = 'done'
     body = json.dumps(job)
-    resp, content = http.request('http://10.2.76.100:8080/crashtest/api/result', method="POST", body=body)
+    resp, content = http.request(crashtestapi + '/result', method="POST", body=body)
     assert resp.status == 200
     
     info = json.loads(content)
@@ -58,6 +67,3 @@ def teardown_module(module):
     resultdb.delete(job)
 #     while thread.isAlive():
 #         httpd.shutdown()
-    
-    
-    

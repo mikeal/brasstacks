@@ -39,8 +39,8 @@ class CrashTestAPIApplication(RestApplication):
     def POST(self, request, method):
         if method == "getJob":
             info = json.loads(str(request.body))
-            rows = self.resultdb.views.jobs.byStarttime(startkey=[info['os'],{}], 
-                                                      endkey=[info['os'], None], limit=1)
+            rows = self.resultdb.views.jobs.byOsStarttime(startkey=[info['os'],{}], descending=True,
+                                                          endkey=[info['os'], None], limit=1)
             if len(rows) is not 0:
                 latest = rows[0]
                 startkey = latest.urls[-1]
@@ -77,7 +77,7 @@ class CrashTestApplication(RestApplication):
         if collection is None:
             limit = request.query.get('limit', 100)
             crashes = self.crashdb.views.crashes.url(limit=limit, group=True, stale="ok")
-            jobs = self.resultdb.views.jobs.byStarttime(limit=10, stale="ok")
+            jobs = self.resultdb.views.jobs.byStarttime(limit=10, descending=True, stale="ok")
             return MakoResponse('index', crashes=crashes, jobs=jobs, urlencode=urlencode)
         if collection == 'url':
             if resource is not None:
