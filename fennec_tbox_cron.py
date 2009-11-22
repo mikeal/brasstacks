@@ -39,10 +39,11 @@ def getTinderboxData():
     return result
 
 def parseFile(tbox_id):
-    result = log_parser.LogParser().parseLog(tbox_id)
-    if (result != None):
+    results = log_parser.LogParser("mobile").parseLog(tbox_id)
+    if (results != None):
         print "saving: " + tbox_id
-        save(result)
+        for result in results:
+            save(result)
 
 
 def main():
