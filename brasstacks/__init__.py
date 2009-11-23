@@ -7,10 +7,6 @@ import webenv
 import couchquery
 from wsgiref.simple_server import make_server
 
-import cronjob
-
-cron = cronjob.run
-
 class Stub(RestApplication):
     def GET(self, request, favicon=None):
         if favicon:

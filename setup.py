@@ -57,7 +57,6 @@ setup(name=PACKAGE_NAME,
       entry_points="""
           [console_scripts]
           brasstacks = brasstacks:cli
-          brasstacks_cron = brasstacks:cron
           sitecompare = brasstacks.sitecompare.runner:cli
           sitecompare-html4v5 = brasstacks.sitecompare.runner:html4v5
           brasstacks-sync = brasstacks:sync_cli
