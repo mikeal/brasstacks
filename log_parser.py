@@ -2,6 +2,7 @@ import urllib
 import re
 import datetime
 import sys
+import copy
 
 class LogParser():
 
@@ -34,8 +35,6 @@ class LogParser():
     reXpcshell = ''
     reParsing = ''
     logroot = ''
-
-    tests = dict()
 
     def __init__(self, product="mobile"):
         if (product == "mobile"):
@@ -171,6 +170,7 @@ class LogParser():
         buildSteps = contentAll.split("BuildStep ended")
         for step in buildSteps:
             if self.reParsing.search(step):
+                doc = copy.copy(doc)
                 doc["testtype"] = self.getTestType(step)
                 if (doc["testtype"] <> None):
                     if (doc["testtype"] == "reftest" or doc["testtype"] == "crashtest"):
@@ -180,7 +180,7 @@ class LogParser():
 
                     if (self.reStatus <> ''):
                         retVal.append(self.parseBuildStep(doc, step))
-
+        
         return retVal
 
     def parseBuildStep(self, doc, step):
@@ -190,7 +190,7 @@ class LogParser():
         mydoc["os"] = doc["os"]
         mydoc["tinderboxID"] = doc["tinderboxID"]
         mydoc["testtype"] = doc["testtype"]
-        self.tests.clear()
+        self.tests = {}
 
         contentByLine = step.split("\n")
         for line in contentByLine:

@@ -66,14 +66,13 @@ def main():
 
     for build in build_table:
         for b in [b for b in build if type(b) is not int]:
-            for k in b:
-                if (k == "buildname" and testName.search(b[k])):
-                    print "checking out buildname: " + b[k]
-                    tbox_id = b['logfile']
-                    if len(getByTinderboxID(db, tbox_id)) is 0:
-                        parseFile(tbox_id)
-                    else:
-                        print 'skipping '+tbox_id
+            if 'buildname' in b and 'test' in b['buildname']:
+                print "checking out buildname: " + str(b)
+                tbox_id = b['logfile']
+                if len(getByTinderboxID(db, tbox_id)) is 0:
+                    parseFile(tbox_id)
+                else:
+                    print 'skipping '+tbox_id
 
 class Cache(dict):
     def __init__(self, *args, **kwargs):
@@ -84,4 +83,6 @@ class Cache(dict):
       
 if __name__ == "__main__":
   result = main()
+
+
 
