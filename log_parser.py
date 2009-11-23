@@ -108,11 +108,13 @@ class LogParser():
         match = self.reStatus.search(line[0])
         if (match):
             outcome = match.group(0)
+            if (outcome.split(' ')[0] == "REFTEST"):
+                outcome = outcome.split(' ')[1]
         else:
             return
 
         pathname = line[1].strip()
-        pieces = pathname.split('/')
+        pieces = pathname.replace('\\', '/').split('/')
         if 'reftest' in pieces:
             index = pieces.index('reftest') + 1
             name = "/".join(pieces[index:])
@@ -121,28 +123,17 @@ class LogParser():
             name = "/".join(pieces[index:])
         else:
             name = pathname
-        p = f = t = 0
+
+        if ((name.strip() != "") and (name not in self.tests)):
+            self.tests[name] = dict({'pass': 0, 'fail': 0, 'todo': 0, 'note': []})
 
         if outcome == 'TEST-PASS':
-            p = 1
-            if name not in self.tests:
-                self.tests[name] = dict({'pass': p, 'fail': f, 'todo': t, 'note': []})
-            else:
-                self.tests[name]['pass'] = self.tests[name]['pass'] + p
+            self.tests[name]['pass'] += 1
 
         elif outcome == 'TEST-KNOWN-FAIL':
-            t = 1
-            if name not in self.tests:
-                self.tests[name] = dict({'pass': p, 'fail': f, 'todo': t, 'note': []})
-            else:
-                self.tests[name]['todo'] = self.tests[name]['todo'] + t
+            self.tests[name]['todo'] += 1
         else:
-            f = 1
-            if name.strip() != "":
-                if name not in self.tests:
-                    self.tests[name] = dict({'pass': p, 'fail': f, 'todo': t, 'note': []})
-                else:
-                    self.tests[name]['fail'] = self.tests[name]['fail'] + f
+            self.tests[name]['fail'] +=  1
 
     def parseLog(self, tbox_id):
 
@@ -230,7 +221,7 @@ def main():
         return
 
     result = LogParser(product).parseLog(tboxid)
-    print len(result)
+    print result
 
 if __name__ == "__main__":
   result = main()

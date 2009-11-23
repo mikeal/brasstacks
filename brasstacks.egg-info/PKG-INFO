@@ -1,0 +1,16 @@
+Metadata-Version: 1.0
+Name: brasstacks
+Version: 0.2
+Summary: BrassTacks.
+Home-page: UNKNOWN
+Author: Mikeal Rogers, Mozilla
+Author-email: mikeal.rogers@gmail.com
+License: http://www.apache.org/licenses/LICENSE-2.0
+Description: BrassTacks.
+Platform: Any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
