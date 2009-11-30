@@ -155,7 +155,7 @@ class LogParser():
         else:
             self.tests[name]['fail'] +=  1
 
-    def parseLog(self, tbox_id):
+    def parseLog(self, tbox_id, callback=None):
 
         retVal = []
         doc = {}
@@ -193,13 +193,17 @@ class LogParser():
                             self.reStatus = self.mochitestHarness
 
                         if (self.reStatus <> ''):
-                            retVal.append(self.parseBuildStep(doc, current_step))
+                            if callback:
+                                callback(self.parseBuildStep(doc, current_step))
+                            else:
+                                retVal.append(self.parseBuildStep(doc, current_step))
                 current_step = ''
             else:
                 current_step += line
             line = f.readline()
         
-        return retVal
+        if callback is None:
+            return retVal
 
     def parseBuildStep(self, doc, step):
         mydoc = {}

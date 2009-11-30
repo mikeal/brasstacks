@@ -25,6 +25,7 @@ def getByTinderboxID(db, tbox_id):
 
 
 def save(data):    
+    print 'Saving '+data['tinderboxID']
     saved = False
     starttime = datetime.datetime.now()
     resp, content = http.request(push_url, method='POST',
@@ -50,10 +51,9 @@ def getTinderboxData():
     return result
 
 def parseFile(tbox_id):
-    results = log_parser.LogParser(product).parseLog(tbox_id)
+    results = log_parser.LogParser(product).parseLog(tbox_id, callback=save)
     if (results != None):
         for result in results:
-            print 'Saving result for '+tbox_id
             save(result)
 
 def main():
