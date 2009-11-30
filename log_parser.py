@@ -162,12 +162,10 @@ class LogParser():
         contentAll = ''
         url = self.logroot + tbox_id + "&fulltext=1"
         try:
-            inFile = urllib.urlopen(url)
+            print 'GET '+url
+            f = urllib.urlopen(url)
         except IOError:
             print "Can't open " + url
-        else:
-            contentAll = inFile.read()
-            inFile.close()
 
         doc = {
             "build": self.getBuildId(contentAll),
@@ -177,22 +175,29 @@ class LogParser():
             "tinderboxID": tbox_id}
 
         self.reStatus = ''
+        
+        line = f.readline()
+        in_step = False
+        steps = []
+        current_step = ''
+        while line:
+            if 'BuildStep ended' in line:
+                if self.reParsing.search(current_step):
+                    doc["testtype"] = self.getTestType(current_step)
+                    if (doc["testtype"] <> None):
+                        if (doc["testtype"] == "reftest" or doc["testtype"] == "crashtest"):
+                            self.reStatus = self.reftestHarness
+                        elif (doc["testtype"] == "xpcshell"):
+                            self.reStatus = self.xpcshellHarness
+                        elif (doc["testtype"] == "chrome" or doc['testtype'] == "browser-chrome"):
+                            self.reStatus = self.mochitestHarness
 
-        buildSteps = contentAll.split("BuildStep ended")
-        for step in buildSteps:
-            if self.reParsing.search(step):
-                doc = copy.copy(doc)
-                doc["testtype"] = self.getTestType(step)
-                if (doc["testtype"] <> None):
-                    if (doc["testtype"] == "reftest" or doc["testtype"] == "crashtest"):
-                        self.reStatus = self.reftestHarness
-                    elif (doc["testtype"] == "xpcshell"):
-                        self.reStatus = self.xpcshellHarness
-                    elif (doc["testtype"] == "chrome" or doc['testtype'] == "browser-chrome"):
-                        self.reStatus = self.mochitestHarness
-
-                    if (self.reStatus <> ''):
-                        retVal.append(self.parseBuildStep(doc, step))
+                        if (self.reStatus <> ''):
+                            retVal.append(self.parseBuildStep(doc, current_step))
+                current_step = ''
+            else:
+                current_step += line
+            line = f.readline()
         
         return retVal
 

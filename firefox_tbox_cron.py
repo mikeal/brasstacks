@@ -52,8 +52,8 @@ def getTinderboxData():
 def parseFile(tbox_id):
     results = log_parser.LogParser(product).parseLog(tbox_id)
     if (results != None):
-        print "saving: " + tbox_id
         for result in results:
+            print 'Saving result for '+tbox_id
             save(result)
 
 def main():
@@ -67,7 +67,6 @@ def main():
     for build in build_table:
         for b in [b for b in build if type(b) is not int]:
             if 'buildname' in b and 'test' in b['buildname']:
-                print "checking out buildname: " + str(b)
                 tbox_id = b['logfile']
                 if len(getByTinderboxID(db, tbox_id)) is 0:
                     parseFile(tbox_id)
