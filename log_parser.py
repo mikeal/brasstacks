@@ -34,14 +34,19 @@ class LogParser():
     xpcshellHarness = re.compile(r'TEST-((FAIL)|(PASS)|(UNEXPECTED-FAIL)|(TIMEOUT)|(KNOWN-FAIL)|(UNEXPECTED-PASS))')
 
     reReftest = ''
+    reJSReftest = ''
     reCrashtest = ''
     reXpcshell = ''
+    reChrome = ''
+    reBrowserChrome = ''
+    reMochitest = ''
     reParsing = ''
     logroot = ''
 
     def __init__(self, product="mobile"):
         if (product == "mobile"):
             self.reReftest = "testtype=reftest"
+            self.reJSReftest = "testtype=jsreftest"
             self.reCrashtest = "testtype=crashtest"
             self.reXpcshell = "testtype=xpcshell"
             self.reChrome = "testtype=chrome"
@@ -51,6 +56,7 @@ class LogParser():
             self.logroot = "http://tinderbox.mozilla.org/Mobile/"
         else:
             self.reReftest = "=symbols reftest/tests/layout/reftests/reftest.list"
+            self.reJSReftest = "jsreftest/tests/jstests.list"
             self.reCrashtest = "=symbols reftest/tests/testing/crashtest/crashtests.list"
             self.reXpcshell = "manifest=xpcshell/tests/all-test-dirs.list"
             self.reChrome = "--chrome"
@@ -96,6 +102,8 @@ class LogParser():
     def getTestType(self, text):
         if (self.reReftest in text):
             return "reftest"
+        elif (self.reJSReftest in text):
+            return "jsreftest"
         elif (self.reCrashtest in text):
             return "crashtest"
         elif (self.reXpcshell in text):
@@ -137,6 +145,9 @@ class LogParser():
         pieces = pathname.replace('\\', '/').split('/')
         if 'reftest' in pieces:
             index = pieces.index('reftest') + 1
+            name = "/".join(pieces[index:])
+        elif 'jsreftest' in pieces:
+            index = pieces.index('jsreftest') + 1
             name = "/".join(pieces[index:])
         elif 'xpcshell' in pieces:
             index = pieces.index('xpcshell') + 1
@@ -198,7 +209,9 @@ class LogParser():
                 if self.reParsing.search(current_step):
                     doc["testtype"] = self.getTestType(current_step)                    
                     if (doc["testtype"] <> None):
-                        if (doc["testtype"] == "reftest" or doc["testtype"] == "crashtest"):
+                        if (doc["testtype"] == "reftest" or 
+                            doc["testtype"] == "jsreftest" or
+                            doc["testtype"] == "crashtest"):
                             self.reStatus = self.reftestHarness
                         elif (doc["testtype"] == "xpcshell"):
                             self.reStatus = self.xpcshellHarness
