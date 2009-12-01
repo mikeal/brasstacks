@@ -41,21 +41,21 @@ class LogParser():
 
     def __init__(self, product="mobile"):
         if (product == "mobile"):
-            self.reReftest = re.compile('.*testtype=reftest.*')
-            self.reCrashtest = re.compile('.*testtype=crashtest.*')
-            self.reXpcshell = re.compile('.*testtype=xpcshell.*')
-            self.reChrome = re.compile('.*testtype=chrome.*')
-            self.reBrowserChrome = re.compile('.*testtype=browserchrome.*')
-            self.reMochitest = re.compile('.*testtype=mochitest.*')
+            self.reReftest = "testtype=reftest"
+            self.reCrashtest = "testtype=crashtest"
+            self.reXpcshell = "testtype=xpcshell"
+            self.reChrome = "testtype=chrome"
+            self.reBrowserChrome = "testtype=browserchrome"
+            self.reMochitest = "testtype=mochitest"
             self.reParsing = re.compile(r'python maemkit-chunked.py')
             self.logroot = "http://tinderbox.mozilla.org/Mobile/"
         else:
-            self.reReftest = re.compile('.*=symbols reftest/tests/layout/reftests/reftest.list.*')
-            self.reCrashtest = re.compile('.*=symbols reftest/tests/testing/crashtest/crashtests.list.*')
-            self.reXpcshell = re.compile('.*manifest=xpcshell/tests/all-test-dirs.list.*')
-            self.reChrome = re.compile('.*--chrome.*')
-            self.reBrowserChrome = re.compile('.*--browser-chrome.*')
-            self.reMochitest = re.compile('.*--this-chunk=.*')
+            self.reReftest = "=symbols reftest/tests/layout/reftests/reftest.list"
+            self.reCrashtest = "=symbols reftest/tests/testing/crashtest/crashtests.list"
+            self.reXpcshell = "manifest=xpcshell/tests/all-test-dirs.list"
+            self.reChrome = "--chrome"
+            self.reBrowserChrome = "--browser-chrome"
+            self.reMochitest = "--this-chunk="
             self.reParsing = re.compile(r'python|bash')
             self.logroot = "http://tinderbox.mozilla.org/Firefox-Unittest/"
  
@@ -94,17 +94,17 @@ class LogParser():
         return (re.split(' +', self._getBuild(text)))[0]
 
     def getTestType(self, text):
-        if (self.reReftest.search(text)):
+        if (self.reReftest in text):
             return "reftest"
-        elif (self.reCrashtest.search(text)):
+        elif (self.reCrashtest in text):
             return "crashtest"
-        elif (self.reXpcshell.search(text)):
+        elif (self.reXpcshell in text):
             return "xpcshell"
-        elif (self.reChrome.search(text)):
+        elif (self.reChrome in text):
             return "chrome"
-        elif (self.reBrowserChrome.search(text)):
+        elif (self.reBrowserChrome in text):
             return "browser-chrome"
-        elif (self.reMochitest.search(text)):
+        elif (self.reMochitest in text):
             return "mochitest"
         return None
 
