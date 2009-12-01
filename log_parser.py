@@ -3,6 +3,8 @@ import re
 import datetime
 import sys
 import copy
+import gzip
+import tempfile
 
 class LogParser():
 
@@ -45,7 +47,7 @@ class LogParser():
             self.reChrome = re.compile('.*testtype=chrome.*')
             self.reBrowserChrome = re.compile('.*testtype=browserchrome.*')
             self.reParsing = re.compile(r'python maemkit-chunked.py')
-            self.logroot = "http://tinderbox.mozilla.org/showlog.cgi?log=Mobile/"
+            self.logroot = "http://tinderbox.mozilla.org/Mobile/"
         else:
             self.reReftest = re.compile('.*=symbols reftest/tests/layout/reftests/reftest.list.*')
             self.reCrashtest = re.compile('.*=symbols reftest/tests/testing/crashtest/crashtests.list.*')
@@ -53,7 +55,7 @@ class LogParser():
             self.reChrome = re.compile('.*--chrome.*')
             self.reBrowserChrome = re.compile('.*--browser-chrome.*')
             self.reParsing = re.compile(r'python|bash')
-            self.logroot = "http://tinderbox.mozilla.org/showlog.cgi?log=Firefox-Unittest/"
+            self.logroot = "http://tinderbox.mozilla.org/Firefox-Unittest/"
 
     def _getBuild(self, text):
         #tinderbox: build: OS X 10.5.2 mozilla-central debug test everythingelse
@@ -161,12 +163,19 @@ class LogParser():
         retVal = []
         doc = {}
         contentAll = ''
-        url = self.logroot + tbox_id + "&fulltext=1"
+        url = self.logroot + tbox_id
         try:
             print 'GET '+url
-            f = urllib.urlopen(url)
+            filename = tempfile.mktemp()
+            # request = urllib2.Request(url)
+            # request.add_header('Accept-encoding', 'gzip')
+            # opener = urllib2.build_opener()
+            # opener.retreive(request, filename)
+            filename, headers = urllib.urlretrieve(url, filename)
+            f = gzip.GzipFile(fileobj=open(filename, 'r'))
+            line = f.readline()
         except IOError:
-            print "Can't open " + url
+            print "File not ready " + url
             return []
 
         doc = {
@@ -178,7 +187,7 @@ class LogParser():
 
         self.reStatus = ''
         
-        line = f.readline()
+        
         current_step = ''
         while line:
             if 'BuildStep ended' in line:
