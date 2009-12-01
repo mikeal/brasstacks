@@ -217,9 +217,17 @@ class LogParser():
         contentByLine = step.split("\n")
         for line in contentByLine:
             if self.reStatus.search(line) != None:
-                 self.getTestDetail(line)
-                 mydoc["tests"] = self.tests
-                 mydoc["timestamp"] = str(datetime.datetime.now())
+                self.getTestDetail(line)
+                mydoc["tests"] = self.tests
+                mydoc["timestamp"] = str(datetime.datetime.now())
+
+                for test in mydoc['tests']:
+                    if test['fail'] is 0:
+                        test['result'] = True
+                    else:
+                        test['result'] = False
+                mydoc['pass_count'] = sum([t.get('pass', 0) for t in mydoc['tests']], 0)
+                mydoc['fail_count'] = sum([t.get('fail', 0) for t in mydoc['tests']], 0)
 
                  #HACK: to only count 1 test/check for each test file
                  # mikeal: I don't know why we would want to do this

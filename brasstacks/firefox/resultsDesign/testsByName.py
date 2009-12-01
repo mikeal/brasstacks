@@ -4,7 +4,7 @@ import zlib
 def timestamp_result(doc):
     if 'type' in doc and doc['type'] == 'test-run':
         for test in doc['tests']:
-            t = zlib.crc32(testname)
+            t = zlib.crc32(test['name'])
             emit([t, doc['timestamp']], [doc['_id'], test['result'], doc['os'], doc['build'], test['name']])
 
 start = """

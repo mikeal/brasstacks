@@ -109,13 +109,13 @@ def build_info(doc, req):
             }
     
     t = pystache.render(start, info)
-    for testname, test in doc['tests'].items():
+    for test in doc['tests']:
         row = {"passed"  :str(test['pass']), 
                "failed"  :str(test['fail']), 
                "todo"    :str(test['todo']), 
                "note"    :str(test['note']),
-               "name"    :testname,
-               "namehash":zlib.crc32(testname),
+               "name"    :test['name'],
+               "namehash":zlib.crc32(test['name']),
                "class":class_map[test['fail'] == 0]
                }
         t += pystache.render(table_row, row)

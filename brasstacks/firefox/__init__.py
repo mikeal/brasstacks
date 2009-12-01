@@ -87,12 +87,6 @@ class FirefoxAPIApplication(FirefoxApplication):
             obj = json.loads(str(request.body))
             if 'tests' not in obj:
                 return Response('invalid, has not tests')
-            for test in [t for t in obj['tests'] if t.get('fail') is not 0]:
-                t['result'] = False
-            for test in [t for t in obj['tests'] if t.get('fail') is 0]:
-                t['result'] = True
-            obj['pass_count'] = sum([t.get('pass', 0) for t in obj['tests']], 0)
-            obj['fail_count'] = sum([t.get('fail', 0) for t in obj['tests']], 0)
             obj['type'] = 'test-run'
             info = self.db.create(obj)
         
