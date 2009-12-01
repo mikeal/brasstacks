@@ -52,13 +52,11 @@ class FirefoxApplication(RestApplication):
     def create_failure_document(self, doc, stale=False):
         """Create failure_info Document for testrun document"""
         # tests = [k for k,v in doc.tests.items() if v.get('fail',0) is not 0]
-        tests = doc.failed_test_names
+        tests = [t['name'] for t in doc.tests if t['result'] == False]
         fails = dict([(test, self.get_failure_info(test, doc.testtype, doc.product, doc.os, stale=stale),) 
                     for test in tests
                     ])
         doc.pop('tests')
-        doc.pop('passed_test_names')
-        doc.pop('failed_test_names')
         # new_failures = []
         # for name, test in fails:
         #     if test['firstfailed']['_id'] == doc._id:
@@ -87,10 +85,14 @@ class FirefoxAPIApplication(FirefoxApplication):
     def POST(self, request, collection):
         if collection == 'testrun':
             obj = json.loads(str(request.body))
-            obj['failed_test_names'] = [k for k, t in obj['tests'].items() if t.get('fail') is not 0]
-            obj['passed_test_names'] = [k for k, t in obj['tests'].items() if t.get('fail') is 0]
-            obj['pass_count'] = sum([t.get('pass', 0) for t in obj['tests'].values()], 0)
-            obj['fail_count'] = sum([t.get('fail', 0) for t in obj['tests'].values()], 0)
+            if 'tests' not in obj:
+                return Response('invalid, has not tests')
+            for test in [t for t in obj['tests'] if t.get('fail') is not 0]:
+                t['result'] = False
+            for test in [t for t in obj['tests'] if t.get('fail') is 0]:
+                t['result'] = True
+            obj['pass_count'] = sum([t.get('pass', 0) for t in obj['tests']], 0)
+            obj['fail_count'] = sum([t.get('fail', 0) for t in obj['tests']], 0)
             obj['type'] = 'test-run'
             info = self.db.create(obj)
         

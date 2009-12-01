@@ -11,12 +11,23 @@ import httplib2
 import log_parser
 
 http = httplib2.Http()
+
+
+#<unique> this stuff is unique to mobile
+product = 'mobile'
 tbox_url = 'http://tinderbox.mozilla.org/showbuilds.cgi?tree=Mobile&json=1&noignore=1'
+push_url = 'http://localhost/fennec/api/testrun'
+pull_url = 'http://localhost:5984/fennec_results'
+
+def getByTinderboxID(db, tbox_id):
+    return db.views.fennec.byTinderboxID(key=tbox_id)
+#</unique>
+
 
 def save(data):    
     saved = False
     starttime = datetime.datetime.now()
-    resp, content = http.request('http://localhost/fennec/api/testrun', method='POST',
+    resp, content = http.request(push_url, method='POST',
                                  body=json.dumps(data), headers={'content-type':'application/json'})
     print content
     finishtime = datetime.datetime.now()
@@ -39,14 +50,14 @@ def getTinderboxData():
     return result
 
 def parseFile(tbox_id):
-    result = log_parser.LogParser().parseLog(tbox_id)
-    if (result != None):
+    results = log_parser.LogParser(product).parseLog(tbox_id)
+    if (results != None):
         print "saving: " + tbox_id
-        save(result)
-
+        for result in results:
+            save(result)
 
 def main():
-    db = Database('http://localhost:5984/fennec_results')
+    db = Database(pull_url)
     data = getTinderboxData()
     testName = re.compile('((reftest)|(crashtests)|(xpcshell))')
 
@@ -59,7 +70,7 @@ def main():
                 if (k == "buildname" and testName.search(b[k])):
                     print "checking out buildname: " + b[k]
                     tbox_id = b['logfile']
-                    if len(db.views.fennec.byTinderboxID(key=tbox_id)) is 0:
+                    if len(getByTinderboxID(db, tbox_id)) is 0:
                         parseFile(tbox_id)
                     else:
                         print 'skipping '+tbox_id
