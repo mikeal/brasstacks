@@ -144,16 +144,17 @@ class LogParser():
         else:
             name = pathname
 
-        if ((name.strip() != "") and (name not in self.tests)):
-            self.tests[name] = dict({'pass': 0, 'fail': 0, 'todo': 0, 'note': []})
+        if len(self.tests) is 0 or ((name.strip() != "") and (self.tests[-1]['name'] != name)):
+            self.tests.append({'pass': 0, 'fail': 0, 'todo': 0, 'note': [], 'name':name})
 
+        t = self.tests[-1]
         if outcome == 'TEST-PASS':
-            self.tests[name]['pass'] += 1
+            t['pass'] += 1
 
         elif outcome == 'TEST-KNOWN-FAIL':
-            self.tests[name]['todo'] += 1
+            t['todo'] += 1
         else:
-            self.tests[name]['fail'] +=  1
+            t['fail'] +=  1
 
     def parseLog(self, tbox_id, callback=None):
 
@@ -166,6 +167,7 @@ class LogParser():
             f = urllib.urlopen(url)
         except IOError:
             print "Can't open " + url
+            return []
 
         doc = {
             "build": self.getBuildId(contentAll),
@@ -177,13 +179,11 @@ class LogParser():
         self.reStatus = ''
         
         line = f.readline()
-        in_step = False
-        steps = []
         current_step = ''
         while line:
             if 'BuildStep ended' in line:
                 if self.reParsing.search(current_step):
-                    doc["testtype"] = self.getTestType(current_step)
+                    doc["testtype"] = self.getTestType(current_step)                    
                     if (doc["testtype"] <> None):
                         if (doc["testtype"] == "reftest" or doc["testtype"] == "crashtest"):
                             self.reStatus = self.reftestHarness
@@ -212,7 +212,7 @@ class LogParser():
         mydoc["os"] = doc["os"]
         mydoc["tinderboxID"] = doc["tinderboxID"]
         mydoc["testtype"] = doc["testtype"]
-        self.tests = {}
+        self.tests = []
 
         contentByLine = step.split("\n")
         for line in contentByLine:
@@ -222,12 +222,13 @@ class LogParser():
                  mydoc["timestamp"] = str(datetime.datetime.now())
 
                  #HACK: to only count 1 test/check for each test file
-                 if (mydoc["testtype"] == "xpcshell"):
-                     for test in mydoc['tests']:
-                         if (mydoc['tests'][test]['fail'] >= 1):
-                             mydoc['tests'][test] = dict({'pass': 0, 'fail': 1, 'todo': 0, 'note': []})
-                         else:
-                             mydoc['tests'][test] = dict({'pass': 1, 'fail': 0, 'todo': 0, 'note': []})
+                 # mikeal: I don't know why we would want to do this
+                 # if (mydoc["testtype"] == "xpcshell"):
+                 #     for test in mydoc['tests']:
+                 #         if (mydoc['tests'][test]['fail'] >= 1):
+                 #             mydoc['tests'][test] = dict({'pass': 0, 'fail': 1, 'todo': 0, 'note': []})
+                 #         else:
+                 #             mydoc['tests'][test] = dict({'pass': 1, 'fail': 0, 'todo': 0, 'note': []})
         return mydoc
 
 def main():

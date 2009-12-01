@@ -3,12 +3,9 @@ import zlib
 @map_function
 def timestamp_result(doc):
     if 'type' in doc and doc['type'] == 'test-run':
-        for testname in doc['passed_test_names']:
+        for test in doc['tests']:
             t = zlib.crc32(testname)
-            emit([t, doc['timestamp']], [doc['_id'], True, doc['os'], doc['build'], testname])
-        for testname in doc['failed_test_names']:
-            t = zlib.crc32(testname)
-            emit([t, doc['timestamp']], [doc['_id'], False, doc['os'], doc['build'], testname])
+            emit([t, doc['timestamp']], [doc['_id'], test['result'], doc['os'], doc['build'], test['name']])
 
 start = """
 <html>
