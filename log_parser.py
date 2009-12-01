@@ -46,6 +46,7 @@ class LogParser():
             self.reXpcshell = re.compile('.*testtype=xpcshell.*')
             self.reChrome = re.compile('.*testtype=chrome.*')
             self.reBrowserChrome = re.compile('.*testtype=browserchrome.*')
+            self.reMochitest = re.compile('.*testtype=mochitest.*')
             self.reParsing = re.compile(r'python maemkit-chunked.py')
             self.logroot = "http://tinderbox.mozilla.org/Mobile/"
         else:
@@ -54,9 +55,10 @@ class LogParser():
             self.reXpcshell = re.compile('.*manifest=xpcshell/tests/all-test-dirs.list.*')
             self.reChrome = re.compile('.*--chrome.*')
             self.reBrowserChrome = re.compile('.*--browser-chrome.*')
+            self.reMochitest = re.compile('.*--this-chunk=.*')
             self.reParsing = re.compile(r'python|bash')
             self.logroot = "http://tinderbox.mozilla.org/Firefox-Unittest/"
-
+ 
     def _getBuild(self, text):
         #tinderbox: build: OS X 10.5.2 mozilla-central debug test everythingelse
         #tinderbox: build: Linux mozilla-central opt test mochitests-4/5
@@ -102,6 +104,8 @@ class LogParser():
             return "chrome"
         elif (self.reBrowserChrome.search(text)):
             return "browser-chrome"
+        elif (self.reMochitest.search(text)):
+            return "mochitest"
         return None
 
     # cannot handle blank test file when exception occurred
@@ -198,7 +202,9 @@ class LogParser():
                             self.reStatus = self.reftestHarness
                         elif (doc["testtype"] == "xpcshell"):
                             self.reStatus = self.xpcshellHarness
-                        elif (doc["testtype"] == "chrome" or doc['testtype'] == "browser-chrome"):
+                        elif (doc["testtype"] == "chrome" or 
+                              doc['testtype'] == "mochitest" or
+                              doc['testtype'] == "browser-chrome"):
                             self.reStatus = self.mochitestHarness
 
                         if (self.reStatus <> ''):
