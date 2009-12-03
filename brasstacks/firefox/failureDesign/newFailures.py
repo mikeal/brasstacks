@@ -87,7 +87,7 @@ class NewFailures(ListView):
     def start(self, head, request):
         self.days = []
         return [start], {'headers':{'content-type':'text/html'}}
-    def list_row(self, row):
+    def handle_row(self, row):
         t = []
         day = row['value']['run']['timestamp'].split(' ')[0]
         if day not in self.days:
@@ -110,6 +110,6 @@ class NewFailures(ListView):
         s = pystache.render(table_row,r)
         t.append(s)
         return t
-    def list_end(self):
+    def end(self):
         return ['</tbody></table>', footer, '</body></html>']
 

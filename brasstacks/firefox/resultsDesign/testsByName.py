@@ -78,7 +78,7 @@ class TestnameList(ListView):
     def start(self, head, req):
         self.i = 0
         return [''], {'headers':{'content-type':'text/html'}}
-    def list_row(self, row):
+    def handle_row(self, row):
         r = []
         if self.i is 0:
             r.append(pystache.render(start, {'testname':row['value'][4]}))
@@ -92,5 +92,5 @@ class TestnameList(ListView):
         self.i += 1
         return r
         
-    def list_end(self):
+    def end(self):
         return ['</tbody></table></body></html>']

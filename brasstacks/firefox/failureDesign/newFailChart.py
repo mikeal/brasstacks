@@ -64,10 +64,10 @@ class FailChart(ListView):
     def start(self, head, req):
         self.days = {}
         return [begin], {'headers':{'content-type':'text/html'}}
-    def list_row(self, row):
+    def handle_row(self, row):
         day = row['key']
         failures = row['value']
         self.days[day] = failures
         return [pystache.render(table_row, {'day':day,'failures':failures})]
-    def list_end(self):
+    def end(self):
         return pystache.render(end, self.days)

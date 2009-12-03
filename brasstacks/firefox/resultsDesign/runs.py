@@ -106,7 +106,7 @@ class TestrunList(ListView):
             table_name = 'Test Runs'
         info = {'head':head,'table_name':table_name}
         return [pystache.render(start, info)], {'headers':{'content-type':'text/html'}}
-    def list_row(self, row):
+    def handle_row(self, row):
         doc = row['value']
         x = {'timestamp' :doc[0].split('.')[0],
              'run_id'    :doc[1],
@@ -121,5 +121,5 @@ class TestrunList(ListView):
              }
         return [pystache.render(table_row, x)]
         
-    def list_end(self):
+    def end(self):
         return ['</tbody></table>', footer, '</body></html>']
