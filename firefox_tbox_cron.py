@@ -23,7 +23,6 @@ def getByTinderboxID(db, tbox_id):
     return db.views.results.byTinderboxID(key=tbox_id)
 #</unique>
 
-
 def save(data):    
     print 'Saving '+data['tinderboxID']
     saved = False
@@ -32,7 +31,6 @@ def save(data):
                                  body=json.dumps(data), headers={'content-type':'application/json'})
     print content
     finishtime = datetime.datetime.now()
-    print finishtime - starttime
     saved = True
     return saved
 
@@ -64,14 +62,19 @@ def main():
     build_table = data['build_table']
     build = build_table[0]
 
+    log_files = []
+
     for build in build_table:
-        for b in [b for b in build if type(b) is not int]:
-            if 'buildname' in b and 'test' in b['buildname']:
-                tbox_id = b['logfile']
-                if len(getByTinderboxID(db, tbox_id)) is 0:
-                    parseFile(tbox_id)
-                else:
-                    print 'skipping '+tbox_id
+        builds = [(b['buildtime'],b,) for b in build if type(b) is not int and 'buildname' in b and 'test' in b['buildname']]
+        log_files += builds
+    
+    builds = [value for key, value in sorted(log_files)]
+    for b in builds:
+        tbox_id = b['logfile']
+        if len(getByTinderboxID(db, tbox_id)) is 0:
+            parseFile(tbox_id)
+        else:
+            print 'skipping '+tbox_id
 
 class Cache(dict):
     def __init__(self, *args, **kwargs):
