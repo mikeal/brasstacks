@@ -3,9 +3,10 @@ import pystache
 @map_function
 def summary_map(doc):
     if 'type' in doc and doc['type'] == 'mozmill-test':
-        emit(doc['endtime'], [doc['_id'],doc['sysinfo']['os.name'], 
-                              doc['appInfo.platformVersion'], doc['buildid'],
-                              doc['testPath'], len(doc['tests'])])
+        emit(doc['endtime'], [doc['_id'],
+                              doc['sysinfo']['os.name']+' '+doc['sysinfo']['os.version.number'], 
+                              doc['app.version'], doc['app.buildID'],
+                              doc['testPath'], len(doc['tests']), doc['app.name']])
 
 begin = """<html>
 <head><title>{{title}}</title></head>
@@ -15,7 +16,8 @@ begin = """<html>
         <tr>
             <th>endtime</th>
             <th>os</th>
-            <th>os version</th>
+            <th>product</th>
+            <th>version</th>
             <th>buildid</th>
             <th>testpath</th>
             <th>total tests</th>
@@ -27,7 +29,8 @@ table_row = """
 <tr>
     <td><a href="http://localhost:5984/mozmill/_design/reports/_show/report/{{id_}}">{{endtime}}</a></td>
     <td>{{os}}</td>
-    <td>{{os_version}}</td>
+    <td>{{product}}</td>
+    <td>{{version}}</td>
     <td>{{buildid}}</td>
     <td>{{testpath}}</td>
     <td>{{total_tests}}</td>
@@ -46,11 +49,12 @@ class Summary(ListView):
         endtime = row['key']
         row_info = {"id_"  :doc[0],
                     "os"   :doc[1],
-                    "os_version": doc[2],
+                    "version": doc[2],
                     "buildid": doc[3],
                     "testpath": doc[4],
                     "total_tests": str(doc[5]),
                     "endtime":endtime,
+                    "product":doc[6]
                    }
         h = []
         if self.index is 0:
