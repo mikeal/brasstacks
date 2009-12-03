@@ -36,6 +36,10 @@ def sync(db, names):
         from brasstacks import firefox
         db.sync_design_doc("results", firefox.results_design_doc, "python")
         db.sync_design_doc("failures", firefox.failures_design_doc, "python") 
+    if 'mozmill' in names:
+        from brasstacks import mozmill
+        for name in os.listdir(mozmill.design_dir):
+            db.sync_design_doc(name, os.path.join(mozmill.design_dir, name), 'python')
     if 'users' in names or 'brasstacks' in names:
         import brasstacks
         db.sync_design_doc("brasstacks", brasstacks.design_doc)
