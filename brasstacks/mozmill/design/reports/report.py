@@ -1,4 +1,7 @@
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import uuid
 
 @update_function
