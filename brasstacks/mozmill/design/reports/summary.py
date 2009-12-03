@@ -43,7 +43,7 @@ end = """
 
 class Summary(ListView):
     def start(self, head, req):
-        return [''], {'headers':{'content-type':'text/html'}}
+        return [''], {'headers':{'Content-Type':'text/html'}}
     def handle_row(self, row):
         doc = row['value']
         endtime = row['key']
