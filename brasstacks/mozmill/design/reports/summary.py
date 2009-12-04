@@ -3,18 +3,30 @@ import pystache
 @map_function
 def summary_map(doc):
     if 'type' in doc and doc['type'] == 'mozmill-test':
-        emit(doc['endtime'], [doc['_id'],
-                              doc['sysinfo']['os.name']+' '+doc['sysinfo']['os.version.number'], 
+        emit(doc['starttime'], [doc['_id'],
+                              doc['sysinfo']['os.name'] + ' ' + doc['sysinfo']['os.version.number'], 
                               doc['app.version'], doc['app.buildID'],
                               doc['testPath'], len(doc['tests']), doc['app.name']])
 
 begin = """<html>
-<head><title>{{title}}</title></head>
+  <head>
+    <title>{{title}}</title>
+    <style>
+      table {
+        border-spacing: 0;
+        padding : 0;
+      }
+      td, th {
+        margin: 0;
+        border: 1px solid #555;
+      }
+    </style>
+</head>
 <body>
 <table>
     <thead>
         <tr>
-            <th>endtime</th>
+            <th>start time</th>
             <th>os</th>
             <th>product</th>
             <th>version</th>
@@ -27,7 +39,7 @@ begin = """<html>
 """
 table_row = """
 <tr>
-    <td><a href="http://localhost:5984/mozmill/_design/reports/_show/report/{{id_}}">{{endtime}}</a></td>
+    <td><a href="../../_show/report/{{id_}}">{{starttime}}</a></td>
     <td>{{os}}</td>
     <td>{{product}}</td>
     <td>{{version}}</td>
@@ -46,14 +58,14 @@ class Summary(ListView):
         return [''], {'headers':{'Content-Type':'text/html'}}
     def handle_row(self, row):
         doc = row['value']
-        endtime = row['key']
+        starttime = row['key']
         row_info = {"id_"  :doc[0],
                     "os"   :doc[1],
                     "version": doc[2],
                     "buildid": doc[3],
                     "testpath": doc[4],
                     "total_tests": str(doc[5]),
-                    "endtime":endtime,
+                    "starttime":starttime,
                     "product":doc[6]
                    }
         h = []
