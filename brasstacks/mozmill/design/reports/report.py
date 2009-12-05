@@ -37,12 +37,17 @@ def show_report(doc, req):
 
     for test in doc['tests']:
         filename = test['filename'].replace(os.path.dirname(doc['testPath']), '')
+        if 'meta' in test and 'litmusids' in test['meta']:
+            litmus = str(test['meta']['litmusids'][0]);
+        else:
+            litmus = ""
 
         for passed in test['passes']:
             row = {
                 'class' : "pass",
                 'filename' : filename,
                 'name' : test['name'],
+                'litmus' : litmus,
                 'test' : passed['function'],
                 'comment' : ""
             }
@@ -52,6 +57,7 @@ def show_report(doc, req):
                 'class' : "fail",
                 'filename' : filename,
                 'name' : test['name'],
+                'litmus' : litmus,
                 'test' : failed.get('exception', {}).get('message','')
             }
             html += pystache.render(table_test, row)
@@ -69,7 +75,7 @@ start = u"""
         border : 1px solid #555;
         padding : 0;
       }
-      td {
+      td, th {
         border: 1px solid #555;
       }
       .pass {
@@ -100,6 +106,13 @@ start = u"""
     </table>
     <h2>Results</h2>
     <table>
+        <thead>
+            <th>Status</th>
+            <th>Filename</th>
+            <th>Test function</th>
+            <th>Litmus ID</th>
+            <th>Information</th>
+        </thead>
 """
 
 table_test = u"""
@@ -107,6 +120,7 @@ table_test = u"""
 <td>{{class}}</td>
 <td>{{filename}}</td>
 <td>{{name}}</td>
+<td><a href="https://litmus.mozilla.org/show_test.cgi?id={{litmus}}">{{litmus}}</a></td>
 <td>{{test}}</td>
 <tr>
 """
