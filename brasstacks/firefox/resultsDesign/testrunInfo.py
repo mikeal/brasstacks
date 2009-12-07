@@ -115,7 +115,7 @@ def build_info(doc, req):
                "todo"    :str(test['todo']), 
                "note"    :str(test['note']),
                "name"    :test['name'],
-               "namehash":zlib.crc32(test['name']),
+               "namehash":str(zlib.crc32(test['name'])),
                "class":class_map[test['fail'] == 0]
                }
         t += pystache.render(table_row, row)
