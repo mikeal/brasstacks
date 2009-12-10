@@ -117,7 +117,7 @@ class TestrunList(ListView):
              'failed'    :str(doc[5]),
              'product'   :doc[3],
              'os'        :doc[6],
-             'class'     :class_map[doc[5] is 0],
+             'class'     :class_map[doc[5] == 0],
              }
         return [pystache.render(table_row, x)]
         
