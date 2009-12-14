@@ -188,7 +188,8 @@ class LogParser():
             # opener.retreive(request, filename)
             filename, headers = urllib.urlretrieve(url, filename)
             f = gzip.GzipFile(fileobj=open(filename, 'r'))
-            line = f.readline()
+            contentAll = f.read()
+            f.close()
         except IOError:
             print "File not ready " + url
             return []
@@ -201,11 +202,11 @@ class LogParser():
             "tinderboxID": tbox_id}
 
         self.reStatus = ''
-        
-        
+
+        buildSteps = contentAll.split("BuildStep ended")
         current_step = ''
-        while line:
-            if 'BuildStep ended' in line:
+        for current_step in buildSteps:
+#            if 'BuildStep ended' in line:
                 if self.reParsing.search(current_step):
                     doc["testtype"] = self.getTestType(current_step)                    
                     if (doc["testtype"] <> None):
@@ -226,9 +227,9 @@ class LogParser():
                             else:
                                 retVal.append(self.parseBuildStep(doc, current_step))
                 current_step = ''
-            else:
-                current_step += line
-            line = f.readline()
+#            else:
+#                current_step += line
+#            line = f.readline()
         
         if callback is None:
             return retVal
